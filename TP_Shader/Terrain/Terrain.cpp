@@ -81,11 +81,11 @@ ColorRGB Terrain::getColor ( const Point & p ) {
 	double z = getPoint(p.x, p.y).z;
 	ColorRGB color;
 
-	ColorRGB white = { 255.f, 255.f, 255 };
+	ColorRGB white = { 255.f, 255.f, 255.f };
 	ColorRGB brown = { 51.f, 25.f, 0.f };
-	ColorRGB green = { 40.f, 150.f, 74.f };
+	ColorRGB green = { 0.f, 102.f, 0.f };
 	ColorRGB blue = { 0.f, 128.f, 255.f };
-	ColorRGB grey = { 150.f, 110.f, 40.f };
+	ColorRGB grey = { 64.f, 64.f, 64.f };
 
 	double max = high - low;
 

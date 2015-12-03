@@ -14,9 +14,9 @@ TerrainFractal::TerrainFractal (unsigned int terrain_width_, unsigned int terrai
 		pointList[i] = new Vector[terrain_height];
 
 	// Pour récuperer le Low and Height
-	for (unsigned int j = 0; j < terrain_height; j++) 
+	for (unsigned int i = 0; i < terrain_width; i++)
 	{
-		for (unsigned int i = 0; i < terrain_width; i++) 
+		for (unsigned int j = 0; j < terrain_height; j++)
 		{
 			float z = Noise::noise((float)i, (float)j);
 			pointList[i][j] = Vector((float)i, (float)j, z);
@@ -29,26 +29,27 @@ TerrainFractal::TerrainFractal (unsigned int terrain_width_, unsigned int terrai
 
 Point TerrainFractal::getPoint(float x, float y) const 
 {
-	return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, Noise::noise ( x, y ) ) : noIntersectPoint;
+	//return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, Noise::noise ( x, y ) ) : noIntersectPoint;
 
-	/*int tmpI = (int)x;
+	int tmpI = (int)x;
 	int tmpJ = (int)y;
 
-	if (!(tmpI < terrain_width && tmpJ < terrain_height))
+	if (!(tmpI >= 0 && tmpI < terrain_width && tmpJ >= 0 && tmpJ < terrain_height))
 		return noIntersectPoint;
 
 	Vector & a(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ]);
-	Vector & b(pointList[tmpI][tmpJ < terrain_width - 1 ? tmpJ + 1 : tmpJ]);
-	Vector & c(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ < terrain_width - 1 ? tmpJ + 1 : tmpJ]);
+	Vector & b(pointList[tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
+	Vector & c(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
+	Vector & d(pointList[tmpI][tmpJ]);
 
-	double x2 = x - (double)tmpI;
-	double y2 = y - (double)tmpJ;
-	double z = (1 - x2) * (1 - y2) * pointList[tmpI][tmpJ].z
+	float x2 = x - (float)tmpI;
+	float y2 = y - (float)tmpJ;
+	float z = (1 - x2) * (1 - y2) * d.z
 		+ x2 * (1 - y2) * a.z
 		+ (1 - x2) * y2 * b.z
 		+ x2 * y2 * c.z;
 
-	return Point(x, y, z);*/
+	return Point(x, y, z);
 }
 
 // Renvoi la normal du terrain au point p
