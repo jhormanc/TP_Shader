@@ -32,7 +32,7 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 	//objects.push_back(new Shapes (new Sphere(16.5, Point(27, 16.5, 47)), red));
 	//objects.push_back(new Shapes(new Sphere(16.5, Point(73, 16.5, 78)), white));
 //	objects.push_back(new Shapes(new Cube(Point(72, 15.5, 77), Point(73, 16.5, 78)), new Diffus(white)));	
-	Terrain * t = new TerrainFractal(100, 100);
+	Terrain * t = new TerrainFractal(1000, 1000);
 	objects.push_back(t);
 	/*
 	Mesh * m = new Mesh();

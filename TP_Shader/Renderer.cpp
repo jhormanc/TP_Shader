@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Camera(Point(50.f, 52.f, 300.6f), normalize(Vector(0.f, -0.042612f, -1.f)), Vector(0, 1, 0), 768, 768, 1.f, 300.f, 64.5)),
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), scene(Scene())
 
 {
@@ -88,7 +88,9 @@ void Renderer::run()
 			std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 			for (int x = 0; x < w; x++)
 			{
-				c = radiance(cam.getRay(x, y));
+				Vector cam_dir = normalize(cam.PtScreen(x, y, w, h) - Vector(cam.o.x, cam.o.y, cam.o.z));
+				Ray r = Ray(cam.getOrigin(), cam_dir);
+				c = radiance(r);
 				image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 				//film.colors[x][y] = c;
 			}

@@ -1,28 +1,27 @@
 #include "Camera.h"
 
-
-Camera::Camera(Point o, Vector d, Vector up, int w, int h, float near, float far, float angle)
+Camera::Camera(Point o_, Point a_, double dw, Vector up)
 {
-	width = w;
-	height = h;
-	Transform camera =
-		Transform::scale(float(w), float(h), 1.f) * Transform::translate(Vector(0.5, 0.5, 0.f)) *
-		Transform::perspective(float(angle * M_PI / 180.f), near, far) * Transform::lookAt(o, o + d, up); // OK
-	screenToRay = Mat4x4::inverse(camera.m);
+	o = o_;
+
+	w = normalize(a_ - o_);
+	u = normalize(-cross(w, up));
+	v = cross(w, u);
+	u = -u;
+
+	lu = 16. / 9.;
+	lv = 1.;
+	lw = dw;
 }
 
-Ray Camera::getRay(float x, float y)
+Vector Camera::PtScreen(int i, int j, int width, int height)
 {
+	double tu = (double)i / (double)(width - 1);
+	double tv = (double)j / (double)(height - 1);
 
-	Point p0 = screenToRay * Point(x, (float)height - y, 0.f);
-	Point p1 = screenToRay * Point(x, (float)height - y, 1.f);
+	Vector res = Vector(o.x, o.y, o.z) + (w * lw)
+		+ u * (-lu * (1 - tu) + tu * lu)
+		+ v * (-lv * (1 - tv) + tv * lv);
 
-	Vector d = normalize(p1 - p0);
-
-	return Ray(p0, d);
-}
-
-
-Camera::~Camera()
-{
+	return res;
 }

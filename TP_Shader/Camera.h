@@ -1,13 +1,20 @@
 #pragma once
 #include "Geometry\Geometry.h"
 #include "Transform\Transform.h"
+#include "Global\Global.h"
+
 class Camera
 {
-	Mat4x4 screenToRay;
-	int width, height;
+	Vector u, v, w;
+	double lu, lv, lw;
 public:
-	Camera(Point o, Vector d, Vector up, int w, int h, float near, float far, float angle);
-	Ray getRay(float x, float y);
-	~Camera();
-};
+	Point o;
+	Camera(Point o_, Point d, double dw, Vector up);
 
+	Vector PtScreen(int i, int j, int width, int height);
+
+	Point getOrigin()
+	{
+		return o;
+	}
+};
