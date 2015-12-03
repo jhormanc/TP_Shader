@@ -15,7 +15,7 @@ ColorRGB Renderer::radiance(Ray r)
 		{
 			Point p = r.o + (r.d * t);
 		
-			return shade(p, obj->getNormal(p), r.o, obj->getColor()).cclamp(0.f, 255.f);
+			return shade ( p, obj->getNormal ( p ), r.o, obj->getColor ( p ) ).cclamp ( 0.f, 255.f );
 		}
 	}
 	return ColorRGB{ 0.f, 0.f, 0.f };

@@ -68,11 +68,12 @@ ColorRGB Terrain::getColor ( const Vector & p ) const {
 
 	float slope = abs ( dot ( getNormal ( Point ( p.x, p.y, p.z ) ), Normals ( .0f, .0f, .1f ) ) );
 
+	printf ( "%f", slope );
+
 	if ( slope > .35f )
 		return roche;
 	if ( p.z < 3 * high * .25f )
 		return herbe;
 	else 
 		return neige;
-
 }
