@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include "..\Shapes\Shapes.h"
+#include "..\Geometry\Geometry.h"
 #include "..\Geometry\Vector.h"
 #include "..\Geometry\Normals.h"
 #include "..\Global\Constants.h"
@@ -27,7 +28,7 @@ public:
 	// calcul la distance en hauteur entre le point p et le terrain
 	virtual double distance ( const Point & p ) const;
 
-//	virtual Vector getColor ( const Vector & p ) const = 0;
+	virtual ColorRGB getColor ( const Vector & p ) const;
 
 	// Renvoi la normal du terrain au point p
 	virtual Normals getNormal(Point p) const = 0;

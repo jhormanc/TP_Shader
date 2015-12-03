@@ -59,3 +59,19 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	*tHit = noIntersect;
 	return false;
 }
+
+
+ColorRGB Terrain::getColor ( const Vector & p ) const {
+	ColorRGB roche = { 150.f, 110.f, 40.f };
+	ColorRGB herbe = { 40.f, 150.f, 74.f };
+	ColorRGB neige = { 255.f, 255.f, 255.f };
+
+	float slope = dot ( getNormal ( Point ( p.x, p.y, p.z ) ), Normals ( .0f, .0f, .1f ) );
+
+	
+	if ( p.z < 3 * high * .25f )
+		return herbe;
+	else 
+		return neige;
+
+}
