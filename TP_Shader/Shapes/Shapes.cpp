@@ -10,7 +10,7 @@ Shapes::Shapes(ColorRGB c_) : c(c_)
 
 }
 
-ColorRGB Shapes::getColor()
+ColorRGB Shapes::getColor(const Point& p)
 {
 	return c;
 }

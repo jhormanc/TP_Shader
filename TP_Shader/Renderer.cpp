@@ -15,7 +15,7 @@ ColorRGB Renderer::radiance(Ray r)
 		{
 			Point p = r.o + (r.d * t);
 		
-			return shade(p, obj->getNormal(p), r.o, obj->getColor()).cclamp(0.f, 255.f);
+			return shade(p, obj->getNormal(p), r.o, obj->getColor(p)).cclamp(0.f, 255.f);
 		}
 	}
 	return ColorRGB{ 0.f, 0.f, 0.f };
@@ -23,6 +23,7 @@ ColorRGB Renderer::radiance(Ray r)
 
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, ColorRGB color)
 {
+	return color;
 	return ambiant + (color * clamp(dot(n, normalize(s.light - p)), 0.f, 1.f) + color *  std::pow(clamp(dot(reflect(normalize(s.light - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * V(p, s.light);
 }
 
