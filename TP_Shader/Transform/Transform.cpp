@@ -13,6 +13,7 @@ Transform Transform::operator*(const Transform &t)
 {
 	return Transform(m * t.m);
 }
+
 Transform::~Transform()
 {
 }
