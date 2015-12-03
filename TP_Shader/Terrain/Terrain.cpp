@@ -21,6 +21,18 @@ double Terrain::distance ( const Point &  p ) const {
 	return noIntersect;
 }
 
+ColorRGB Terrain::getColor(const Point & p) {
+	ColorRGB roche = { 150.f, 110.f, 40.f };
+	ColorRGB herbe = { 40.f, 150.f, 74.f };
+	ColorRGB neige = { 255.f, 255.f, 255.f };
+
+	//float slope = dot ( getNormal ( Point ( p.x, p.y, p.z ) ), Normals ( .0f, .0f, .1f ) );
+	return herbe;
+	ColorRGB c = neige * abs(p.z / low) + herbe * abs(p.z / high);// + roche * slope;
+	
+	return c;
+}
+
 // Calcul la pente maximale du terrain
 void Terrain::calcK ( ) {
 	k = std::abs ( getPoint ( 0., 0. ).z - getPoint ( 0., 1. ).z );
@@ -58,4 +70,23 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	}
 	*tHit = noIntersect;
 	return false;
+}
+
+
+ColorRGB Terrain::getColor ( const Vector & p ) const 
+{
+	ColorRGB roche = { 150.f, 110.f, 40.f };
+	ColorRGB herbe = { 40.f, 150.f, 74.f };
+	ColorRGB neige = { 255.f, 255.f, 255.f };
+
+	float slope = abs ( dot ( getNormal ( Point ( p.x, p.y, p.z ) ), Normals ( .0f, .0f, .1f ) ) );
+
+	printf ( "%f", slope );
+
+	if ( slope > .35f )
+		return roche;
+	if ( p.z < 3 * high * .25f )
+		return herbe;
+	else 
+		return neige;
 }

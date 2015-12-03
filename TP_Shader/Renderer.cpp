@@ -1,8 +1,9 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Camera(Point(50.f, 52.f, 295.6f), 
-	normalize(Vector(0.f, -0.042612f, -1.f)), Vector(0, 1, 0), 768, 768, 1.f, 10000.f, 54.5f)),
-	film(Film(768, 768, "test.ppm", ColorRGB{ 1.0f, 1.0f, 1.0f })), scene(Scene())
+
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Camera(Point(50.f, 52.f, 300.6f), normalize(Vector(0.f, -0.042612f, -1.f)), Vector(0, 1, 0), 768, 768, 1.f, 300.f, 64.5)),
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), scene(Scene())
+
 {
 	restart = false;
 	abort = false;
@@ -28,7 +29,7 @@ ColorRGB Renderer::radiance(Ray r)
 		{
 			Point p = r.o + (r.d * t);
 		
-			return shade(p, obj->getNormal(p), r.o, obj->getColor()).cclamp(0.f, 255.f);
+			return shade(p, obj->getNormal(p), r.o, obj->getColor(p)).cclamp(0.f, 255.f);
 		}
 	}
 	return ColorRGB{ 0.f, 0.f, 0.f };
@@ -46,6 +47,7 @@ float Renderer::V(Point collide, Point l)
 	Vector lightVec = normalize(l - collide);
 	Ray lightRay = Ray(l, -lightVec);
 	Shapes * obj;
+
 	if ((obj = scene.intersect(lightRay, t)) != nullptr)
 	{
 		float distance1 = distance(lightRay.o, lightRay.o + lightRay.d * t);

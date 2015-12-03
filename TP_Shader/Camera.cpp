@@ -7,7 +7,7 @@ Camera::Camera(Point o, Vector d, Vector up, int w, int h, float near, float far
 	height = h;
 	Transform camera =
 		Transform::scale(float(w), float(h), 1.f) * Transform::translate(Vector(0.5, 0.5, 0.f)) *
-		Transform::perspective(float(angle * M_PI / 180.f), near, far) * Transform::lookAt(o, o + d, Vector(0, 1, 0)); // OK
+		Transform::perspective(float(angle * M_PI / 180.f), near, far) * Transform::lookAt(o, o + d, up); // OK
 	screenToRay = Mat4x4::inverse(camera.m);
 }
 

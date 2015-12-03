@@ -17,7 +17,6 @@ public:
 	virtual bool intersect(const Ray &ray, float * tHit) const = 0;
 	virtual BBox getBound() const = 0;
 	virtual Normals getNormal(Point p) const = 0;
-	virtual ColorRGB getColor();
-
+	virtual ColorRGB getColor(const Point & p);
 	~Shapes();
 };
