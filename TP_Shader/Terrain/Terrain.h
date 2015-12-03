@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include "..\Shapes\Shapes.h"
+#include "..\Geometry\Geometry.h"
 #include "..\Geometry\Vector.h"
 #include "..\Geometry\Normals.h"
 #include "..\Global\Constants.h"

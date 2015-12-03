@@ -18,6 +18,5 @@ public:
 	virtual BBox getBound() const = 0;
 	virtual Normals getNormal(Point p) const = 0;
 	virtual ColorRGB getColor(const Point & p);
-
 	~Shapes();
 };
