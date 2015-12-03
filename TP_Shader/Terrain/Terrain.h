@@ -6,6 +6,7 @@
 #include "..\Geometry\Vector.h"
 #include "..\Geometry\Normals.h"
 #include "..\Global\Constants.h"
+#include "Global\Constants.h"
 
 class Terrain :
 	public Shapes {
@@ -34,10 +35,11 @@ public:
 	virtual Normals getNormal(Point p) const = 0;
 
 	// Renvoie le point x, y, z appartenant a pointList a partir du x, y (recherche matrice + interpolation).
-	virtual Point getPoint ( double x, double y ) const = 0;
+	virtual Point getPoint(float x, float y) const = 0;
 
-	Point getOrigin ( ) const {
-		return Point ( 0. ); // TODO
+	Point getOrigin () const 
+	{
+		return Point (0.); // TODO
 	}
 
 	virtual bool intersect(const Ray &ray, float * tHit) const;
@@ -51,24 +53,28 @@ public:
 	//bool intersection(Ray r, double &t) const;
 
 	// DEBUG
-	unsigned int getWidth ( ) const {
+	unsigned int getWidth() const 
+	{
 		return terrain_width;
 	}
 
-	unsigned int getHeight ( ) const {
+	unsigned int getHeight() const 
+	{
 		return terrain_height;
 	}
 
-	double getLow ( ) const {
+	double getLow() const 
+	{
 		return low;
 	}
 
-	double getHigh ( ) const {
+	double getHigh() const 
+	{
 		return high;
 	}
 	
 	// Calcul la pente maximale du terrain
-	void calcK ( );
+	void calcK();
 
 	//Mesh* GetMesh ( );
 	

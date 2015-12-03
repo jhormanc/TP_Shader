@@ -4,23 +4,26 @@
 #include <math.h>
 #include "..\Geometry\Vector.h"
 
-class Noise {
-
+class Noise
+{
 public:
-	static double noise ( double x, double y );
-	static double ridge ( const double z, const double zr );
+	static float noise(const float x, const float y);
+	static float ridge(const float z, const float zr);
 
 private:
-	static int fastfloor ( double x );
-	static double dot ( int g[], double x, double y );
+	static float noise1(const float x, const float y);
+	static float noise2(const float x, const float y);
+
+	static int fastfloor(float x);
+	static float dot(int g[], float x, float y);
 
 	// Renvoi une valeur aleatoire entre 0 et 1 a partir de x.
-	static double hash ( double x );
-	static Vector warp ( const Vector p, const double c, const double f );
-	static double smooth ( const double z, const double zmin, const double zmax );
+	static float hash(float x);
+	static Vector warp(const Vector p, const float c, const float f, const bool perlin);
+	static float smooth(const float z, const float zmin, const float zmax);
 
-	static double perlin2D ( double x, double y, const double res_x, const double res_y );
-	static double simplex ( double xin, double yin );
-
+	static float perlin2D(const float x, const float y);
+	static float simplex(const float xin, const float yin);
 };
+
 

@@ -62,18 +62,44 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 
 
 ColorRGB Terrain::getColor ( const Point & p ) {
-	ColorRGB roche = { 150.f, 110.f, 40.f };
-	ColorRGB herbe = { 40.f, 150.f, 74.f };
-	ColorRGB neige = { 255.f, 255.f, 255.f };
-	//return herbe;
-	float slope = abs ( dot ( getNormal ( Point ( p.x, p.y, p.z ) ), Normals ( .0f, .0f, .1f ) ) );
+	//ColorRGB roche = { 150.f, 110.f, 40.f };
+	//ColorRGB herbe = { 40.f, 150.f, 74.f };
+	//ColorRGB neige = { 255.f, 255.f, 255.f };
+	////return herbe;
+	//float slope = abs ( dot ( getNormal ( Point ( p.x, p.y, p.z ) ), Normals ( .0f, .0f, .1f ) ) );
 
-	printf ( "%f", slope );
+	//printf ( "%f", slope );
 
-	if ( slope > .35f )
-		return roche;
-	if ( p.z < 3 * high * .25f )
-		return herbe;
-	else 
-		return neige;
+	//if ( slope > .35f )
+	//	return roche;
+	//if ( p.z < 3 * high * .25f )
+	//	return herbe;
+	//else 
+	//	return neige;
+
+
+	double z = getPoint(p.x, p.y).z;
+	ColorRGB color;
+
+	ColorRGB white = { 255.f, 255.f, 255 };
+	ColorRGB brown = { 51.f, 25.f, 0.f };
+	ColorRGB green = { 40.f, 150.f, 74.f };
+	ColorRGB blue = { 0.f, 128.f, 255.f };
+	ColorRGB grey = { 150.f, 110.f, 40.f };
+
+	double max = high - low;
+
+	// Noise
+	if (z <= low + (max * (5. / 100.)))
+		color = green;
+	else if (z >= low + (max * (90. / 100.)))
+		color = white;
+	else if (z >= low + (max * (50. / 100.)))
+		color = grey;
+	else if (z >= low + (max * (5. / 100.)) && (z <= low + (max * (50. / 100.))))
+		color = brown;
+	else
+		color = blue;
+
+	return color;
 }

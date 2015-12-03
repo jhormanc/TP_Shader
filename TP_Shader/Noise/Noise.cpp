@@ -1,9 +1,11 @@
 #include "Noise.h"
 
+#include <stdlib.h>
+#include <math.h>
 
-static double unit = 1.0f / sqrt ( 2.0f );
+static float unit = 1.0f / sqrt(2.f);
 
-static double grad2[][2] = { { unit, unit }, { -unit, unit }, { unit, -unit }, { -unit, -unit },
+static float grad2[][2] = { { unit, unit }, { -unit, unit }, { unit, -unit }, { -unit, -unit },
 { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
 
 static int grad3[][3] = { { 1, 1, 0 }, { -1, 1, 0 }, { 1, -1, 0 }, { -1, -1, 0 },
@@ -24,70 +26,83 @@ static int p[] = { 151, 160, 137, 91, 90, 15,
 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180 };
 
-// To remove the need for index wrapping, double the permutation table length
+// To remove the need for index wrapping, float the permutation table length
 static int perm[512];
 
 // This method is a *lot* faster than using (int)Math.floor(x)
-int Noise::fastfloor ( double x ) {
-	return x>0 ? ( int ) x : ( int ) x - 1;
+int Noise::fastfloor(float x)
+{
+	return x>0 ? (int)x : (int)x - 1;
 }
 
-double Noise::dot ( int g[], double x, double y ) {
+float Noise::dot(int g[], float x, float y)
+{
 	return g[0] * x + g[1] * y;
 }
 
 // Renvoi une valeur aleatoire entre 0 et 1 a partir de x.
-double Noise::hash ( double x ) {
-	return ( 1.0 + ( sin ( sin ( x ) * rand ( ) ) ) ) / 2.0;
+float Noise::hash(float x)
+{
+	return (1.0 + (sin(sin(x) * rand()))) / 2.0;
 }
 
-double Noise::ridge ( const double z, const double zr ) {
-	if ( z < zr )
+float Noise::ridge(const float z, const float zr)
+{
+	if (z < zr)
 		return z;
 	return 2 * zr - z;
 }
 
-Vector Noise::warp ( const Vector p, const double c, const double f ) {
-	return p + Vector ( simplex ( f * p.x, f * p.y ), simplex ( f * ( p.x * cos ( 30.0f ) - p.y * sin ( 30.0f ) ) + 10, f * ( p.x * sin ( 30.0f ) + p.y * cos ( 30.0f ) ) + 10 ), 0 ) * c;
+Vector Noise::warp(const Vector p, const float c, const float f, const bool perlin)
+{
+	if (perlin)
+		return p + Vector((f * p.x, f * p.y), perlin2D(f * (p.x * cos(30.f) - p.y * sin(30.f)) + 10., f * (p.x * sin(30.f) + p.y * cos(30.f)) + 10.), 0.) * c;
+
+	return p + Vector((f * p.x, f * p.y), simplex(f * (p.x * cos(30.f) - p.y * sin(30.f)) + 10., f * (p.x * sin(30.f) + p.y * cos(30.f)) + 10.), 0.) * c;
 }
 
-double Noise::smooth ( const double z, const double zmin, const double zmax ) {
-	if ( z < zmin )
+float Noise::smooth(const float z, const float zmin, const float zmax)
+{
+	if (z < zmin)
 		return 0;
 
-	if ( z > zmax )
+	if (z > zmax)
 		return 1;
 
-	double t = ( z - zmin ) / ( zmax - zmin );
+	float t = (z - zmin) / (zmax - zmin);
 
-	return 1 - ( 1 - t * t ) * ( 1 - t * t );
+	return 1 - (1 - t * t) * (1 - t * t);
 }
 
 // 2D Simplex noise
-double Noise::simplex ( double xin, double yin ) {
-	for ( int i = 0; i<512; i++ ) perm[i] = p[i & 255];
+float Noise::simplex(const float xin, const float yin)
+{
+	for (int i = 0; i < 512; i++)
+		perm[i] = p[i & 255];
 
-	double n0, n1, n2; // Noise contributions from the three corners
+	float n0, n1, n2; // Noise contributions from the three corners
 	// Skew the input space to determine which Noise cell we're in
-	double F2 = 0.5 * ( sqrt ( 3.0 ) - 1.0 );
-	double s = ( xin + yin ) * F2; // Hairy factor for 2D
-	int i = fastfloor ( xin + s );
-	int j = fastfloor ( yin + s );
-	double G2 = ( 3.0 - sqrt ( 3.0 ) ) / 6.0;
-	double t = ( i + j ) * G2;
-	double X0 = i - t; // Unskew the cell origin back to (x,y) space
-	double Y0 = j - t;
-	double x0 = xin - X0; // The x,y distances from the cell origin
-	double y0 = yin - Y0;
+	float F2 = 0.5 * (sqrt(3.0) - 1.0);
+	float s = (xin + yin) * F2; // Hairy factor for 2D
+	int i = fastfloor(xin + s);
+	int j = fastfloor(yin + s);
+	float G2 = (3.0 - sqrt(3.0)) / 6.0;
+	float t = (i + j) * G2;
+	float X0 = i - t; // Unskew the cell origin back to (x,y) space
+	float Y0 = j - t;
+	float x0 = xin - X0; // The x,y distances from the cell origin
+	float y0 = yin - Y0;
 
 	// For the 2D case, the Noise shape is an equilateral triangle.
 	// Determine which Noise we are in.
 	int i1, j1; // Offsets for second (middle) corner of Noise in (i,j) coords
-	if ( x0  > y0 ) {
+	if (x0  > y0)
+	{
 		i1 = 1;
 		j1 = 0;
 	} // lower triangle, XY order: (0,0)->(1,0)->(1,1)
-	else {
+	else
+	{
 		i1 = 0;
 		j1 = 1;
 	} // upper triangle, YX order: (0,0)->(0,1)->(1,1)
@@ -95,10 +110,10 @@ double Noise::simplex ( double xin, double yin ) {
 	// A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
 	// a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
 	// c = (3-sqrt(3))/6
-	double x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
-	double y1 = y0 - j1 + G2;
-	double x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords
-	double y2 = y0 - 1.0 + 2.0 * G2;
+	float x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+	float y1 = y0 - j1 + G2;
+	float x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords
+	float y2 = y0 - 1.0 + 2.0 * G2;
 
 	// Work out the hashed gradient indices of the three Noise corners
 	int ii = i & 255;
@@ -108,107 +123,136 @@ double Noise::simplex ( double xin, double yin ) {
 	int gi2 = perm[ii + 1 + perm[jj + 1]] % 12;
 
 	// Calculate the contribution from the three corners
-	double t0 = 0.5 - x0 * x0 - y0 * y0;
-	if ( t0 < 0 )
+	float t0 = 0.5 - x0 * x0 - y0 * y0;
+	if (t0 < 0)
 		n0 = 0.0;
-	else {
+	else
+	{
 		t0 *= t0;
-		n0 = t0 * t0 * dot ( grad3[gi0], x0, y0 ); // (x,y) of grad3 used for 2D gradient
+		n0 = t0 * t0 * dot(grad3[gi0], x0, y0); // (x,y) of grad3 used for 2D gradient
 	}
 
-	double t1 = 0.5 - x1 * x1 - y1 * y1;
-	if ( t1 < 0 )
+	float t1 = 0.5 - x1 * x1 - y1 * y1;
+	if (t1 < 0)
 		n1 = 0.0;
-	else {
+	else
+	{
 		t1 *= t1;
-		n1 = t1 * t1 * dot ( grad3[gi1], x1, y1 );
+		n1 = t1 * t1 * dot(grad3[gi1], x1, y1);
 	}
 
-	double t2 = 0.5 - x2 * x2 - y2 * y2;
-	if ( t2 < 0 )
+	float t2 = 0.5 - x2 * x2 - y2 * y2;
+	if (t2 < 0)
 		n2 = 0.0;
-	else {
+	else
+	{
 		t2 *= t2;
-		n2 = t2 * t2 * dot ( grad3[gi2], x2, y2 );
+		n2 = t2 * t2 * dot(grad3[gi2], x2, y2);
 	}
 
 	// Add contributions from each corner to get the final noise value.
 	// The result is scaled to return values in the interval [-1,1].
-	return 70.0 * ( n0 + n1 + n2 );
+	return 70.0 * (n0 + n1 + n2);
 }
 
 // Perlin noise
-// Renvoie un double compris entre -1 et 1
-double Noise::perlin2D ( double x, double y, const double res_x, const double res_y ) {
-	double tempX, tempY;
+// Renvoie un float compris entre -1 et 1
+float Noise::perlin2D(const float x, const float y)
+{
+	float tempX, tempY;
 	int x0, y0, ii, jj, gi0, gi1, gi2, gi3;
 
-	double tmp, s, t, u, v, Cx, Cy, Li1, Li2;
+	float tmp, s, t, u, v, Cx, Cy, Li1, Li2;
 
-	//Adapter pour la résolution
-	x /= res_x;
-	y /= res_y;
+	// On récupère les positions de la grille associée à (x,y)
+	x0 = (int)(x);
+	y0 = (int)(y);
 
-	//On récupère les positions de la grille associée à (x,y)
-	x0 = ( int ) ( x );
-	y0 = ( int ) ( y );
-
-	//Masquage
+	// Masquage
 	ii = x0 & 255;
 	jj = y0 & 255;
 
-	//Pour récupérer les vecteurs
+	// Pour récupérer les vecteurs
 	gi0 = p[ii + p[jj]] % 8;
 	gi1 = p[ii + 1 + p[jj]] % 8;
 	gi2 = p[ii + p[jj + 1]] % 8;
 	gi3 = p[ii + 1 + p[jj + 1]] % 8;
 
-	//on récupère les vecteurs et on pondère
+	// On récupère les vecteurs et on pondère
 	tempX = x - x0;
 	tempY = y - y0;
 	s = grad2[gi0][0] * tempX + grad2[gi0][1] * tempY;
 
-	tempX = x - ( x0 + 1 );
+	tempX = x - (x0 + 1);
 	tempY = y - y0;
 	t = grad2[gi1][0] * tempX + grad2[gi1][1] * tempY;
 
 	tempX = x - x0;
-	tempY = y - ( y0 + 1 );
+	tempY = y - (y0 + 1);
 	u = grad2[gi2][0] * tempX + grad2[gi2][1] * tempY;
 
-	tempX = x - ( x0 + 1 );
-	tempY = y - ( y0 + 1 );
+	tempX = x - (x0 + 1);
+	tempY = y - (y0 + 1);
 	v = grad2[gi3][0] * tempX + grad2[gi3][1] * tempY;
 
 
-	//Lissage
+	// Lissage
 	tmp = x - x0;
 	Cx = 3 * tmp * tmp - 2 * tmp * tmp * tmp;
 
-	Li1 = s + Cx*( t - s );
-	Li2 = u + Cx*( v - u );
+	Li1 = s + Cx*(t - s);
+	Li2 = u + Cx*(v - u);
 
 	tmp = y - y0;
 	Cy = 3 * tmp * tmp - 2 * tmp * tmp * tmp;
 
-	return Li1 + Cy*( Li2 - Li1 );
+	return Li1 + Cy*(Li2 - Li1);
 }
 
-double Noise::noise ( double x, double y ) {
-	Vector w = warp ( Vector ( x, y, 0 ), 5, 1 / 50.0 );
-	double tmp;
-	tmp = ( simplex ( w.x / 500, w.y / 500 ) + 1 ) * 0.5;
+float Noise::noise(const float x, const float y)
+{
+	return noise1(x, y);
+}
 
-	double z0 = ridge ( 200 * tmp, 180 );
+float Noise::noise1(const float x, const float y)
+{
+	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
+	float tmp;
 
-	tmp = ( simplex ( w.x / 200, w.y / 200 ) + 1 ) * 0.5;
+	tmp = (simplex(w.x / 500., w.y / 500.) + 1.) * 0.5;
+	float z0 = ridge(200. * tmp, 180.);
 
-	double z1 = 50 * tmp; //ridge(50 * tmp, 15);
+	tmp = (simplex(w.x / 200., w.y / 200.) + 1.) * 0.5;
+	float z1 = 50. * tmp;
 
-	tmp = ( simplex ( w.x / 50, w.y / 50 ) + 1 ) * 0.5;
+	tmp = (simplex(w.x / 50, w.y / 50) + 1.) * 0.5;
+	float z2 = 15. * tmp;
 
-	double z2 = 15 * tmp; //ridge(15 * tmp, 5);
+	float z = z0 * smooth(z0, 50., 200.) + z1 * smooth(z0, 50., 200.) + z2 * smooth(z0, 50., 200.);
+	return z;
+}
 
-	double z = z0 * smooth ( z0, 50, 200 ) + z1 * smooth ( z0, 50, 200 ) + z2 * smooth ( z0, 50, 200 );
+float Noise::noise2(const float x, const float y)
+{
+	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
+	float tmp;
+
+	tmp = (simplex(w.x / 700., w.y / 700.) + 1.) * 0.5;
+	float z0 = 200. * tmp;
+
+	tmp = (simplex(w.x / 300., w.y / 300.) + 1.) * 0.5;
+	float z1 = 100. * tmp;
+
+	tmp = (simplex(w.x / 100., w.y / 100.) + 1.) * 0.5;
+	float z2 = 50. * tmp;
+
+	tmp = (simplex(w.x / 30., w.y / 30.) + 1.) * 0.5;
+	float z3 = 30. * tmp;
+
+	float z = z0 - ridge(z0 * smooth(z0, 0., 100.), 100.);
+	z += z1 * smooth(z, 50., 300.);
+	z += z2 * smooth(z, 70., 300.);
+	z += z3 * smooth(z, 100., 300.);
+
 	return z;
 }
