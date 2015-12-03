@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer() :c(Camera(Point(50.f, 52.f, 300.6f), normalize(Vector(0.f, -0.042612f, -1.f)), Vector(0, 1, 0), 768, 768, 1.f, 300.f, 64.5)),
+Renderer::Renderer() :c(Camera(Point(0.f, 0.f, 300.6f), normalize(Vector(0.f, -0.042612f, -1.f)), Vector(0, 1, 0), 768, 768, 1.f, 1000.f, 64.5)),
 f(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), s(Scene())
 {
 }

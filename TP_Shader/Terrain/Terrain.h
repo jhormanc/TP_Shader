@@ -29,7 +29,7 @@ public:
 	virtual double distance ( const Point & p ) const;
 
 //	virtual Vector getColor ( const Vector & p ) const = 0;
-	virtual ColorRGB getColor(const Point & p);
+	 ColorRGB getColor(const Point & p) override;
 	// Renvoi la normal du terrain au point p
 	virtual Normals getNormal(Point p) const = 0;
 
