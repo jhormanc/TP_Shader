@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer() :c(Camera(Point(50.f, 52.f, 295.6f), normalize(Vector(0.f, -0.042612f, -1.f)), Vector(0, 1, 0), 768, 768, 1.f, 10000.f, 54.5f)),
-f(Film(768, 768, "test.ppm", ColorRGB{ 1.0f, 1.0f, 1.0f })), s(Scene())
+Renderer::Renderer() :c(Camera(Point(50.f, 52.f, 300.6f), normalize(Vector(0.f, -0.042612f, -1.f)), Vector(0, 1, 0), 768, 768, 1.f, 300.f, 64.5)),
+f(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), s(Scene())
 {
 }
 
@@ -28,16 +28,18 @@ ColorRGB Renderer::shade(Point p, Normals n, Point eye, ColorRGB color)
 
 float Renderer::V(Point collide, Point l)
 {
-	return 1.f;
-
 	const float epsilon = 0.1f;
 	float t;
 	Vector lightVec = normalize(l - collide);
 	Ray lightRay = Ray(l, -lightVec);
 	Shapes * obj;
-	if ((obj = s.intersect(lightRay, t)) != nullptr && distance(collide, (lightRay.o + lightRay.d * t)) < epsilon)
+	if ((obj = s.intersect(lightRay, t)) != nullptr)
 	{
-		return 1.f;
+		float distance1 = distance(lightRay.o, lightRay.o + lightRay.d * t);
+
+		float distance2 = distance(lightRay.o, collide);
+		if (!(distance1 + epsilon < distance2))
+			return 1.f;
 	}
 	return 0.f;
 }
