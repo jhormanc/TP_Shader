@@ -27,16 +27,23 @@ ColorRGB Renderer::radiance(Ray r)
 		if ((obj = scene.intersect(r, t)) != nullptr)
 		{
 			Point p = r.o + (r.d * t);
-		
-			return shade(p, obj->getNormal(p), r.o, obj->getColor(p)).cclamp(0.f, 255.f);
+			int n = 0;
+			ColorRGB acc = ColorRGB{ 0, 0, 0 };
+
+			for (Light l : scene.lights)
+			{
+				acc = acc + (shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * l.influence);
+				n += l.influence;
+			}
+			return acc * (1.f /(float)n);
 		}
 	}
 	return ColorRGB{ 0.f, 0.f, 0.f };
 }
 
-ColorRGB Renderer::shade(Point p, Normals n, Point eye, ColorRGB color)
+ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
-	return ambiant + (color * clamp(dot(n, normalize(scene.light - p)), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(scene.light - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * V(p, scene.light);
+	return ambiant + (color * clamp(dot(n, normalize(l - p)), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * V(p, l);
 }
 
 float Renderer::V(Point collide, Point l)

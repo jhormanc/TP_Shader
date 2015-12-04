@@ -22,14 +22,14 @@ private:
 	Camera cam;
 	Scene scene;
 	Film film;
-	ColorRGB ambiant = ColorRGB{ 100.F, 100.f, 100.f };
+	ColorRGB ambiant = ColorRGB{ 00.F, 00.f, 0.f };
 
 public:
 	Renderer(QObject *parent = 0);
 	void render();
 	ColorRGB radiance(Ray r);
 	float V(Point collide, Point l);
-	ColorRGB shade(Point p, Normals n, Point eye, ColorRGB color);
+	ColorRGB shade(Point p, Normals n, Point eye, Point l, ColorRGB color);
 	~Renderer();
 
 signals:

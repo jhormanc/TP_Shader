@@ -39,8 +39,13 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 	*m = Mesh::readFromObj("test.obj", Vector(50, 16.5, 50));
 	objects.push_back(new Shapes (m, new Diffus(white)));
 	*/
-	light = Point(50.f, 50.f, 300.6f);
-	
+	lights.push_back(Light{ Point(500.f, 500.f, 500.6f), 1 });
+	lights.push_back(Light{ Point(-100.f, 1100.f, 500.6f), 1 });
+	lights.push_back(Light{ Point(0.f, 0.f, 500.6f), 1 });
+
+	lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
+	lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
+
 }
 
 Shapes * Scene::intersect(const Ray &r, float & t)

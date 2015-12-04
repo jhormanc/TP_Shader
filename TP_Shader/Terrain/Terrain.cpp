@@ -41,7 +41,7 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 {
 	*tHit = 0.f;
 	Point res;
-	for (int i = 0; i < 256; i++)
+	for (int i = 0; i < 1024; i++)
 	{
 		res = r.o + (r.d * *tHit);
 		Point tmp = getPoint(res.x, res.y);
