@@ -9,7 +9,7 @@ Camera::Camera(Point o_, Point a_, double dw, Vector up)
 	v = cross(w, u);
 	u = -u;
 
-	lu = 16. / 9.;
+	lu = 4. / 3.;
 	lv = 1.;
 	lw = dw;
 }

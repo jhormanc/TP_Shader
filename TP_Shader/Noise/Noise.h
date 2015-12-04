@@ -13,6 +13,8 @@ public:
 private:
 	static float noise1(const float x, const float y);
 	static float noise2(const float x, const float y);
+	static float noise3(const float x, const float y);
+	static float noise4(const float x, const float y);
 
 	static int fastfloor(float x);
 	static float dot(int g[], float x, float y);

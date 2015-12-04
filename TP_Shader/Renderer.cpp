@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), scene(Scene())
 
 {
@@ -88,15 +88,17 @@ void Renderer::run()
 		int w = film.xResolution;
 		QImage image(w, h, QImage::Format_RGB32);
 		ColorRGB c;
+		Point cam_pt(cam.getOrigin());
+		Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
 
-		#pragma omp parallel for
+		#pragma omp parallel for schedule(static)
 		for (int y = 0; y < h; y++)
 		{
 			std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 			for (int x = 0; x < w; x++)
 			{
-				Vector cam_dir = normalize(cam.PtScreen(x, y, w, h) - Vector(cam.o.x, cam.o.y, cam.o.z));
-				Ray r = Ray(cam.getOrigin(), cam_dir);
+				Vector cam_dir = normalize(cam.PtScreen(x, y, w, h) - cam_vec);
+				Ray r = Ray(cam_pt, cam_dir);
 				c = radiance(r);
 				image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 				//film.colors[x][y] = c;

@@ -9,7 +9,8 @@
 #include "Global\Constants.h"
 
 class Terrain :
-	public Shapes {
+	public Shapes 
+{
 
 protected:
 	unsigned int terrain_width;
@@ -18,19 +19,20 @@ protected:
 	double high, low;				// Paramètre pour connaitre la hauteur max et min de la map
 
 public:
-	Terrain ( ) : Shapes ( ) { }
+	Terrain() : Shapes() { }
 
 	//Pour definir un max et un min
-	void MaxMin ( double );
+	void MaxMin(double);
 
 	// Renvoie vrai si le point p est en dehors du terrain, faux sinon.
-	virtual bool inside ( const Point & p ) const;
+	virtual bool inside(const Point & p) const;
 
 	// calcul la distance en hauteur entre le point p et le terrain
-	virtual double distance ( const Point & p ) const;
+	virtual double distance (const Point & p) const;
 
-//	virtual Vector getColor ( const Vector & p ) const = 0;
+	//	virtual Vector getColor ( const Vector & p ) const = 0;
 	 ColorRGB getColor(const Point & p) override;
+
 	// Renvoi la normal du terrain au point p
 	virtual Normals getNormal(Point p) const = 0;
 

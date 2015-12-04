@@ -13,13 +13,13 @@ TerrainFractal::TerrainFractal (unsigned int terrain_width_, unsigned int terrai
 	for (int i = 0; i < terrain_width; i++)
 		pointList[i] = new Vector[terrain_height];
 
-	// Pour récuperer le Low and Height
-	for (unsigned int i = 0; i < terrain_width; i++)
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < terrain_width; i++)
 	{
-		for (unsigned int j = 0; j < terrain_height; j++)
+		for (int j = 0; j < terrain_height; j++)
 		{
-			float z = Noise::noise((float)i, (float)j);
-			pointList[i][j] = Vector((float)i, (float)j, z);
+			float z = Noise::noise(i, j);
+			pointList[i][j] = Vector(i, j, z);
 			MaxMin(z);
 		}
 	}
@@ -44,9 +44,9 @@ Point TerrainFractal::getPoint(float x, float y) const
 
 	float x2 = x - (float)tmpI;
 	float y2 = y - (float)tmpJ;
-	float z = (1 - x2) * (1 - y2) * d.z
-		+ x2 * (1 - y2) * a.z
-		+ (1 - x2) * y2 * b.z
+	float z = (1.f - x2) * (1.f - y2) * d.z
+		+ x2 * (1.f - y2) * a.z
+		+ (1.f - x2) * y2 * b.z
 		+ x2 * y2 * c.z;
 
 	return Point(x, y, z);
