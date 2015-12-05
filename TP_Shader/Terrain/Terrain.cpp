@@ -81,45 +81,66 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 
 
 ColorRGB Terrain::getColor ( const Point & p ) {
-	//ColorRGB roche = { 150.f, 110.f, 40.f };
-	//ColorRGB herbe = { 40.f, 150.f, 74.f };
-	//ColorRGB neige = { 255.f, 255.f, 255.f };
-	////return herbe;
-	//float slope = abs ( dot ( getNormal ( Point ( p.x, p.y, p.z ) ), Normals ( .0f, .0f, .1f ) ) );
+	ColorRGB roche = { 100.f, 100.f, 100.f };
+	ColorRGB roche_claire = { 200.f, 200.f, 200.f };
+	ColorRGB terre = { 95.f, 62.f, 5.f };
+	ColorRGB terre_claire = { 195.f, 162.f, 105.f };
+	ColorRGB herbe = { 40.f, 150.f, 74.f };
+	ColorRGB neige = { 255.f, 255.f, 255.f };
+	ColorRGB bleue = { 0.f, 128.f, 220.f };
 
-	//printf ( "%f", slope );
+	double z = getPoint ( p.x, p.y ).z;
 
-	//if ( slope > .35f )
-	//	return roche;
-	//if ( p.z < 3 * high * .25f )
-	//	return herbe;
-	//else 
-	//	return neige;
-
-
-	double z = getPoint(p.x, p.y).z;
+	double slope = std::max ( std::max ( std::max (
+		std::abs ( double ( z - getPoint ( p.x - 1, p.y ).z ) ),
+		std::abs ( double ( z - getPoint ( p.x + 1, p.y ).z ) ) ),
+		std::abs ( double ( z - getPoint ( p.x, p.y - 1 ).z ) ) ),
+		std::abs ( double ( z - getPoint ( p.x, p.y + 1 ).z ) ) );		
+	slope *= .5f;
+	
 	ColorRGB color;
-
-	ColorRGB white = { 230.f, 230.f, 230.f };
-	ColorRGB brown = { 51.f, 25.f, 0.f };
-	ColorRGB green = { 0.f, 102.f, 10.f };
-	ColorRGB blue = { 0.f, 128.f, 220.f };
-	ColorRGB grey = { 64.f, 64.f, 64.f };
 
 	double max = high - low;
 
-	// Noise
-
-	if (z >= low + (max * (70. / 100.)))
-		color = white;
-	else if (z >= low + (max * (50. / 100.)))
-		color = grey;
-	else if (z >= low + (max * (10. / 100.)))
-		color = brown;
-	else if (z >= 0.f)
-		color = green;
-	else
-		color = blue;
-
+	float rng1 = 60.0f + rand ( ) * 10;
+	float rng2 = 40.0f + rand ( ) * 10;
+	float rng3 = .0f + rand ( ) * 10;
+		
+	if ( z >= low + ( max * ( 80 / 100. ) ) ) {
+		if ( slope <= .8f )
+			color = neige;
+		else
+			color = roche_claire;
+	}		
+	else if ( z >= low + ( max * ( 60 / 100. ) ) ) {
+		if (slope <= .1f )
+			color = neige;
+		else if ( slope <= .3f )
+			color = roche_claire;
+		else
+			color = roche;
+	}	
+	else if ( z >= low + ( max * ( 40 / 100. ) ) ) {
+		if ( slope <= .25f )
+			color = terre;
+		else
+			color = terre_claire;
+	}
+	else if ( z >= low + ( max * ( 20 / 100. ) ) ) {
+		if ( slope <= .15f )
+			color = herbe;
+		else
+			color = terre;
+	}		
+	else if ( z >= 0.f ) {
+		if ( slope <= .85f )
+			color = herbe;
+		else
+			color = terre;
+	}		
+	else {
+		color = bleue;
+	}		
+		
 	return color;
 }
