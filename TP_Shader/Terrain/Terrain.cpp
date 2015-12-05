@@ -36,31 +36,43 @@ void Terrain::calcK()
 		{
 			k = std::max(std::max(std::max(k, 
 				std::abs(double(getPoint(i, j).z - getPoint(i, j + 1).z))),
-				std::abs(double(getPoint(i, j ).z - getPoint(i + 1, j).z))),
-				std::abs(double(getPoint( i, j ).z - getPoint(i + 1, j + 1).z)));
+				std::abs(double(getPoint(i, j).z - getPoint(i + 1, j).z) )),
+				std::abs(double(getPoint(i, j).z - getPoint(i + 1, j + 1).z)));
 		}
 	}
-	k /= high;
+	k *= 0.5;
 }
 
 // Renvoie True si le Ray r touche le terrain
 bool Terrain::intersect(const Ray& r, float *tHit) const
 {
-	*tHit = 0.f;
-	Point res;
-	for (int i = 0; i < 1024; i++)
+	// a decommenter quand k sera = max des dérivées
+	if (r.d.z > k)
+	{
+		return false;
+	}
+	float k2 = 1.f / (k - r.d.z);
+	BBox box = getBound();
+	Point res = r.o + (r.d * *tHit);
+	float tmin = std::min((res - box.pMin).length(), (res - box.pMax).length());
+	float tmax = std::max((res - box.pMin).length(), (res - box.pMax).length());
+	*tHit = tmin;
+	while (*tHit >= tmin && *tHit <= tmax)
 	{
 		res = r.o + (r.d * *tHit);
 		Point tmp = getPoint(res.x, res.y);
 		if (tmp != noIntersectPoint)
 		{
 			double h = res.z - tmp.z;
-			if (h < (0.001 * *tHit))
+			if (h < (0.0001 * *tHit))
 				return true;
-			*tHit += k * h;
+			*tHit +=  h * k2;
 		}
 		else
-			*tHit += 10.;
+		{
+			*tHit = noIntersect;
+			return false;
+		}
 
 	}
 	*tHit = noIntersect;

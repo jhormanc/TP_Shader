@@ -22,6 +22,7 @@ public:
 	Scene();
 	Shapes * intersect(const Ray &r, float & t);
 	BBox getBound() const;
+	void placeLightHalfCircle(const Point& o, const float rayon, const unsigned int nbLight, const Point& sunshinePos, const int sunshinePower);
 	~Scene();
 };
 

@@ -45,9 +45,22 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 
 	lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
 	lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
+	//placeLightHalfCircle(Point(500.f, 0.f, 500.f), 500.F, 10.f, Point(), 0);
 
 }
 
+// Dessine un cercle d'origine o, de couleur color ett de rayon r, avec side cotes.
+void Scene::placeLightHalfCircle(const Point& o, const float rayon, const unsigned int nbLight, const Point& sunshinePos, const int sunshinePower)
+{
+	const float dsize = M_PI / (float)nbLight;
+
+
+	for (unsigned int i = 0; i <= nbLight; ++i)
+	{
+		const float angle = (float)i * dsize;
+		lights.push_back(Light{ Point(o.x + rayon * cos(angle), o.y, o.z + rayon * sin(angle)), 1.f });
+	}
+}
 Shapes * Scene::intersect(const Ray &r, float & t)
 {
 	Shapes * ret = nullptr;
