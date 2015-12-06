@@ -54,9 +54,12 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	float k2 = 1.f / (k - r.d.z);
 	BBox box = getBound();
 	Point res = r.o + (r.d * *tHit);
-	float tmin = std::min((res - box.pMin).length(), (res - box.pMax).length());
-	float tmax = std::max((res - box.pMin).length(), (res - box.pMax).length());
+	float t1, t2;
+	box.intersect(r, &t1, &t2);
+	float tmin = std::min(t1, t2);
+	float tmax = t1 + t2 - tmin;
 	*tHit = tmin;
+
 	while (*tHit >= tmin && *tHit <= tmax)
 	{
 		res = r.o + (r.d * *tHit);
