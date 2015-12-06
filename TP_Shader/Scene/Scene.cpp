@@ -45,7 +45,7 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 
 	//lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
 	//lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
-	placeLightHalfCircle(Point(500.f, 0.f, 500.f), 500.F, 20, Point(0.f, 500.f, 0.f), 20);
+	placeLightHalfCircle(Point(500.f, 0.f, 500.f), 500.F, 5, Point(0.f, 500.f, 0.f), 4);
 
 }
 

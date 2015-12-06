@@ -18,6 +18,7 @@ private:
 	QWaitCondition condition;
 	bool restart;
 	bool abort;
+	float CameraX, CameraY, CameraZ;
 
 	Camera cam;
 	Scene scene;
@@ -30,6 +31,12 @@ public:
 	ColorRGB radiance(Ray r);
 	float V(Point collide, Point l);
 	ColorRGB shade(Point p, Normals n, Point eye, Point l, ColorRGB color);
+
+	void CameraUp(float up){
+		CameraZ += up;
+	}
+	void CameraRotation(float rot);
+
 	~Renderer();
 
 signals:

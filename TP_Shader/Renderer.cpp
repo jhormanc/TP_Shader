@@ -2,8 +2,10 @@
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), scene(Scene())
-
 {
+	CameraX = -20;
+	CameraY = 500;
+	CameraZ = 700;
 	restart = false;
 	abort = false;
 }
@@ -88,6 +90,7 @@ void Renderer::run()
 		int w = film.xResolution;
 		QImage image(w, h, QImage::Format_RGB32);
 		ColorRGB c;
+		cam.Init(Point(CameraX, CameraY, CameraZ), Point(500., 500., 0.), 1.);
 		Point cam_pt(cam.getOrigin());
 		Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
 
@@ -118,4 +121,18 @@ void Renderer::run()
 	}
 }
 
+//****************A MODIFIER*******************//
+//o is the origin of the rotation
+//p is the point we want to rotate;
+/*
+p'x = cos(theta) * (px-ox) - sin(theta) * (py-oy) + ox  
+p'y = sin(theta) * (px-ox) + cos(theta) * (py-oy) + oy
+*/
+
+void Renderer::CameraRotation(float rot){
+	float degres = rot / 180 * M_PI;
+	float CameraXtmp = cos(rot) * (CameraX - 500) - sin(rot) * (CameraY - 500) + 500;
+	CameraY = sin(rot) * (CameraX - 500) + cos(rot) * (CameraY - 500) + 500;
+	CameraX = CameraXtmp;
+}
 

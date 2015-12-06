@@ -61,16 +61,20 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 		zoom(ZoomOutFactor);
 		break;
 	case Qt::Key_Left:
-		scroll(-ScrollStep, 0);
+		thread.CameraRotation(1);
+		scroll(ScrollStep, 0);
 		break;
 	case Qt::Key_Right:
-		scroll(+ScrollStep, 0);
+		thread.CameraRotation(-1);
+		scroll(ScrollStep, 0);
 		break;
 	case Qt::Key_Down:
-		scroll(0, -ScrollStep);
+		thread.CameraUp(-100);
+		scroll(0, ScrollStep);
 		break;
 	case Qt::Key_Up:
-		scroll(0, +ScrollStep);
+		thread.CameraUp(100);
+		scroll(0, ScrollStep);
 		break;
 	default:
 		QWidget::keyPressEvent(event);

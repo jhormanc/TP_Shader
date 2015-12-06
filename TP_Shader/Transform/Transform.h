@@ -11,20 +11,49 @@ public:
 	Transform operator*(const Transform &t);
 	static Transform translate(const Vector &delta)
 	{
+		return Transform(Mat4x4(1.f, 0.f, 0.f, delta.x,
+			0.f, 1.f, 0.f, delta.y,
+								0.f, 0.f, 1.f, delta.z, 
+								0.f, 0.f, 0.f, 1.f));
+	}
+
+	static Transform rotateX(float angle)
+	{
+		float cos_a = std::cos(angle);
+		float sin_a = std::sin(angle);
 		return Transform(Mat4x4(1.f, 0.f, 0.f, 0.f,
-			0.f, 1.f, 0.f, 0.f,
-								0.f, 0.f, 1.f, 0.f, 
-								delta.x, delta.y, delta.z, 1.f));
+								0.f, cos_a, -sin_a, 0.f,
+								0.f, sin_a, cos_a, 0.f,
+								0.f, 0.f, 0.f, 1.f));
+	}
+
+	static Transform rotateY(float angle)
+	{
+		float cos_a = std::cos(angle);
+		float sin_a = std::sin(angle);
+		return Transform(Mat4x4(cos_a, 0.f, sin_a, 0.f,
+								0.f, 1.F, 0.f, 0.f,
+								-sin_a, 0.f, cos_a, 0.f,
+									0.f, 0.f, 0.f, 1.f));
+	}
+
+	static Transform rotateZ(float angle)
+	{
+		float cos_a = std::cos(angle);
+		float sin_a = std::sin(angle);
+		return Transform(Mat4x4(cos_a, -sin_a, 0.f, 0.f,
+								sin_a, cos_a, 0.f, 0.f,
+								0.f, 0.f, 1.f, 0.f,
+								0.f, 0.f, 0.f, 1.f));
 	}
 
 	static Transform scale(float x, float y, float z)
 	{
 		return Transform(Mat4x4(x, 0.f, 0.f, 0.f,
-								0.f, y, 0.f, 0.f,
-								0.f, 0.f, z, 0.f,
-								0.f, 0.f, 0.f, 1.f));
+			0.f, y, 0.f, 0.f,
+			0.f, 0.f, z, 0.f,
+			0.f, 0.f, 0.f, 1.f));
 	}
-
 	static Transform lookAt(const Point& pos, const Point& look, const Vector& up)
 	{
 		Mat4x4 Matrix;
