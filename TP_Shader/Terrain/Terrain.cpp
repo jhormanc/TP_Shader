@@ -19,7 +19,7 @@ double Terrain::distance ( const Point &  p ) const
 	Point pointTerrain = getPoint ( p.x, p.y );
 
 	if (pointTerrain != noIntersectPoint) // Car distance en z en attendant box.
-		return (p.z - pointTerrain.z) * k; // 0.5 = pente maximale
+		return (p.z - pointTerrain.z); // 0.5 = pente maximale
 
 	return noIntersect;
 }
@@ -57,7 +57,8 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	float t1, t2;
 	box.intersect(r, &t1, &t2);
 	float tmin = std::min(t1, t2);
-	float tmax = t1 + t2 - tmin;
+	float tmax = std::max(t1, t2);
+	//tmin = std::max(0.f, tmin);
 	*tHit = tmin;
 
 	while (*tHit >= tmin && *tHit <= tmax)

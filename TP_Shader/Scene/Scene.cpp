@@ -32,20 +32,20 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 	//objects.push_back(new Shapes (new Sphere(16.5, Point(27, 16.5, 47)), red));
 	//objects.push_back(new Shapes(new Sphere(16.5, Point(73, 16.5, 78)), white));
 //	objects.push_back(new Shapes(new Cube(Point(72, 15.5, 77), Point(73, 16.5, 78)), new Diffus(white)));	
-	Terrain * t = new TerrainFractal(5000, 5000);
+	Terrain * t = new TerrainFractal(1000, 1000);
 	objects.push_back(t);
 	/*
 	Mesh * m = new Mesh();
 	*m = Mesh::readFromObj("test.obj", Vector(50, 16.5, 50));
 	objects.push_back(new Shapes (m, new Diffus(white)));
 	*/
-	lights.push_back(Light{ Point(500.f, 500.f, 500.6f), 1 });
-	lights.push_back(Light{ Point(-100.f, 1100.f, 500.6f), 1 });
-	lights.push_back(Light{ Point(0.f, 0.f, 500.6f), 1 });
+	//lights.push_back(Light{ Point(500.f, 500.f, 500.6f), 1 });
+	//lights.push_back(Light{ Point(-100.f, 1100.f, 500.6f), 1 });
+	//lights.push_back(Light{ Point(0.f, 0.f, 500.6f), 1 });
 
-	lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
-	lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
-	//placeLightHalfCircle(Point(500.f, 0.f, 500.f), 500.F, 10.f, Point(), 0);
+	//lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
+	//lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
+	placeLightHalfCircle(Point(500.f, 0.f, 500.f), 500.F, 20, Point(0.f, 500.f, 0.f), 20);
 
 }
 
@@ -53,14 +53,17 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 void Scene::placeLightHalfCircle(const Point& o, const float rayon, const unsigned int nbLight, const Point& sunshinePos, const int sunshinePower)
 {
 	const float dsize = M_PI / (float)nbLight;
-
+	const float distMax = rayon + rayon;
 
 	for (unsigned int i = 0; i <= nbLight; ++i)
 	{
 		const float angle = (float)i * dsize;
-		lights.push_back(Light{ Point(o.x + rayon * cos(angle), o.y, o.z + rayon * sin(angle)), 1.f });
+		const Point point(o.x, o.y + rayon * cos(angle), o.z + rayon * sin(angle));
+		const int power = std::max(1, (int)((distance(sunshinePos, point) / distMax) * sunshinePower));
+		lights.push_back(Light{ point , power });
 	}
 }
+
 Shapes * Scene::intersect(const Ray &r, float & t)
 {
 	Shapes * ret = nullptr;

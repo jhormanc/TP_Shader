@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.)),
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), scene(Scene())
 
 {
@@ -94,7 +94,7 @@ void Renderer::run()
 		#pragma omp parallel for schedule(static)
 		for (int y = 0; y < h; y++)
 		{
-			std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
+		//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 			for (int x = 0; x < w; x++)
 			{
 				Vector cam_dir = normalize(cam.PtScreen(x, y, w, h) - cam_vec);
