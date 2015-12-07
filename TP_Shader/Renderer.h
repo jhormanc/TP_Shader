@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Camera.h"
 #include "Scene\Scene.h"
+#include "SamplerPoisson.h"
 #include <QSize>
 #include <QMutex>
 #include <QSize>
@@ -24,12 +25,14 @@ private:
 	Scene scene;
 	Film film;
 	ColorRGB ambiant = ColorRGB{ 00.F, 00.f, 0.f };
+	SamplerPoisson samplerPoisson;
 
 public:
 	Renderer(QObject *parent = 0);
 	void render();
 	ColorRGB radiance(Ray r);
 	float V(Point collide, Point l);
+	float delta(Point collide, int nbEchantillon);
 	ColorRGB shade(Point p, Normals n, Point eye, Point l, ColorRGB color);
 
 	void CameraUp(float up){

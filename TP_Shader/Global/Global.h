@@ -49,6 +49,10 @@ inline float degres(float rad)
 	return(180.f / M_PI) * rad;
 }
 
+inline float randf(float low, float high)
+{
+	return low + (float)rand() / (float)(RAND_MAX / (high - low));
+}
 struct ColorRGB
 {
 	float x, y, z;

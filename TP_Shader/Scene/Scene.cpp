@@ -39,13 +39,13 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 	*m = Mesh::readFromObj("test.obj", Vector(50, 16.5, 50));
 	objects.push_back(new Shapes (m, new Diffus(white)));
 	*/
-	//lights.push_back(Light{ Point(500.f, 500.f, 500.6f), 1 });
-	//lights.push_back(Light{ Point(-100.f, 1100.f, 500.6f), 1 });
-	//lights.push_back(Light{ Point(0.f, 0.f, 500.6f), 1 });
+	lights.push_back(Light{ Point(500.f, 500.f, 500.6f), 1 });
+	lights.push_back(Light{ Point(-100.f, 1100.f, 500.6f), 1 });
+	lights.push_back(Light{ Point(0.f, 0.f, 500.6f), 1 });
 
-	//lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
-	//lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
-	placeLightHalfCircle(Point(500.f, 0.f, 500.f), 500.F, 5, Point(0.f, 500.f, 0.f), 4);
+	lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
+	lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
+	//placeLightHalfCircle(Point(500.f, 500.f, 0.f), 500.F, 1, Point(0.f, 500.f, 0.f), 4);
 
 }
 
@@ -58,7 +58,7 @@ void Scene::placeLightHalfCircle(const Point& o, const float rayon, const unsign
 	for (unsigned int i = 0; i <= nbLight; ++i)
 	{
 		const float angle = (float)i * dsize;
-		const Point point(o.x, o.y + rayon * cos(angle), o.z + rayon * sin(angle));
+		const Point point(o.x + rayon * sin(angle), o.y, o.z + rayon * cos(angle));
 		const int power = std::max(1, (int)((distance(sunshinePos, point) / distMax) * sunshinePower));
 		lights.push_back(Light{ point , power });
 	}

@@ -15,8 +15,7 @@
 #endif
 
 const int nbRebondMax = 5;
-const int nbEchantillon = 0;
-const int nbEchantillonAA = 3;
+const int nbEchantillon = 10;
 
 // Distance d'intersection null
 const double noIntersect = -10.0f;

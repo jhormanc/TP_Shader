@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), scene(Scene())
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(500.f, 500.f, 500.f)), 10), scene(Scene())
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -31,13 +31,14 @@ ColorRGB Renderer::radiance(Ray r)
 			Point p = r.o + (r.d * t);
 			int n = 0;
 			ColorRGB acc = ColorRGB{ 0, 0, 0 };
-
-			for (Light l : scene.lights)
+			for (int i = 0; i < nbEchantillon; ++i)
 			{
-				acc = acc + (shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * l.influence);
-				n += l.influence;
+				Light l = { samplerPoisson.next(), 1 };
+				const float epsilon = 0.1f;
+
+				acc = acc + shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * l.influence;
 			}
-			return acc * (1.f /(float)n);
+			return acc * (1.0f / (float)nbEchantillon);
 		}
 	}
 	return ColorRGB{ 0.f, 0.f, 0.f };
@@ -48,6 +49,17 @@ ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 	return ambiant + (color * clamp(dot(n, normalize(l - p)), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * V(p, l);
 }
 
+float Renderer::delta(Point collide, int nbEchantillon)
+{
+	float acc = 0.f;
+	for (int i = 0; i < nbEchantillon; ++i)
+	{
+		const float epsilon = 0.1f;
+		
+		acc += V(collide, samplerPoisson.next());
+	}
+	return acc / (float)nbEchantillon;
+}
 float Renderer::V(Point collide, Point l)
 {
 	const float epsilon = 0.1f;
@@ -86,6 +98,7 @@ void Renderer::run()
 {
 	forever
 	{
+		samplerPoisson.genAleatoire();
 		int h = film.yResolution;
 		int w = film.xResolution;
 		QImage image(w, h, QImage::Format_RGB32);

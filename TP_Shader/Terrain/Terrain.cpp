@@ -60,7 +60,9 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	float tmax = std::max(t1, t2);
 	//tmin = std::max(0.f, tmin);
 	*tHit = tmin;
-
+	//*tHit = 0.f;
+	//Point res;
+	//for (int i = 0; i < 1024; i++)
 	while (*tHit >= tmin && *tHit <= tmax)
 	{
 		res = r.o + (r.d * *tHit);
@@ -68,7 +70,7 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 		if (tmp != noIntersectPoint)
 		{
 			double h = res.z - tmp.z;
-			if (h < (0.0001 * *tHit))
+			if (h < 0.001)
 				return true;
 			*tHit +=  h * k2;
 		}

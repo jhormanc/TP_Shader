@@ -13,6 +13,11 @@ Sphere::Sphere(const Sphere & s) : radius(s.radius), origin(s.origin)
 {
 
 }
+
+bool Sphere::overlap(const Sphere& s) const
+{
+	return distance(s.origin, origin) < radius + s.radius;
+}
 //#include <iostream>
 bool Sphere::intersect(const Ray &ray, float * tHit) const
 {

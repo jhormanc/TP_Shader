@@ -5,9 +5,10 @@
 
 class Sphere : public Shapes
 {
+	
+public:
 	Point origin;
 	float radius;
-public:
 	Sphere();
 	Sphere(float radius_, Point origin_);
 	Sphere(const Sphere & s);
@@ -15,6 +16,7 @@ public:
 	bool intersect(const Ray &ray, float * tHit) const;
 	BBox getBound() const;
 	Normals getNormal(Point p) const;
+	bool overlap(const Sphere& s) const;
 	~Sphere();
 };
 
