@@ -49,7 +49,7 @@ public:
 	{
 		return BBox(getOrigin() + Point(0., 0., low), Point(terrain_width, terrain_height, high));
 	}
-	
+	bool intersectSegment(const Ray& r, float *tHit, float tMax) const override;
 
 	// Renvoie vrai si le Ray r touche le terrain.
 	//bool intersection(Ray r, double &t) const;

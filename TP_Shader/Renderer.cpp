@@ -46,19 +46,22 @@ ColorRGB Renderer::radiance(Ray r)
 
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
-	return ambiant + (color * clamp(dot(n, normalize(l - p)), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * V(p, l);
+	return ambiant + (color * clamp(dot(n, normalize(l - p)), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * delta(p, l, r_delta);
 }
 
-float Renderer::delta(Point collide, int nbEchantillon)
+float Renderer::delta(Point collide, Point l, float r)
 {
-	float acc = 0.f;
-	for (int i = 0; i < nbEchantillon; ++i)
+	const float epsilon = 0.1f;
+	float t;
+	Vector lightVec = normalize(l - collide);
+	Ray lightRay = Ray(collide + epsilon * lightVec, lightVec);
+	Shapes * obj;
+
+	if ((obj = scene.intersectSegment(lightRay, t, r)) != nullptr)
 	{
-		const float epsilon = 0.1f;
-		
-		acc += V(collide, samplerPoisson.next());
+		return 0.f;
 	}
-	return acc / (float)nbEchantillon;
+	return 1.f;
 }
 float Renderer::V(Point collide, Point l)
 {

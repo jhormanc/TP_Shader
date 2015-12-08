@@ -56,7 +56,7 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	Point res = r.o + (r.d * *tHit);
 	float t1, t2;
 	box.intersect(r, &t1, &t2);
-	float tmin = std::min(t1, t2);
+	float tmin = std::max(0.f, std::min(t1, t2));
 	float tmax = std::max(t1, t2);
 	//tmin = std::max(0.f, tmin);
 	*tHit = tmin;
@@ -85,7 +85,35 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	return false;
 }
 
+bool Terrain::intersectSegment(const Ray& r, float *tHit, float tMax) const
+{
+	float tmin = 0.f;
+	if (r.d.z > k)
+	{
+		return false;
+	}
+	float k2 = 1.f / (k - r.d.z);
+	while (*tHit >= tmin && *tHit <= tMax)
+	{
+		Point res = r.o + (r.d * *tHit);
+		Point tmp = getPoint(res.x, res.y);
+		if (tmp != noIntersectPoint)
+		{
+			double h = res.z - tmp.z;
+			if (h < 0.001)
+				return true;
+			*tHit += h * k2;
+		}
+		else
+		{
+			*tHit = noIntersect;
+			return false;
+		}
 
+	}
+	*tHit = noIntersect;
+	return false;
+}
 ColorRGB Terrain::getColor ( const Point & p ) {
 	ColorRGB roche = { 100.f, 100.f, 100.f };
 	ColorRGB roche_claire = { 200.f, 200.f, 200.f };
