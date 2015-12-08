@@ -13,7 +13,7 @@ void SamplerPoisson::genAleatoire()
 		Sphere tmp(r, Point(randf(size.pMin.x, size.pMax.x), randf(size.pMin.y, size.pMax.y), randf(size.pMin.z, size.pMax.z)));
 		for (int j = 0; j < randArray.size(); ++j)
 		{
-			if (tmp.overlap(randArray[i]))
+			if (tmp.overlap(randArray[j]))
 			{
 				addSphere = false;
 				break;
