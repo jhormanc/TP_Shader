@@ -117,9 +117,6 @@ void MainWin::mouseReleaseEvent(QMouseEvent *event)
 
 void MainWin::updatePixmap(const QImage &image, float scaleFactor)
 {
-	if (!lastDragPos.isNull())
-		return;
-
 	pixmap = QPixmap::fromImage(image);
 	pixmapOffset = QPoint();
 	lastDragPos = QPoint();

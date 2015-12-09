@@ -93,7 +93,7 @@ void Renderer::render()
 
 	if (!isRunning()) 
 	{
-		start(LowPriority);
+		start(HighestPriority);
 	}
 	else 
 	{
@@ -111,9 +111,11 @@ void Renderer::run()
 		int w = film.xResolution;
 		QImage image(w, h, QImage::Format_RGB32);
 		ColorRGB c;
-		//cam.Init(Point(CameraX, CameraY, CameraZ), Point(500., 500., 0.), 1.);
+
+		mutex.lock();
 		Point cam_pt(cam.getOrigin());
 		Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
+
 
 		#pragma omp parallel for schedule(static)
 		for (int y = 0; y < h; y++)
@@ -130,7 +132,7 @@ void Renderer::run()
 		}
 
 		//film.writePpm();
-
+		mutex.unlock();
 		if (!restart)
 			emit renderedImage(image, 1.f);
 
@@ -152,12 +154,14 @@ void Renderer::MoveCam(const int& x, const int& y, const int& z)
 
 void Renderer::RotateCam(const Point& pt)
 {
+	mutex.lock();
+
 	Vector pt_screen = cam.PtScreen(pt.x, pt.y, film.xResolution, film.yResolution);
 	Point org = cam.getOrigin();
 	Vector dir = normalize(pt_screen - Vector(org.x, org.y, org.z));
 	float rot = dot(dir, cam.Forward());
 
-	mutex.lock();
 	cam.Rotate(dir, rot);
+
 	mutex.unlock();
 }
