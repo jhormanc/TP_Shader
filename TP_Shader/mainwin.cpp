@@ -53,28 +53,25 @@ void MainWin::resizeEvent(QResizeEvent * /* event */)
 
 void MainWin::keyPressEvent(QKeyEvent *event)
 {
-	switch (event->key()) {
+	switch (event->key()) 
+	{
+	case Qt::Key_Z:
+		move(0, 100, 0);
+		break;
+	case Qt::Key_S:
+		move(0, -100, 0);
+		break;
+	case Qt::Key_Q:
+		move(-100, 0, 0);
+		break;
+	case Qt::Key_D:
+		move(100, 0, 0);
+		break;
 	case Qt::Key_Plus:
-		zoom(ZoomInFactor);
+		move(0, 0, 100);
 		break;
 	case Qt::Key_Minus:
-		zoom(ZoomOutFactor);
-		break;
-	case Qt::Key_Left:
-		thread.CameraRotation(1);
-		scroll(ScrollStep, 0);
-		break;
-	case Qt::Key_Right:
-		thread.CameraRotation(-1);
-		scroll(ScrollStep, 0);
-		break;
-	case Qt::Key_Down:
-		thread.CameraUp(-100);
-		scroll(0, ScrollStep);
-		break;
-	case Qt::Key_Up:
-		thread.CameraUp(100);
-		scroll(0, ScrollStep);
+		move(0, 0, -100);
 		break;
 	default:
 		QWidget::keyPressEvent(event);
@@ -84,25 +81,29 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 #ifndef QT_NO_WHEELEVENT
 void MainWin::wheelEvent(QWheelEvent *event)
 {
-	int numDegrees = event->delta() / 8;
-	double numSteps = numDegrees / 15.0f;
-	zoom(pow(ZoomInFactor, numSteps));
+
 }
 #endif
 
 void MainWin::mousePressEvent(QMouseEvent *event)
 {
 	if (event->button() == Qt::LeftButton)
+	{
 		lastDragPos = event->pos();
+		rotate(lastDragPos);
+	}
 }
 
 void MainWin::mouseMoveEvent(QMouseEvent *event)
 {
-	if (event->buttons() & Qt::LeftButton) {
+	if (event->buttons() & Qt::LeftButton) 
+	{
 		pixmapOffset += event->pos() - lastDragPos;
 		lastDragPos = event->pos();
-		update();
 	}
+
+	// Pour du vrai temps réel !
+	//rotate(event->pos());
 }
 
 void MainWin::mouseReleaseEvent(QMouseEvent *event)
@@ -111,10 +112,6 @@ void MainWin::mouseReleaseEvent(QMouseEvent *event)
 	{
 		pixmapOffset += event->pos() - lastDragPos;
 		lastDragPos = QPoint();
-
-		int deltaX = (width() - pixmap.width()) / 2 - pixmapOffset.x();
-		int deltaY = (height() - pixmap.height()) / 2 - pixmapOffset.y();
-		scroll(deltaX, deltaY);
 	}
 }
 
@@ -129,16 +126,17 @@ void MainWin::updatePixmap(const QImage &image, float scaleFactor)
 	update();
 }
 
-void MainWin::zoom(float zoomFactor)
+void MainWin::move(const int& x, const int& y, const int& z)
 {
-	// TODO
+	thread.MoveCam(x, y, z);
 	update();
 	thread.render();
+
 }
 
-void MainWin::scroll(int deltaX, int deltaY)
+void MainWin::rotate(const QPoint& pt)
 {
-	// TODO
+	thread.RotateCam(Point(pt.x(), pt.y(), 0.f));
 	update();
 	thread.render();
 }

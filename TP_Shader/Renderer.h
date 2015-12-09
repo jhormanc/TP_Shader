@@ -35,10 +35,13 @@ public:
 	float delta(Point collide, int nbEchantillon);
 	ColorRGB shade(Point p, Normals n, Point eye, Point l, ColorRGB color);
 
-	void CameraUp(float up){
-		CameraZ += up;
-	}
 	void CameraRotation(float rot);
+
+	// Déplace la caméra
+	void MoveCam(const int& x = 0, const int& y = 0, const int& z = 0);
+
+	// Rotate la caméra
+	void RotateCam(const Point& pt_screen);
 
 	~Renderer();
 

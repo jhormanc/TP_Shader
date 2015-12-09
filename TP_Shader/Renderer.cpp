@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(500.f, 500.f, 500.f)), 10), scene(Scene())
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.)),
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(2500.f, 2500.f, 2500.f)), 10), scene(Scene())
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -96,14 +96,14 @@ void Renderer::render()
 
 void Renderer::run()
 {
-	forever
+	if (!abort)
 	{
 		samplerPoisson.genAleatoire();
 		int h = film.yResolution;
 		int w = film.xResolution;
 		QImage image(w, h, QImage::Format_RGB32);
 		ColorRGB c;
-		cam.Init(Point(CameraX, CameraY, CameraZ), Point(500., 500., 0.), 1.);
+		//cam.Init(Point(CameraX, CameraY, CameraZ), Point(500., 500., 0.), 1.);
 		Point cam_pt(cam.getOrigin());
 		Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
 
@@ -126,6 +126,7 @@ void Renderer::run()
 		if (!restart)
 			emit renderedImage(image, 1.f);
 
+
 		mutex.lock();
 		if (!restart)
 			condition.wait(&mutex);
@@ -134,18 +135,21 @@ void Renderer::run()
 	}
 }
 
-//****************A MODIFIER*******************//
-//o is the origin of the rotation
-//p is the point we want to rotate;
-/*
-p'x = cos(theta) * (px-ox) - sin(theta) * (py-oy) + ox  
-p'y = sin(theta) * (px-ox) + cos(theta) * (py-oy) + oy
-*/
-
-void Renderer::CameraRotation(float rot){
-	float degres = rot / 180 * M_PI;
-	float CameraXtmp = cos(rot) * (CameraX - 500) - sin(rot) * (CameraY - 500) + 500;
-	CameraY = sin(rot) * (CameraX - 500) + cos(rot) * (CameraY - 500) + 500;
-	CameraX = CameraXtmp;
+void Renderer::MoveCam(const int& x, const int& y, const int& z)
+{
+	mutex.lock();
+	cam.Move(true, x, y, z);
+	mutex.unlock();
 }
 
+void Renderer::RotateCam(const Point& pt)
+{
+	Vector pt_screen = cam.PtScreen(pt.x, pt.y, film.xResolution, film.yResolution);
+	Point org = cam.getOrigin();
+	Vector dir = normalize(pt_screen - Vector(org.x, org.y, org.z));
+	float rot = dot(dir, cam.Forward());
+
+	mutex.lock();
+	cam.Rotate(dir, rot);
+	mutex.unlock();
+}

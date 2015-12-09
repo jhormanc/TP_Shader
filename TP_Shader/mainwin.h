@@ -25,15 +25,15 @@ protected:
 
 	private slots:
 	void updatePixmap(const QImage &image, float scaleFactor);
-	void zoom(float zoomFactor);
 
 private:
-	void scroll(int deltaX, int deltaY);
-
 	Renderer thread;
 	QPixmap pixmap;
 	QPoint pixmapOffset;
 	QPoint lastDragPos;
+
+	void rotate(const QPoint& pt);
+	void move(const int& x = 0, const int& y = 0, const int& z = 0);
 };
 
 #endif // MAINWIN_H
