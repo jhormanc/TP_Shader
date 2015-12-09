@@ -32,7 +32,7 @@ public:
 	void render();
 	ColorRGB radiance(Ray r);
 	float V(Point collide, Point l);
-	float delta(Point collide, int nbEchantillon);
+	float delta(Point collide, Point l, float r);
 	ColorRGB shade(Point p, Normals n, Point eye, Point l, ColorRGB color);
 
 	void CameraRotation(float rot);

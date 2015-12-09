@@ -85,6 +85,27 @@ Shapes * Scene::intersect(const Ray &r, float & t)
 	return ret;
 }
 
+Shapes * Scene::intersectSegment(const Ray &ray, float & t, float tMax)
+{
+	Shapes * ret = nullptr;
+	t = INFINITY;
+	float d;
+	for (Shapes * &object : objects)
+	{
+		if (object->getBound().intersect(ray, nullptr, nullptr))
+		{
+			bool isIntersect = object->intersectSegment(ray, &d, tMax);
+			if (isIntersect && d < t)
+			{
+				t = d;
+				ret = object;
+			}
+		}
+	}
+
+	return ret;
+}
+
 BBox Scene::getBound() const
 {
 	if (objects.size() <= 0) return BBox();

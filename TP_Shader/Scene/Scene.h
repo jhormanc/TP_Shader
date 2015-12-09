@@ -21,6 +21,7 @@ public:
 	std::list<Light> lights;
 	Scene();
 	Shapes * intersect(const Ray &r, float & t);
+	Shapes * intersectSegment(const Ray &ray, float & tHit, float tMax);
 	BBox getBound() const;
 	void placeLightHalfCircle(const Point& o, const float rayon, const unsigned int nbLight, const Point& sunshinePos, const int sunshinePower);
 	~Scene();

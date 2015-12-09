@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(2500.f, 2500.f, 2500.f)), 10), scene(Scene())
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(1000.f, 1000.f, 500.f)), 10), scene(Scene())
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -31,14 +31,19 @@ ColorRGB Renderer::radiance(Ray r)
 			Point p = r.o + (r.d * t);
 			int n = 0;
 			ColorRGB acc = ColorRGB{ 0, 0, 0 };
+			float accli = 0.f;
+			Point sunshine(500, 500, 500); // midi
 			for (int i = 0; i < nbEchantillon; ++i)
 			{
-				Light l = { samplerPoisson.next(), 1 };
+				Light l = { samplerPoisson.next(), 1 }; // 2 eme param a enlever
+				float cosLiS = std::abs(dot(normalize(l.o - Point(0)), normalize(sunshine - Point(0))));
+				float li = 0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
+			//	 li = 1.f;
 				const float epsilon = 0.1f;
-
-				acc = acc + shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * l.influence;
+				accli += li;
+				acc = acc + shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * li;
 			}
-			return acc * (1.0f / (float)nbEchantillon);
+			return acc * (1.0f / accli);
 		}
 	}
 	return ColorRGB{ 0.f, 0.f, 0.f };
@@ -46,19 +51,22 @@ ColorRGB Renderer::radiance(Ray r)
 
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
-	return ambiant + (color * clamp(dot(n, normalize(l - p)), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * V(p, l);
+	return ambiant + (color * clamp(dot(normalize(l - p), n), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * delta(p, l, r_delta);
 }
 
-float Renderer::delta(Point collide, int nbEchantillon)
+float Renderer::delta(Point collide, Point l, float r)
 {
-	float acc = 0.f;
-	for (int i = 0; i < nbEchantillon; ++i)
+	const float epsilon = 0.1f;
+	float t;
+	Vector lightVec = normalize(l - collide);
+	Ray lightRay = Ray(collide + epsilon * lightVec, lightVec);
+	Shapes * obj;
+
+	if ((obj = scene.intersectSegment(lightRay, t, r)) != nullptr)
 	{
-		const float epsilon = 0.1f;
-		
-		acc += V(collide, samplerPoisson.next());
+		return 0.f;
 	}
-	return acc / (float)nbEchantillon;
+	return 1.f;
 }
 float Renderer::V(Point collide, Point l)
 {
