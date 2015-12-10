@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 2500., 700.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(1000.f, 1000.f, 500.f)), 10), scene(Scene())
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 2500., 1000.), Point(2500., 2500., 100.), 1., Vector(0., 0., -1.)),
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10), scene(Scene())
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -34,7 +34,7 @@ ColorRGB Renderer::radiance(Ray r)
 			int n = 0;
 			ColorRGB acc = ColorRGB{ 0, 0, 0 };
 			float accli = 0.f;
-			Point sunshine(500, 500, 500); // midi
+			Point sunshine(2500, 2500, 1000); // midi
 			for (int i = 0; i < nbEchantillon; ++i)
 			{
 				Light l = { samplerPoisson.next(), 1 }; // 2 eme param a enlever

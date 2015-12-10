@@ -209,10 +209,53 @@ float Noise::perlin2D(const float x, const float y)
 	return Li1 + Cy*(Li2 - Li1);
 }
 
-// Choix du noise (1, 2, 3, 4)
+// Choix du noise
 float Noise::noise(const float x, const float y)
 {
-	return noise4(x, y);
+	float plains = noisePlains(x, y);
+	float mountains = noiseMountains(x, y);
+
+	return plains + mountains * smooth(plains, 0.f, 5.f);
+}
+
+float Noise::noisePlains(const float x, const float y)
+{
+	Vector w = warp(Vector(x, y, 0.), 2., 1. / 50.0, false);
+	float tmp;
+
+	tmp = (simplex(w.x / 2000.f, w.y / 2000.f) + 1.) * 0.5f;
+	float z0 = 3. * tmp;
+
+	tmp = (simplex(x / 4000.f, y / 4000.f) + 1.) * 0.5f;
+	float z1 = 5. * tmp;
+
+	return z0 + z1 * smooth(z1, 0., 5.);
+	return (z1 + z0) * smooth(z0, 0., 5.) * smooth(z1, 0., 5.);
+}
+
+float Noise::noiseMountains(const float x, const float y)
+{
+	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
+	float tmp;
+
+	tmp = (simplex(w.x / 750., w.y / 750.) + 1.) * 0.5;
+	float z0 = ridge(300. * tmp, 250.);
+
+	tmp = (simplex(w.x / 400., w.y / 400.) + 1.) * 0.5;
+	float z1 = 20. + 30. * tmp;
+
+	tmp = (simplex(w.x / 250., w.y / 250.) + 1.) * 0.5;
+	float z2 = ridge(30. * tmp, 40.);
+
+	tmp = (simplex(w.x / 150., w.y / 150.) + 1.) * 0.5;
+	float z3 = 15. * tmp;
+
+	tmp = (simplex(w.x / 50., w.y / 50.) + 1.) * 0.5;
+	float z4 = 7. * tmp;
+
+	float z = z0 + z1 + z2 * smooth(z0, 50., 200.) + z3 * smooth(z0, 150., 200.) + z4 * smooth(z0, 150., 250.);
+	z += (z1 * (1. - smooth(z, 0., 60.)));
+	return z;
 }
 
 float Noise::noise1(const float x, const float y)
@@ -276,33 +319,6 @@ float Noise::noise3(const float x, const float y)
 	float z3 = 30. * tmp;
 
 	tmp = (simplex(w.x / 5., w.y / 5.) + 1.) * 0.5;
-	float z4 = 15. * tmp;
-
-	float z = z0 + z1 + z2 * smooth(z0, 50., 200.) + z3 * smooth(z0, 150., 200.) + z4 * smooth(z0, 150., 250.);
-	z += (z1 * (1. - smooth(z, 0., 60.)));
-	return z;
-}
-
-// Même noise que le 3 mais avec des fréquences plus petites
-// Bug à cause de la pente (à mon avis)
-float Noise::noise4(const float x, const float y)
-{
-	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
-	float tmp;
-
-	tmp = (simplex(w.x / 1500., w.y / 1500.) + 1.) * 0.5;
-	float z0 = ridge(350. * tmp, 270.);
-
-	tmp = (simplex(w.x / 800., w.y / 800.) + 1.) * 0.5;
-	float z1 = 20. + 30. * tmp;
-
-	tmp = (simplex(w.x / 500., w.y / 500.) + 1.) * 0.5;
-	float z2 = ridge(60. * tmp, 40.);
-
-	tmp = (simplex(w.x / 300., w.y / 300.) + 1.) * 0.5;
-	float z3 = 30. * tmp;
-
-	tmp = (simplex(w.x / 100., w.y / 100.) + 1.) * 0.5;
 	float z4 = 15. * tmp;
 
 	float z = z0 + z1 + z2 * smooth(z0, 50., 200.) + z3 * smooth(z0, 150., 200.) + z4 * smooth(z0, 150., 250.);
