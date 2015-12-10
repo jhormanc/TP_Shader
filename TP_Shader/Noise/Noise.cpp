@@ -299,10 +299,10 @@ float Noise::noise4(const float x, const float y)
 	tmp = (simplex(w.x / 500., w.y / 500.) + 1.) * 0.5;
 	float z2 = ridge(60. * tmp, 40.);
 
-	tmp = (simplex(w.x / 150., w.y / 150.) + 1.) * 0.5;
+	tmp = (simplex(w.x / 300., w.y / 300.) + 1.) * 0.5;
 	float z3 = 30. * tmp;
 
-	tmp = (simplex(w.x / 20., w.y / 20.) + 1.) * 0.5;
+	tmp = (simplex(w.x / 100., w.y / 100.) + 1.) * 0.5;
 	float z4 = 15. * tmp;
 
 	float z = z0 + z1 + z2 * smooth(z0, 50., 200.) + z3 * smooth(z0, 150., 200.) + z4 * smooth(z0, 150., 250.);

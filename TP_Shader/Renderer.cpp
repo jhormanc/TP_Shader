@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 500., 700.), Point(500., 500., 0.), 1., Vector(0., 0., -1.)),
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 2500., 700.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(1000.f, 1000.f, 500.f)), 10), scene(Scene())
 {
 	CameraX = -20;
