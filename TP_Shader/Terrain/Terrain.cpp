@@ -140,42 +140,48 @@ ColorRGB Terrain::getColor ( const Point & p ) {
 	float rng1 = 60.0f + rand ( ) * 10;
 	float rng2 = 40.0f + rand ( ) * 10;
 	float rng3 = .0f + rand ( ) * 10;
-		
+	
 	if ( z >= low + ( max * ( 80 / 100. ) ) ) {
 		if ( slope <= .8f )
 			color = neige;
 		else
-			color = roche_claire;
+			color = ColorFade(roche_claire, neige, z, low + (max * (80 / 100.)));
 	}		
 	else if ( z >= low + ( max * ( 60 / 100. ) ) ) {
-		if (slope <= .1f )
+		if (slope <= .1f)
 			color = neige;
-		else if ( slope <= .3f )
+		else if (slope <= .3f)
 			color = roche_claire;
 		else
-			color = roche;
+			color = ColorFade(roche, neige, z, low + (max * (20 / 100.))); 
 	}	
 	else if ( z >= low + ( max * ( 40 / 100. ) ) ) {
 		if ( slope <= .25f )
-			color = terre;
+			color = ColorFade(terre, roche, z, low + (max * (20 / 100.)));
 		else
 			color = terre_claire;
 	}
-	else if ( z >= low + ( max * ( 20 / 100. ) ) ) {
+	else if (z >= low + (max * (20 / 100.))) {
 		if ( slope <= .15f )
-			color = herbe;
+			color = ColorFade(herbe, terre,z, low + (max * (20 / 100.)));
 		else
 			color = terre;
 	}		
 	else if ( z >= 0.f ) {
-		if ( slope <= .85f )
-			color = herbe;
+		if (slope <= .85f)
+			color = ColorFade(herbe, terre, z, low + (max * (20 / 100.)));
 		else
-			color = terre;
+			color = ColorFade(terre, roche, z, low + (max * (20 / 100.)));;
 	}		
 	else {
 		color = bleue;
 	}		
 		
 	return color;
+}
+
+
+ColorRGB Terrain::ColorFade(ColorRGB c1, ColorRGB c2,double z ,double nb_step){
+	ColorRGB colorDiff = c2 - c1;
+	return c1+(colorDiff*z) / nb_step;
 }

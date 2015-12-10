@@ -33,6 +33,8 @@ public:
 	//	virtual Vector getColor ( const Vector & p ) const = 0;
 	 ColorRGB getColor(const Point & p) override;
 
+	 ColorRGB ColorFade(ColorRGB,ColorRGB,double,double);
+
 	// Renvoi la normal du terrain au point p
 	virtual Normals getNormal(Point p) const = 0;
 

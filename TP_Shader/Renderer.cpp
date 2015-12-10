@@ -43,7 +43,7 @@ ColorRGB Renderer::radiance(Ray r)
 			//	 li = 1.f;
 				const float epsilon = 0.1f;
 				accli += li;
-				acc = acc + shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * li;
+				acc = acc +shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * li;
 			}
 			return acc * (1.0f / accli);
 		}
@@ -53,7 +53,7 @@ ColorRGB Renderer::radiance(Ray r)
 
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
-	return ambiant + color * clamp ( dot ( normalize ( l - p ), n ) + std::pow ( dot ( reflect ( normalize ( l - p ), n ), normalize ( eye - p ) ), 40 ), 0.f, 1.f ) * delta ( p, l, r_delta );;
+	return ambiant + color * clamp ( dot ( normalize ( l - p ), n ) + std::pow ( dot ( reflect ( normalize ( l - p ), n ), normalize ( eye - p ) ), 40 ), 0.f, 1.f ) * delta ( p, l, r_delta );
 	//return ambiant + (color * clamp(dot(normalize(l - p), n), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * delta(p, l, r_delta);
 }
 
