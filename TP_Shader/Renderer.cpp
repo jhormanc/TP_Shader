@@ -8,11 +8,13 @@ film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(B
 	CameraZ = 700;
 	restart = false;
 	abort = false;
+	changes = true;
 }
 
 Renderer::~Renderer()
 {
 	mutex.lock();
+	changes = false;
 	abort = true;
 	condition.wakeOne();
 	mutex.unlock();
@@ -95,7 +97,7 @@ void Renderer::render()
 	{
 		start(HighestPriority);
 	}
-	else 
+	else
 	{
 		restart = true;
 		condition.wakeOne();
@@ -104,51 +106,66 @@ void Renderer::render()
 
 void Renderer::run()
 {
-	if (!abort)
+	forever
 	{
-		samplerPoisson.genAleatoire();
-		int h = film.yResolution;
-		int w = film.xResolution;
-		QImage image(w, h, QImage::Format_RGB32);
-		ColorRGB c;
-
-		mutex.lock();
-		Point cam_pt(cam.getOrigin());
-		Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
-
-
-		#pragma omp parallel for schedule(static)
-		for (int y = 0; y < h; y++)
+		while (!abort)
 		{
-		//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
-			for (int x = 0; x < w; x++)
+			if (changes)
 			{
-				Vector cam_dir = normalize(cam.PtScreen(x, y, w, h) - cam_vec);
-				Ray r = Ray(cam_pt, cam_dir);
-				c = radiance(r);
-				image.setPixel(x, y, qRgb(c.x, c.y, c.z));
-				//film.colors[x][y] = c;
+				samplerPoisson.genAleatoire();
+				int h = film.yResolution;
+				int w = film.xResolution;
+				QImage image(w, h, QImage::Format_RGB32);
+				ColorRGB c;
+
+				mutex.lock();
+				Camera camera(cam);
+				mutex.unlock();
+
+				Point cam_pt(camera.getOrigin());
+				Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
+
+				#pragma omp parallel for schedule(static)
+				for (int y = 0; y < h; y++)
+				{
+					//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
+					for (int x = 0; x < w; x++)
+					{
+						Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
+						Ray r = Ray(cam_pt, cam_dir);
+						c = radiance(r);
+						image.setPixel(x, y, qRgb(c.x, c.y, c.z));
+						//film.colors[x][y] = c;
+					}
+				}
+
+				//film.writePpm();
+
+				if (!restart)
+					emit renderedImage(image);
+
+				mutex.lock();
+
+				if (!restart)
+				{
+					changes = false;
+					condition.wait(&mutex);
+				}
+				restart = false;
+
+				mutex.unlock();
 			}
 		}
-
-		//film.writePpm();
-		mutex.unlock();
-		if (!restart)
-			emit renderedImage(image, 1.f);
-
-
-		mutex.lock();
-		if (!restart)
-			condition.wait(&mutex);
-		restart = false;
-		mutex.unlock();
 	}
 }
 
 void Renderer::MoveCam(const int& x, const int& y, const int& z)
 {
 	mutex.lock();
+
 	cam.Move(true, x, y, z);
+	changes = true;
+
 	mutex.unlock();
 }
 
@@ -162,6 +179,7 @@ void Renderer::RotateCam(const Point& pt)
 	float rot = dot(dir, cam.Forward());
 
 	cam.Rotate(dir, rot);
+	changes = true;
 
 	mutex.unlock();
 }

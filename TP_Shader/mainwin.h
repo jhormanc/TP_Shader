@@ -24,13 +24,11 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
 	private slots:
-	void updatePixmap(const QImage &image, float scaleFactor);
+	void updatePixmap(const QImage &image);
 
 private:
 	Renderer thread;
 	QPixmap pixmap;
-	QPoint pixmapOffset;
-	QPoint lastDragPos;
 
 	void rotate(const QPoint& pt);
 	void move(const int& x = 0, const int& y = 0, const int& z = 0);

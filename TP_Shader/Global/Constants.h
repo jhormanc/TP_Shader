@@ -15,13 +15,13 @@
 #endif
 
 const int nbRebondMax = 5;
-const int nbEchantillon = 100;
+const int nbEchantillon = 1;
 const float r_delta = 10.f;
 // Distance d'intersection null
 const double noIntersect = -10.0f;
 
 // Vecteur d'intersection null
-const Vector noIntersectVec ( -10.0f );
+const Vector noIntersectVec (-10.0f);
 
 // Point d'intersection null
 const Point noIntersectPoint(-10.0f);

@@ -46,9 +46,10 @@ public:
 	~Renderer();
 
 signals:
-	void renderedImage(const QImage &image, float scaleFactor);
+	void renderedImage(const QImage &image);
 
 protected:
+	bool changes;
 	void run() Q_DECL_OVERRIDE;
 
 };

@@ -11,7 +11,7 @@ const int ScrollStep = 20;
 MainWin::MainWin(QWidget *parent)
 	: QWidget(parent)
 {
-	connect(&thread, SIGNAL(renderedImage(QImage, float)), this, SLOT(updatePixmap(QImage, float)));
+	connect(&thread, SIGNAL(renderedImage(QImage)), this, SLOT(updatePixmap(QImage)));
 
 	setWindowTitle(tr("Shader"));
 #ifndef QT_NO_CURSOR
@@ -32,10 +32,10 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		return;
 	}
 
-	painter.drawPixmap(pixmapOffset, pixmap);
+	painter.drawPixmap(QPoint(), pixmap);
 
-	QString text = tr("Use mouse wheel or the '+' and '-' keys to zoom. "
-		"Press and hold left mouse button to scroll.");
+	QString text = tr("Use ZQSD or the '+' and '-' keys move camera"
+		"Left mouse click to rotate camera");
 	QFontMetrics metrics = painter.fontMetrics();
 	int textWidth = metrics.width(text);
 
@@ -89,37 +89,24 @@ void MainWin::mousePressEvent(QMouseEvent *event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
-		lastDragPos = event->pos();
-		rotate(lastDragPos);
+		rotate(event->pos());
 	}
 }
 
 void MainWin::mouseMoveEvent(QMouseEvent *event)
 {
-	if (event->buttons() & Qt::LeftButton) 
-	{
-		pixmapOffset += event->pos() - lastDragPos;
-		lastDragPos = event->pos();
-	}
-
 	// Pour du vrai temps réel !
 	//rotate(event->pos());
 }
 
 void MainWin::mouseReleaseEvent(QMouseEvent *event)
 {
-	if (event->button() == Qt::LeftButton) 
-	{
-		pixmapOffset += event->pos() - lastDragPos;
-		lastDragPos = QPoint();
-	}
+
 }
 
-void MainWin::updatePixmap(const QImage &image, float scaleFactor)
+void MainWin::updatePixmap(const QImage &image)
 {
 	pixmap = QPixmap::fromImage(image);
-	pixmapOffset = QPoint();
-	lastDragPos = QPoint();
 	update();
 }
 
@@ -128,7 +115,6 @@ void MainWin::move(const int& x, const int& y, const int& z)
 	thread.MoveCam(x, y, z);
 	update();
 	thread.render();
-
 }
 
 void MainWin::rotate(const QPoint& pt)
