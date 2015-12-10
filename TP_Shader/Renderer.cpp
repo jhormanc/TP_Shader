@@ -175,11 +175,7 @@ void Renderer::RotateCam(const Point& pt)
 	mutex.lock();
 
 	Vector pt_screen = cam.PtScreen(pt.x, pt.y, film.xResolution, film.yResolution);
-	Point org = cam.getOrigin();
-	Vector dir = normalize(pt_screen - Vector(org.x, org.y, org.z));
-	float rot = dot(dir, cam.Forward());
-
-	cam.Rotate(dir, rot);
+	cam.Rotate(pt_screen);
 	changes = true;
 
 	mutex.unlock();
