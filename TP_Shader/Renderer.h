@@ -18,7 +18,7 @@ private:
 	QMutex mutex;
 	QWaitCondition condition;
 	bool restart;
-	bool abort;
+	
 	float CameraX, CameraY, CameraZ;
 	bool calledPrecalc = false;
 	Camera cam;
@@ -28,6 +28,7 @@ private:
 	SamplerPoisson samplerPoisson;
 
 public:
+	bool abort;
 	Renderer(QObject *parent = 0);
 	void render();
 	ColorRGB radiance(Point p, Point o);

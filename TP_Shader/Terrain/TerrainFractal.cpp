@@ -1,6 +1,35 @@
 #include "TerrainFractal.h"
 
+TerrainFractal::TerrainFractal()
+{
 
+}
+
+TerrainFractal::TerrainFractal(const TerrainFractal &terrain) : Terrain(terrain)
+{
+	terrain_width = terrain.terrain_width;
+	terrain_height = terrain.terrain_height;
+	pointList = new Vector *[terrain.terrain_width];
+	for (int i = 0; i < terrain.terrain_width; i++)
+		pointList[i] = new Vector [terrain.terrain_height];
+
+	for (int i = 0; i < terrain.terrain_width; ++i)
+		for (int j = 0; j < terrain.terrain_height; ++j)
+			pointList[i][j] = terrain.pointList[i][j];
+}
+
+TerrainFractal & TerrainFractal::operator=(const TerrainFractal & terrain)
+{
+	terrain_width = terrain.terrain_width;
+	terrain_height = terrain.terrain_height;
+	precalc = new ColorRGB *[terrain.terrain_width];
+	for (int i = 0; i < terrain.terrain_width; i++)
+		precalc[i] = new ColorRGB[terrain.terrain_height];
+	for (int i = 0; i < terrain.terrain_width; ++i)
+		for (int j = 0; j < terrain.terrain_height; ++j)
+			precalc[i][j] = terrain.precalc[i][j];
+	return *this;
+}
 // Renvoi un terrain généré aléatoirement
 TerrainFractal::TerrainFractal(unsigned int terrain_width_, unsigned int terrain_height_) : Terrain(terrain_width_, terrain_height_)
 {
@@ -55,6 +84,13 @@ Normals TerrainFractal::getNormal(Point p) const
 {
 	float eps = .1f;
 	return Normals ( getPoint ( p.x - eps, p.y - eps ) + getPoint ( p.x + eps, p.y + eps ) ) / ( 2 * eps );
+}
+
+TerrainFractal::~TerrainFractal()
+{
+	for (int i = 0; i < terrain_width; i++)
+		delete[] pointList[i];
+	delete[] pointList;
 }
 //
 //Vector TerrainFractal::getColor ( const Vector & p ) const { 

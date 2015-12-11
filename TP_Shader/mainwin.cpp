@@ -123,3 +123,11 @@ void MainWin::rotate(const QPoint& pt)
 	update();
 	thread.render();
 }
+
+void MainWin::closeEvent(QCloseEvent *event)
+{
+
+	thread.abort = true;
+	thread.exit();
+	event->accept();
+}

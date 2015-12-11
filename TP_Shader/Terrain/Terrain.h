@@ -22,8 +22,10 @@ public:
 	unsigned int terrain_width;
 	unsigned int terrain_height;
 	ColorRGB ** precalc;
+	Terrain();
 	Terrain(unsigned int terrain_width, unsigned int terrain_height);
-
+	Terrain(const Terrain&);
+	Terrain & operator=(const Terrain&);
 	//Pour definir un max et un min
 	void MaxMin(double);
 
@@ -83,7 +85,7 @@ public:
 	
 	// Calcul la pente maximale du terrain
 	void calcK();
-
+	virtual ~Terrain();
 	//Mesh* GetMesh ( );
 	
 };

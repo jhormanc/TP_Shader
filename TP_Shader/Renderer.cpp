@@ -13,6 +13,7 @@ film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(B
 
 Renderer::~Renderer()
 {
+	delete terrain;
 	mutex.lock();
 	changes = false;
 	abort = true;
@@ -55,8 +56,8 @@ ColorRGB Renderer::radiancePrecalculed(Ray r)
 {
 	float t;
 	Shapes * obj = nullptr;
-	if (terrain->getBound().intersect(r, nullptr, nullptr))
-	{
+	//if (terrain->getBound().intersect(r, nullptr, nullptr))
+	//{
 		if (terrain->intersect(r, &t))
 		{
 			Point p(r.o + r.d * t);
@@ -65,7 +66,7 @@ ColorRGB Renderer::radiancePrecalculed(Ray r)
 			//qDebug(" res : %f, %f, %f", res.x, res.y, res.z);
 			return res;
 		}
-	}
+	//}
 	return ColorRGB{ 0.f, 0.f, 0.f };
 }
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
@@ -149,8 +150,6 @@ void Renderer::render()
 
 void Renderer::run()
 {
-	forever
-	{
 		while (!abort)
 		{
 			if (changes)
@@ -199,7 +198,6 @@ void Renderer::run()
 				mutex.unlock();
 			}
 		}
-	}
 }
 
 void Renderer::MoveCam(const int& x, const int& y, const int& z)

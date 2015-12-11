@@ -32,6 +32,7 @@ private:
 
 	void rotate(const QPoint& pt);
 	void move(const int& x = 0, const int& y = 0, const int& z = 0);
+	void closeEvent(QCloseEvent *event);
 };
 
 #endif // MAINWIN_H
