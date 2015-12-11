@@ -230,7 +230,7 @@ float Noise::noisePlains(const float x, const float y)
 	float z1 = 5.f * tmp;
 
 	return z0 + z1 * smooth(z1, 0.f, 5.f);
-	return (z1 + z0) * smooth(z0, 0.f, 5.f) * smooth(z1, 0.f, 5.f);
+//	return (z1 + z0) * smooth(z0, 0.f, 5.f) * smooth(z1, 0.f, 5.f);
 }
 
 float Noise::noiseMountains(const float x, const float y)

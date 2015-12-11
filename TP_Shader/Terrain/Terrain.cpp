@@ -191,10 +191,10 @@ ColorRGB Terrain::getColor ( const Point & p ) {
 
 	double max = high - low;
 
-	float rng1 = 60.0f + rand ( ) * 10;
+	/*float rng1 = 60.0f + rand ( ) * 10;
 	float rng2 = 40.0f + rand ( ) * 10;
 	float rng3 = .0f + rand ( ) * 10;
-
+*/
 	float steps = low + (max * (20 / 100.));
 	
 	if ( z >= low + ( max * ( 80 / 100. ) ) ) {
