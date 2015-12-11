@@ -66,10 +66,19 @@ struct ColorRGB
 		return ColorRGB{ x * c.x, y * c.y, z * c.z };
 	}
 
+	ColorRGB operator/(float f)
+	{
+		return ColorRGB{ x /f, y /f, z /f};
+	}
 
 	ColorRGB operator+(ColorRGB c)
 	{
 		return ColorRGB{ x + c.x, y + c.y, z + c.z };
+	}
+
+	ColorRGB operator-(ColorRGB c)
+	{
+		return ColorRGB{ x - c.x, y - c.y, z - c.z };
 	}
 
 	ColorRGB cclamp(float min, float max)

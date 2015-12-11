@@ -22,7 +22,7 @@ public:
 	//void Init(Point o_, Point d, double dw);
 
 	void Move(const bool& move_target, const int& x = 0, const int& y = 0, const int& z = 0);
-	void Rotate(const Vector& dir, const float& rot);
+	void Rotate(const Vector& pt_screen);
 
 	Point getOrigin();
 

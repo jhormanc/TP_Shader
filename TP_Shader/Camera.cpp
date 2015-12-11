@@ -64,12 +64,9 @@ void Camera::Move(const bool& move_target, const int& x, const int& y, const int
 // Déplace le point de vue de la caméra d'un certain angle
 // dir : axe(s) de rotation
 // rot : angle de rotation en degré
-void Camera::Rotate(const Vector& dir, const float& rot)
+void Camera::Rotate(const Vector& pt_screen)
 {
-	// origin is the origin of the rotation
-	// pt_view is the point we want to rotate
-	pt_view.x = cos(rot) * (pt_view.x - origin.x) - sin(rot) * (pt_view.y - origin.y) + origin.x;
-	pt_view.y = sin(rot) * (pt_view.x - origin.x) + cos(rot) * (pt_view.y - origin.y) + origin.y;
+	pt_view = Point(pt_screen.x, pt_screen.y, pt_screen.z);
 
 	Init();
 }
