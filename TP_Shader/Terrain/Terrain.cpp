@@ -1,5 +1,12 @@
 #include "Terrain.h"
 
+Terrain::Terrain(unsigned int terrain_width_, unsigned int terrain_height_) : terrain_width(terrain_width_), terrain_height(terrain_height_), Shapes()
+{
+	precalc = new ColorRGB *[terrain_width_];
+	for (int i = 0; i < terrain_width_; i++)
+		precalc[i] = new ColorRGB[terrain_height_];
+
+}
 // Fonction pour trouver la hauteur max et min
 void Terrain::MaxMin(double x) 
 {
@@ -53,13 +60,23 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	}
 	float k2 = 1.f / (k - r.d.z);
 	BBox box = getBound();
-	Point res = r.o + (r.d * *tHit);
+	
 	float t1, t2;
 	box.intersect(r, &t1, &t2);
 	float tmin = std::max(0.f, std::min(t1, t2));
 	float tmax = std::max(t1, t2);
+	//if (tmax > tmin)
+	//	return false;
+	//qDebug(" min box : %f, %f, %f", box.pMin.x, box.pMin.y, box.pMin.z);
+	//qDebug(" max box : %f, %f, %f", box.pMax.x, box.pMax.y, box.pMax.z);
+	////qDebug(" res : %f, %f, %f", res.x, res.y, res.z);
+	//qDebug(" tmin : %f", tmin);
+	//qDebug(" tmax : %f", tmax);
 	//tmin = std::max(0.f, tmin);
 	*tHit = tmin;
+	Point res = r.o + (r.d * *tHit);/*
+	qDebug(" res : %f, %f, %f", res.x, res.y, res.z);*/
+
 	//*tHit = 0.f;
 	//Point res;
 	//for (int i = 0; i < 1024; i++)
@@ -85,7 +102,7 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	return false;
 }
 
-bool Terrain::intersectSegment(const Ray& r, float *tHit, float tMax) const
+bool Terrain::intersectSegment(const Ray& r, float * tHit, float tMax) const
 {
 	float tmin = 0.f;
 	if (r.d.z > k)
@@ -114,8 +131,13 @@ bool Terrain::intersectSegment(const Ray& r, float *tHit, float tMax) const
 	*tHit = noIntersect;
 	return false;
 }
+
+ColorRGB Terrain::getColorPrecalculed(const Point & p) {
+	//Point intersect = getPoint(p.x, p.y);
+	return precalc[(int)p.x][(int)p.y];
+}
 ColorRGB Terrain::getColor ( const Point & p ) {
-//	return ColorRGB{ 255.f, 255.f, 255.f };
+	//return ColorRGB{ 255.f, 255.f, 255.f };
 	ColorRGB roche = { 100.f, 100.f, 100.f };
 	ColorRGB roche_claire = { 200.f, 200.f, 200.f };
 	ColorRGB terre = { 95.f, 62.f, 5.f };

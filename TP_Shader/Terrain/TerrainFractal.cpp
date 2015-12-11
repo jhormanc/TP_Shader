@@ -2,21 +2,18 @@
 
 
 // Renvoi un terrain généré aléatoirement
-TerrainFractal::TerrainFractal (unsigned int terrain_width_, unsigned int terrain_height_) : Terrain () 
+TerrainFractal::TerrainFractal(unsigned int terrain_width_, unsigned int terrain_height_) : Terrain(terrain_width_, terrain_height_)
 {
-	terrain_width = terrain_width_;
-	terrain_height = terrain_height_;
-
 	high = (low = Noise::noise(0., 0.));
 
-	pointList = new Vector *[terrain_width];
-	for (int i = 0; i < terrain_width; i++)
-		pointList[i] = new Vector[terrain_height];
+	pointList = new Vector *[terrain_width_];
+	for (int i = 0; i < terrain_width_; i++)
+		pointList[i] = new Vector[terrain_height_];
 
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < terrain_width; i++)
+	for (int i = 0; i < terrain_width_; i++)
 	{
-		for (int j = 0; j < terrain_height; j++)
+		for (int j = 0; j < terrain_height_; j++)
 		{
 			float z = Noise::noise(i, j);
 			pointList[i][j] = Vector(i, j, z);
@@ -29,7 +26,8 @@ TerrainFractal::TerrainFractal (unsigned int terrain_width_, unsigned int terrai
 
 Point TerrainFractal::getPoint(float x, float y) const 
 {
-	//return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, Noise::noise ( x, y ) ) : noIntersectPoint;
+	//return Point(x, y, 0.f);
+	//return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, 0.f ) : noIntersectPoint;
 
 	int tmpI = (int)x;
 	int tmpJ = (int)y;

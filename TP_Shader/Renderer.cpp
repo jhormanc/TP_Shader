@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 2500., 1000.), Point(2500., 2500., 100.), 1., Vector(0., 0., -1.)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10), scene(Scene())
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10), terrain(new TerrainFractal(5000, 5000))
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -22,15 +22,14 @@ Renderer::~Renderer()
 	wait();
 }
 
-ColorRGB Renderer::radiance(Ray r)
+ColorRGB Renderer::radiance(Point p, Point o)
 {
 	float t;
-	Shapes * obj = nullptr;
-	if (scene.getBound().intersect(r, nullptr, nullptr))
-	{
-		if ((obj = scene.intersect(r, t)) != nullptr)
-		{
-			Point p = r.o + (r.d * t);
+	//if (terrain->getBound().intersect(r, nullptr, nullptr))
+	//{
+	//	if (terrain->intersect(r, &t))
+	//	{
+			//Point p = r.o + (r.d * t);
 			int n = 0;
 			ColorRGB acc = ColorRGB{ 0, 0, 0 };
 			float accli = 0.f;
@@ -43,18 +42,38 @@ ColorRGB Renderer::radiance(Ray r)
 			//	 li = 1.f;
 				const float epsilon = 0.1f;
 				accli += li;
-				acc = acc + shade(p, obj->getNormal(p), r.o, l.o, obj->getColor(p)).cclamp(0.f, 255.f) * li;
+				acc = acc + shade(p, terrain->getNormal(p), o, l.o, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
 			}
 			return acc * (1.0f / accli);
+	//	}
+	//}
+	//return ColorRGB{ 0.f, 0.f, 0.f };
+}
+
+
+ColorRGB Renderer::radiancePrecalculed(Ray r)
+{
+	float t;
+	Shapes * obj = nullptr;
+	if (terrain->getBound().intersect(r, nullptr, nullptr))
+	{
+		if (terrain->intersect(r, &t))
+		{
+			Point p(r.o + r.d * t);
+			//qDebug(" p : %f, %f, %f", p.x, p.y, p.z);
+			ColorRGB res =  terrain->getColorPrecalculed(p);
+			//qDebug(" res : %f, %f, %f", res.x, res.y, res.z);
+			return res;
 		}
 	}
 	return ColorRGB{ 0.f, 0.f, 0.f };
 }
-
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
-	return ambiant + color * clamp((dot(normalize(l - p), n) + std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), 40)), 0.f, 1.f);
-//	return ambiant + (color * clamp(dot(normalize(l - p), n), 0.f, 1.f) + color * std::pow(clamp(dot(reflect(normalize(l - p), n), normalize(eye - p)), 0.f, 1.f), 40)) * delta(p, l, r_delta);
+	return ambiant + color * clamp(
+		(dot(normalize(l - p), n) // diffus  
+		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), 40)) // speculaire
+		, 0.f, 1.f);
 }
 
 float Renderer::delta(Point collide, Point l, float r)
@@ -65,7 +84,7 @@ float Renderer::delta(Point collide, Point l, float r)
 	Ray lightRay = Ray(collide + epsilon * lightVec, lightVec);
 	Shapes * obj;
 
-	if ((obj = scene.intersectSegment(lightRay, t, r)) != nullptr)
+	if (terrain->intersectSegment(lightRay, &t, r))
 	{
 		return 0.f;
 	}
@@ -79,7 +98,7 @@ float Renderer::V(Point collide, Point l)
 	Ray lightRay = Ray(l, -lightVec);
 	Shapes * obj;
 
-	if ((obj = scene.intersect(lightRay, t)) != nullptr)
+	if (terrain->intersect(lightRay, &t))
 	{
 		float distance1 = distance(lightRay.o, lightRay.o + lightRay.d * t);
 
@@ -90,12 +109,35 @@ float Renderer::V(Point collide, Point l)
 	return 0.f;
 }
 
+void Renderer::precalc()
+{
+	Camera precalcCam(Point(2500., 2500., 1000.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.));
+	//BBox sceneSize = terrain->getBound();
+	int w = terrain->terrain_width;
+	int h = terrain->terrain_height;
+	for (int i = 0; i < w; ++i)
+	{
+		for (int j = 0; j < h; ++j)
+		{
+		/*	Vector cam_dir = normalize( - precalcCam.getOrigin());
+			Ray r = Ray(precalcCam.getOrigin(), cam_dir);*/
+			terrain->precalc[i][j] = radiance(terrain->getPoint(i, j), precalcCam.getOrigin());
+		}
+	}
+}
+
 void Renderer::render()
 {
+	
 	QMutexLocker locker(&mutex);
-
 	if (!isRunning()) 
 	{
+		samplerPoisson.genAleatoire();
+		if (!calledPrecalc)
+		{
+			precalc();
+			calledPrecalc = true;
+		}
 		start(HighestPriority);
 	}
 	else
@@ -113,7 +155,7 @@ void Renderer::run()
 		{
 			if (changes)
 			{
-				samplerPoisson.genAleatoire();
+				
 				int h = film.yResolution;
 				int w = film.xResolution;
 				QImage image(w, h, QImage::Format_RGB32);
@@ -134,7 +176,7 @@ void Renderer::run()
 					{
 						Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 						Ray r = Ray(cam_pt, cam_dir);
-						c = radiance(r);
+						c = radiancePrecalculed(r);
 						image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 						//film.colors[x][y] = c;
 					}

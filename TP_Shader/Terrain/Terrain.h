@@ -7,19 +7,22 @@
 #include "..\Geometry\Normals.h"
 #include "..\Global\Constants.h"
 #include "Global\Constants.h"
-
+#include <qdebug.h>
 class Terrain :
 	public Shapes 
 {
 
 protected:
-	unsigned int terrain_width;
-	unsigned int terrain_height;
+	
+	
 	double k;						// Pente maximale
 	double high, low;				// Paramètre pour connaitre la hauteur max et min de la map
 
 public:
-	Terrain() : Shapes() { }
+	unsigned int terrain_width;
+	unsigned int terrain_height;
+	ColorRGB ** precalc;
+	Terrain(unsigned int terrain_width, unsigned int terrain_height);
 
 	//Pour definir un max et un min
 	void MaxMin(double);
@@ -32,6 +35,8 @@ public:
 
 	//	virtual Vector getColor ( const Vector & p ) const = 0;
 	 ColorRGB getColor(const Point & p) override;
+
+	 ColorRGB getColorPrecalculed(const Point & p);
 
 	// Renvoi la normal du terrain au point p
 	virtual Normals getNormal(Point p) const = 0;
@@ -49,7 +54,7 @@ public:
 	{
 		return BBox(getOrigin() + Point(0., 0., low), Point(terrain_width, terrain_height, high));
 	}
-	bool intersectSegment(const Ray& r, float *tHit, float tMax) const override;
+	bool intersectSegment(const Ray& r, float * tHit, float tMax) const;
 
 	// Renvoie vrai si le Ray r touche le terrain.
 	//bool intersection(Ray r, double &t) const;

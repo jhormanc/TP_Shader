@@ -13,6 +13,7 @@ struct Light
 {
 	Point o;
 	int influence;
+	
 };
 class Scene
 {

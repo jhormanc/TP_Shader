@@ -27,7 +27,7 @@ void SamplerPoisson::genAleatoire()
 }
 Point SamplerPoisson::next()
 {
-	if (++indice >= randArray.size())
+	if (++indice >= randArray.size() - 1)
 		indice = 0;
 	return randArray[indice].origin;
 }

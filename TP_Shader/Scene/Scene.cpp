@@ -32,8 +32,10 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 	//objects.push_back(new Shapes (new Sphere(16.5, Point(27, 16.5, 47)), red));
 	//objects.push_back(new Shapes(new Sphere(16.5, Point(73, 16.5, 78)), white));
 //	objects.push_back(new Shapes(new Cube(Point(72, 15.5, 77), Point(73, 16.5, 78)), new Diffus(white)));	
-	Terrain * t = new TerrainFractal(5000, 5000);
-	objects.push_back(t);
+	unsigned int terrainWidth = 5000;
+	unsigned int terrainHeight = 5000;
+//	Terrain * t = new TerrainFractal(5000, 5000);
+	//objects.push_back(t);
 	/*
 	Mesh * m = new Mesh();
 	*m = Mesh::readFromObj("test.obj", Vector(50, 16.5, 50));
@@ -46,6 +48,9 @@ Scene::Scene() : objects(std::vector<Shapes *>())
 	lights.push_back(Light{ Point(250.f, 250.f, 500.6f), 1 });
 	lights.push_back(Light{ Point(1100.f, 1100.f, 500.6f), 1 });
 	//placeLightHalfCircle(Point(500.f, 500.f, 0.f), 500.F, 1, Point(0.f, 500.f, 0.f), 4);
+
+
+
 
 }
 

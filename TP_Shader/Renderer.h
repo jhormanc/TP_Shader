@@ -20,9 +20,9 @@ private:
 	bool restart;
 	bool abort;
 	float CameraX, CameraY, CameraZ;
-
+	bool calledPrecalc = false;
 	Camera cam;
-	Scene scene;
+	Terrain * terrain;
 	Film film;
 	ColorRGB ambiant = ColorRGB{ 00.F, 00.f, 0.f };
 	SamplerPoisson samplerPoisson;
@@ -30,11 +30,13 @@ private:
 public:
 	Renderer(QObject *parent = 0);
 	void render();
-	ColorRGB radiance(Ray r);
+	ColorRGB radiance(Point p, Point o);
 	float V(Point collide, Point l);
 	float delta(Point collide, Point l, float r);
 	ColorRGB shade(Point p, Normals n, Point eye, Point l, ColorRGB color);
-
+	void precalc();
+	
+	ColorRGB radiancePrecalculed(Ray r);
 	void CameraRotation(float rot);
 
 	// Déplace la caméra
