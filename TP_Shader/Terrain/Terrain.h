@@ -1,15 +1,13 @@
 #pragma once
 
 #include <math.h>
-#include "..\Shapes\Shapes.h"
 #include "..\Geometry\Geometry.h"
 #include "..\Geometry\Vector.h"
 #include "..\Geometry\Normals.h"
-#include "..\Global\Constants.h"
+#include "..\Global\Global.h"
 #include "Global\Constants.h"
 #include <qdebug.h>
-class Terrain :
-	public Shapes 
+class Terrain
 {
 
 protected:
@@ -36,7 +34,7 @@ public:
 	virtual double distance (const Point & p) const;
 
 	//	virtual Vector getColor ( const Vector & p ) const = 0;
-	 ColorRGB getColor(const Point & p) override;
+	 ColorRGB getColor(const Point & p);
 
 	 ColorRGB getColorPrecalculed(const Point & p);
 	 ColorRGB ColorFade(ColorRGB,ColorRGB,double,double);

@@ -10,18 +10,18 @@ Terrain::Terrain(const Terrain& terrain)
 	terrain_width = terrain.terrain_width;
 	terrain_height = terrain.terrain_height;
 	precalc = new ColorRGB *[terrain.terrain_width];
-	for (int i = 0; i < terrain.terrain_width; i++)
+	for (unsigned int i = 0; i < terrain.terrain_width; i++)
 		precalc[i] = new ColorRGB[terrain.terrain_height];
 
-	for (int i = 0; i < terrain.terrain_width; ++i)
-		for (int j = 0; j < terrain.terrain_height; ++j)
+	for (unsigned int i = 0; i < terrain.terrain_width; ++i)
+		for (unsigned int j = 0; j < terrain.terrain_height; ++j)
 			precalc[i][j] = terrain.precalc[i][j];
 }
 
-Terrain::Terrain(unsigned int terrain_width_, unsigned int terrain_height_) : terrain_width(terrain_width_), terrain_height(terrain_height_), Shapes()
+Terrain::Terrain(unsigned int terrain_width_, unsigned int terrain_height_) : terrain_width(terrain_width_), terrain_height(terrain_height_)
 {
 	precalc = new ColorRGB *[terrain_width_];
-	for (int i = 0; i < terrain_width_; i++)
+	for (unsigned int i = 0; i < terrain_width_; i++)
 		precalc[i] = new ColorRGB[terrain_height_];
 }
 
@@ -30,11 +30,11 @@ Terrain & Terrain::operator=(const Terrain& terrain)
 	terrain_width = terrain.terrain_width;
 	terrain_height = terrain.terrain_height;
 	precalc = new ColorRGB *[terrain.terrain_width];
-	for (int i = 0; i < terrain.terrain_width; i++)
+	for (unsigned int i = 0; i < terrain.terrain_width; i++)
 		precalc[i] = new ColorRGB[terrain.terrain_height];
 
-	for (int i = 0; i < terrain.terrain_width; ++i)
-		for (int j = 0; j < terrain.terrain_height; ++j)
+	for (unsigned int i = 0; i < terrain.terrain_width; ++i)
+		for (unsigned int j = 0; j < terrain.terrain_height; ++j)
 			precalc[i][j] = terrain.precalc[i][j];
 	return *this;
 }
@@ -244,7 +244,7 @@ ColorRGB Terrain::ColorFade(ColorRGB c1, ColorRGB c2, double z ,double nb_step){
 
 Terrain::~Terrain()
 {
-	for (int i = 0; i < terrain_width; i++)
+	for (unsigned int i = 0; i < terrain_width; i++)
 		delete[] precalc[i];
 	delete[] precalc;
 }

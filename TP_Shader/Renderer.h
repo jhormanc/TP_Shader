@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include "Camera.h"
-#include "Scene\Scene.h"
 #include "SamplerPoisson.h"
 #include <QSize>
 #include <QMutex>
@@ -9,6 +8,9 @@
 #include <QThread>
 #include <QWaitCondition>
 #include <QImage>
+#include "Terrain\Terrain.h"
+#include "Terrain\TerrainFractal.h"
+#include "Film.h"
 
 class Renderer : public QThread
 {

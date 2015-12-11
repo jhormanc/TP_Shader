@@ -9,11 +9,10 @@ class SamplerPoisson
 	BBox size;
 	const int maxSample = 10000;
 	int indice = 0;
-	int r;
+	float r;
 public:
-	SamplerPoisson(BBox size_, int r_);
+	SamplerPoisson(BBox size_, float r_);
 	void genAleatoire();
 	Point next();
-	~SamplerPoisson();
 };
 

@@ -1,12 +1,11 @@
 #pragma once
 #include "Geometry\Geometry.h"
-#include "Transform\Transform.h"
 #include "Global\Global.h"
 
 class Camera
 {
 	Vector u, v, w;
-	double lu, lv, lw;
+	float lu, lv, lw;
 	Vector up;
 	Point origin;
 	Point pt_view;
@@ -15,7 +14,7 @@ class Camera
 
 public:
 	
-	Camera(Point o_, Point d, double dw, Vector up);
+	Camera(Point o_, Point d, float dw, Vector up);
 
 	Vector PtScreen(int i, int j, int width, int height);
 

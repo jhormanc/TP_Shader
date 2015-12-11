@@ -43,7 +43,7 @@ float Noise::dot(int g[], float x, float y)
 // Renvoi une valeur aleatoire entre 0 et 1 a partir de x.
 float Noise::hash(float x)
 {
-	return (1.0 + (sin(sin(x) * rand()))) / 2.0;
+	return (1.0f + (sin(sin(x) * rand()))) / 2.0f;
 }
 
 float Noise::ridge(const float z, const float zr)
@@ -56,9 +56,9 @@ float Noise::ridge(const float z, const float zr)
 Vector Noise::warp(const Vector p, const float c, const float f, const bool perlin)
 {
 	if (perlin)
-		return p + Vector((f * p.x, f * p.y), perlin2D(f * (p.x * cos(30.f) - p.y * sin(30.f)) + 10., f * (p.x * sin(30.f) + p.y * cos(30.f)) + 10.), 0.) * c;
+		return p + Vector((f * p.x, f * p.y), perlin2D(f * (p.x * cos(30.f) - p.y * sin(30.f)) + 10.f, f * (p.x * sin(30.f) + p.y * cos(30.f)) + 10.f), 0.f) * c;
 
-	return p + Vector((f * p.x, f * p.y), simplex(f * (p.x * cos(30.f) - p.y * sin(30.f)) + 10., f * (p.x * sin(30.f) + p.y * cos(30.f)) + 10.), 0.) * c;
+	return p + Vector((f * p.x, f * p.y), simplex(f * (p.x * cos(30.f) - p.y * sin(30.f)) + 10.f, f * (p.x * sin(30.f) + p.y * cos(30.f)) + 10.f), 0.f) * c;
 }
 
 float Noise::smooth(const float z, const float zmin, const float zmax)
@@ -82,11 +82,11 @@ float Noise::simplex(const float xin, const float yin)
 
 	float n0, n1, n2; // Noise contributions from the three corners
 	// Skew the input space to determine which Noise cell we're in
-	float F2 = 0.5 * (sqrt(3.0) - 1.0);
+	float F2 = 0.5f * (sqrt(3.0f) - 1.0f);
 	float s = (xin + yin) * F2; // Hairy factor for 2D
 	int i = fastfloor(xin + s);
 	int j = fastfloor(yin + s);
-	float G2 = (3.0 - sqrt(3.0)) / 6.0;
+	float G2 = (3.0f - sqrt(3.0f)) / 6.0f;
 	float t = (i + j) * G2;
 	float X0 = i - t; // Unskew the cell origin back to (x,y) space
 	float Y0 = j - t;
@@ -95,7 +95,7 @@ float Noise::simplex(const float xin, const float yin)
 
 	// For the 2D case, the Noise shape is an equilateral triangle.
 	// Determine which Noise we are in.
-	int i1, j1; // Offsets for second (middle) corner of Noise in (i,j) coords
+	int i1, j1; // Ofsets for second (middle) corner of Noise in (i,j) coords
 	if (x0  > y0)
 	{
 		i1 = 1;
@@ -110,10 +110,10 @@ float Noise::simplex(const float xin, const float yin)
 	// A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
 	// a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
 	// c = (3-sqrt(3))/6
-	float x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+	float x1 = x0 - i1 + G2; // Ofsets for middle corner in (x,y) unskewed coords
 	float y1 = y0 - j1 + G2;
-	float x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords
-	float y2 = y0 - 1.0 + 2.0 * G2;
+	float x2 = x0 - 1.0f + 2.0f * G2; // Ofsets for last corner in (x,y) unskewed coords
+	float y2 = y0 - 1.0f + 2.0f * G2;
 
 	// Work out the hashed gradient indices of the three Noise corners
 	int ii = i & 255;
@@ -123,27 +123,27 @@ float Noise::simplex(const float xin, const float yin)
 	int gi2 = perm[ii + 1 + perm[jj + 1]] % 12;
 
 	// Calculate the contribution from the three corners
-	float t0 = 0.5 - x0 * x0 - y0 * y0;
+	float t0 = 0.5f - x0 * x0 - y0 * y0;
 	if (t0 < 0)
-		n0 = 0.0;
+		n0 = 0.f;
 	else
 	{
 		t0 *= t0;
 		n0 = t0 * t0 * dot(grad3[gi0], x0, y0); // (x,y) of grad3 used for 2D gradient
 	}
 
-	float t1 = 0.5 - x1 * x1 - y1 * y1;
+	float t1 = 0.5f - x1 * x1 - y1 * y1;
 	if (t1 < 0)
-		n1 = 0.0;
+		n1 = 0.0f;
 	else
 	{
 		t1 *= t1;
 		n1 = t1 * t1 * dot(grad3[gi1], x1, y1);
 	}
 
-	float t2 = 0.5 - x2 * x2 - y2 * y2;
+	float t2 = 0.5f - x2 * x2 - y2 * y2;
 	if (t2 < 0)
-		n2 = 0.0;
+		n2 = 0.f;
 	else
 	{
 		t2 *= t2;
@@ -152,7 +152,7 @@ float Noise::simplex(const float xin, const float yin)
 
 	// Add contributions from each corner to get the final noise value.
 	// The result is scaled to return values in the interval [-1,1].
-	return 70.0 * (n0 + n1 + n2);
+	return 70.0f * (n0 + n1 + n2);
 }
 
 // Perlin noise
@@ -220,108 +220,108 @@ float Noise::noise(const float x, const float y)
 
 float Noise::noisePlains(const float x, const float y)
 {
-	Vector w = warp(Vector(x, y, 0.), 2., 1. / 50.0, false);
+	Vector w = warp(Vector(x, y, 0.f), 2.f, 1.f / 50.f, false);
 	float tmp;
 
-	tmp = (simplex(w.x / 2000.f, w.y / 2000.f) + 1.) * 0.5f;
-	float z0 = 3. * tmp;
+	tmp = (simplex(w.x / 2000.f, w.y / 2000.f) + 1.f) * 0.5f;
+	float z0 = 3.f * tmp;
 
-	tmp = (simplex(x / 4000.f, y / 4000.f) + 1.) * 0.5f;
-	float z1 = 5. * tmp;
+	tmp = (simplex(x / 4000.f, y / 4000.f) + 1.f) * 0.5f;
+	float z1 = 5.f * tmp;
 
-	return z0 + z1 * smooth(z1, 0., 5.);
-	return (z1 + z0) * smooth(z0, 0., 5.) * smooth(z1, 0., 5.);
+	return z0 + z1 * smooth(z1, 0.f, 5.f);
+	return (z1 + z0) * smooth(z0, 0.f, 5.f) * smooth(z1, 0.f, 5.f);
 }
 
 float Noise::noiseMountains(const float x, const float y)
 {
-	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
+	Vector w = warp(Vector(x, y, 0.f), 5.f, 1.f / 50.f, false);
 	float tmp;
 
-	tmp = (simplex(w.x / 750., w.y / 750.) + 1.) * 0.5;
-	float z0 = ridge(300. * tmp, 250.);
+	tmp = (simplex(w.x / 750.f, w.y / 750.f) + 1.f) * 0.5f;
+	float z0 = ridge(300.f * tmp, 250.f);
 
-	tmp = (simplex(w.x / 400., w.y / 400.) + 1.) * 0.5;
-	float z1 = 20. + 30. * tmp;
+	tmp = (simplex(w.x / 400.f, w.y / 400.f) + 1.f) * 0.5f;
+	float z1 = 20.f + 30.f * tmp;
 
-	tmp = (simplex(w.x / 250., w.y / 250.) + 1.) * 0.5;
-	float z2 = ridge(30. * tmp, 40.);
+	tmp = (simplex(w.x / 250.f, w.y / 250.f) + 1.f) * 0.5f;
+	float z2 = ridge(30.f * tmp, 40.f);
 
-	tmp = (simplex(w.x / 150., w.y / 150.) + 1.) * 0.5;
-	float z3 = 15. * tmp;
+	tmp = (simplex(w.x / 150.f, w.y / 150.f) + 1.f) * 0.5f;
+	float z3 = 15.f * tmp;
 
-	tmp = (simplex(w.x / 50., w.y / 50.) + 1.) * 0.5;
-	float z4 = 7. * tmp;
+	tmp = (simplex(w.x / 50.f, w.y / 50.f) + 1.f) * 0.5f;
+	float z4 = 7.f * tmp;
 
-	float z = z0 + z1 + z2 * smooth(z0, 50., 200.) + z3 * smooth(z0, 150., 200.) + z4 * smooth(z0, 150., 250.);
-	z += (z1 * (1. - smooth(z, 0., 60.)));
+	float z = z0 + z1 + z2 * smooth(z0, 50.f, 200.f) + z3 * smooth(z0, 150.f, 200.f) + z4 * smooth(z0, 150.f, 250.f);
+	z += (z1 * (1.f - smooth(z, 0.f, 60.f)));
 	return z;
 }
 
 float Noise::noise1(const float x, const float y)
 {
-	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
+	Vector w = warp(Vector(x, y, 0.f), 5.f, 1.f / 50.f, false);
 	float tmp;
 
-	tmp = (simplex(w.x / 500., w.y / 500.) + 1.) * 0.5;
-	float z0 = ridge(200. * tmp, 180.);
+	tmp = (simplex(w.x / 500.f, w.y / 500.f) + 1.f) * 0.5f;
+	float z0 = ridge(200.f * tmp, 180.f);
 
-	tmp = (simplex(w.x / 200., w.y / 200.) + 1.) * 0.5;
-	float z1 = 50. * tmp;
+	tmp = (simplex(w.x / 200.f, w.y / 200.f) + 1.f) * 0.5f;
+	float z1 = 50.f * tmp;
 
-	tmp = (simplex(w.x / 50, w.y / 50) + 1.) * 0.5;
-	float z2 = 15. * tmp;
+	tmp = (simplex(w.x / 50.f, w.y / 50.f) + 1.f) * 0.5f;
+	float z2 = 15.f * tmp;
 
-	float z = z0 * smooth(z0, 50., 200.) + z1 * smooth(z0, 50., 200.) + z2 * smooth(z0, 50., 200.);
+	float z = z0 * smooth(z0, 50.f, 200.f) + z1 * smooth(z0, 50.f, 200.f) + z2 * smooth(z0, 50.f, 200.f);
 	return z;
 }
 
 float Noise::noise2(const float x, const float y)
 {
-	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
+	Vector w = warp(Vector(x, y, 0.f), 5.f, 1.f / 50.f, false);
 	float tmp;
 
-	tmp = (simplex(w.x / 700., w.y / 700.) + 1.) * 0.5;
-	float z0 = 200. * tmp;
+	tmp = (simplex(w.x / 700.f, w.y / 700.f) + 1.f) * 0.5f;
+	float z0 = 200.f * tmp;
 
-	tmp = (simplex(w.x / 300., w.y / 300.) + 1.) * 0.5;
-	float z1 = 100. * tmp;
+	tmp = (simplex(w.x / 300.f, w.y / 300.f) + 1.f) * 0.5f;
+	float z1 = 100.f * tmp;
 
-	tmp = (simplex(w.x / 100., w.y / 100.) + 1.) * 0.5;
-	float z2 = 50. * tmp;
+	tmp = (simplex(w.x / 100.f, w.y / 100.f) + 1.f) * 0.5f;
+	float z2 = 50.f * tmp;
 
-	tmp = (simplex(w.x / 30., w.y / 30.) + 1.) * 0.5;
-	float z3 = 30. * tmp;
+	tmp = (simplex(w.x / 30.f, w.y / 30.f) + 1.f) * 0.5f;
+	float z3 = 30.f * tmp;
 
-	float z = z0 - ridge(z0 * smooth(z0, 0., 100.), 100.);
-	z += z1 * smooth(z, 50., 300.);
-	z += z2 * smooth(z, 70., 300.);
-	z += z3 * smooth(z, 100., 300.);
+	float z = z0 - ridge(z0 * smooth(z0, 0.f, 100.f), 100.f);
+	z += z1 * smooth(z, 50.f, 300.f);
+	z += z2 * smooth(z, 70.f, 300.f);
+	z += z3 * smooth(z, 100.f, 300.f);
 
 	return z;
 }
 
 float Noise::noise3(const float x, const float y)
 {
-	Vector w = warp(Vector(x, y, 0.), 5., 1. / 50.0, false);
+	Vector w = warp(Vector(x, y, 0.f), 5.f, 1.f / 50.f, false);
 	float tmp;
 
-	tmp = (simplex(w.x / 500., w.y / 500.) + 1.) * 0.5;
-	float z0 = ridge(250. * tmp, 230.);
+	tmp = (simplex(w.x / 500.f, w.y / 500.f) + 1.f) * 0.5f;
+	float z0 = ridge(250.f * tmp, 230.f);
 
-	tmp = (simplex(w.x / 300., w.y / 300.) + 1.) * 0.5;
-	float z1 = 20. + 30. * tmp;
+	tmp = (simplex(w.x / 300.f, w.y / 300.f) + 1.f) * 0.5f;
+	float z1 = 20.f + 30.f * tmp;
 
-	tmp = (simplex(w.x / 200., w.y / 200.) + 1.) * 0.5;
-	float z2 = ridge(60. * tmp, 40.);
+	tmp = (simplex(w.x / 200.f, w.y / 200.f) + 1.f) * 0.5f;
+	float z2 = ridge(60.f * tmp, 40.f);
 
-	tmp = (simplex(w.x / 50., w.y / 50.) + 1.) * 0.5;
-	float z3 = 30. * tmp;
+	tmp = (simplex(w.x / 50.f, w.y / 50.f) + 1.f) * 0.5f;
+	float z3 = 30.f * tmp;
 
-	tmp = (simplex(w.x / 5., w.y / 5.) + 1.) * 0.5;
-	float z4 = 15. * tmp;
+	tmp = (simplex(w.x / 5.f, w.y / 5.f) + 1.f) * 0.5f;
+	float z4 = 15.f * tmp;
 
-	float z = z0 + z1 + z2 * smooth(z0, 50., 200.) + z3 * smooth(z0, 150., 200.) + z4 * smooth(z0, 150., 250.);
-	z += (z1 * (1. - smooth(z, 0., 60.)));
+	float z = z0 + z1 + z2 * smooth(z0, 50.f, 200.f) + z3 * smooth(z0, 150.f, 200.f) + z4 * smooth(z0, 150.f, 250.f);
+	z += (z1 * (1.f - smooth(z, 0.f, 60.f)));
 	return z;
 }

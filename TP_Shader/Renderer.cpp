@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20., 2500., 1000.), Point(2500., 2500., 100.), 1., Vector(0., 0., -1.)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10), terrain(new TerrainFractal(5000, 5000))
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -25,48 +25,30 @@ Renderer::~Renderer()
 
 ColorRGB Renderer::radiance(Point p, Point o)
 {
-	float t;
-	//if (terrain->getBound().intersect(r, nullptr, nullptr))
-	//{
-	//	if (terrain->intersect(r, &t))
-	//	{
-			//Point p = r.o + (r.d * t);
-			int n = 0;
-			ColorRGB acc = ColorRGB{ 0, 0, 0 };
-			float accli = 0.f;
-			Point sunshine(2500, 2500, 1000); // midi
-			for (int i = 0; i < nbEchantillon; ++i)
-			{
-				Light l = { samplerPoisson.next(), 1 }; // 2 eme param a enlever
-				float cosLiS = std::abs(dot(normalize(l.o - Point(0)), normalize(sunshine - Point(0))));
-				float li = 0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
-			//	 li = 1.f;
-				const float epsilon = 0.1f;
-				accli += li;
-				acc = acc + shade(p, terrain->getNormal(p), o, l.o, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
-			}
-			return acc * (1.0f / accli);
-	//	}
-	//}
-	//return ColorRGB{ 0.f, 0.f, 0.f };
+	ColorRGB acc = ColorRGB{ 0, 0, 0 };
+	float accli = 0.f;
+	Point sunshine(2500, 2500, 1000); // midi
+	for (int i = 0; i < nbEchantillon; ++i)
+	{
+		Point l = samplerPoisson.next(); // 2 eme param a enlever
+		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
+		float li = 0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
+		accli += li;
+		acc = acc + shade(p, terrain->getNormal(p), o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
+	}
+	return acc * (1.0f / accli);
 }
 
 
 ColorRGB Renderer::radiancePrecalculed(Ray r)
 {
 	float t;
-	Shapes * obj = nullptr;
-	//if (terrain->getBound().intersect(r, nullptr, nullptr))
-	//{
-		if (terrain->intersect(r, &t))
-		{
-			Point p(r.o + r.d * t);
-			//qDebug(" p : %f, %f, %f", p.x, p.y, p.z);
-			ColorRGB res =  terrain->getColorPrecalculed(p);
-			//qDebug(" res : %f, %f, %f", res.x, res.y, res.z);
-			return res;
-		}
-	//}
+	if (terrain->intersect(r, &t))
+	{
+		Point p(r.o + r.d * t);
+		ColorRGB res = terrain->getColorPrecalculed(p);
+		return res;
+	}
 	return ColorRGB{ 0.f, 0.f, 0.f };
 }
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
@@ -83,7 +65,6 @@ float Renderer::delta(Point collide, Point l, float r)
 	float t;
 	Vector lightVec = normalize(l - collide);
 	Ray lightRay = Ray(collide + epsilon * lightVec, lightVec);
-	Shapes * obj;
 
 	if (terrain->intersectSegment(lightRay, &t, r))
 	{
@@ -97,7 +78,6 @@ float Renderer::V(Point collide, Point l)
 	float t;
 	Vector lightVec = normalize(l - collide);
 	Ray lightRay = Ray(l, -lightVec);
-	Shapes * obj;
 
 	if (terrain->intersect(lightRay, &t))
 	{

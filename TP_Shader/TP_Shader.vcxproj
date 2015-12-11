@@ -96,6 +96,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -131,6 +133,8 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <Optimization>MaxSpeed</Optimization>
       <OpenMPSupport>true</OpenMPSupport>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -166,16 +170,9 @@
     <ClCompile Include="Noise\Noise.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SamplerPoisson.cpp" />
-    <ClCompile Include="Scene\Scene.cpp" />
-    <ClCompile Include="Shapes\Cube.cpp" />
-    <ClCompile Include="Shapes\Mesh.cpp" />
-    <ClCompile Include="Shapes\Shapes.cpp" />
     <ClCompile Include="Shapes\Sphere.cpp" />
-    <ClCompile Include="Shapes\Triangle.cpp" />
     <ClCompile Include="Terrain\Terrain.cpp" />
     <ClCompile Include="Terrain\TerrainFractal.cpp" />
-    <ClCompile Include="Transform\Mat4x4.cpp" />
-    <ClCompile Include="Transform\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwin.h">
@@ -228,16 +225,9 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
     </CustomBuild>
     <ClInclude Include="SamplerPoisson.h" />
-    <ClInclude Include="Scene\Scene.h" />
-    <ClInclude Include="Shapes\Cube.h" />
-    <ClInclude Include="Shapes\Mesh.h" />
-    <ClInclude Include="Shapes\Shapes.h" />
     <ClInclude Include="Shapes\Sphere.h" />
-    <ClInclude Include="Shapes\Triangle.h" />
     <ClInclude Include="Terrain\Terrain.h" />
     <ClInclude Include="Terrain\TerrainFractal.h" />
-    <ClInclude Include="Transform\Mat4x4.h" />
-    <ClInclude Include="Transform\Transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,7 +1,7 @@
 #include "SamplerPoisson.h"
 
 
-SamplerPoisson::SamplerPoisson(BBox size_, int r_) : size(size_), randArray(std::vector<Sphere>()), r(r_)
+SamplerPoisson::SamplerPoisson(BBox size_, float r_) : size(size_), randArray(std::vector<Sphere>()), r(r_)
 {
 }
 void SamplerPoisson::genAleatoire()
@@ -32,6 +32,3 @@ Point SamplerPoisson::next()
 	return randArray[indice].origin;
 }
 
-SamplerPoisson::~SamplerPoisson()
-{
-}

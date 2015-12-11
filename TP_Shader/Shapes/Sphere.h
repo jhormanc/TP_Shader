@@ -1,9 +1,8 @@
 #pragma once
-#include "Shapes.h"
 #include "..\Global\Global.h"
 #include "..\Geometry\Geometry.h"
 
-class Sphere : public Shapes
+class Sphere
 {
 	
 public:

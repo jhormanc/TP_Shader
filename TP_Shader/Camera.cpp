@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera(Point o_, Point a_, double dw, Vector _up)
+Camera::Camera(Point o_, Point a_, float dw, Vector _up)
 {
 	origin = o_;
 	pt_view = a_;
@@ -11,15 +11,15 @@ Camera::Camera(Point o_, Point a_, double dw, Vector _up)
 	v = cross(w, u);
 	u = -u;
 
-	lu = 4. / 3.;
-	lv = 1.;
+	lu = 4.f / 3.f;
+	lv = 1.f;
 	lw = dw;
 }
 
 Vector Camera::PtScreen(int i, int j, int width, int height)
 {
-	double tu = (double)i / (double)(width - 1);
-	double tv = (double)j / (double)(height - 1);
+	float tu = (float)i / (float)(width - 1);
+	float tv = (float)j / (float)(height - 1);
 
 	Vector res = Vector(origin.x, origin.y, origin.z) + (w * lw)
 		+ u * (-lu * (1 - tu) + tu * lu)
