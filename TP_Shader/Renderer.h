@@ -23,7 +23,6 @@ private:
 	bool restart;
 	
 	float CameraX, CameraY, CameraZ;
-	bool calledPrecalc = false;
 	Camera cam;
 	Terrain * terrain;
 	Film film;
@@ -31,9 +30,13 @@ private:
 	SamplerPoisson samplerPoisson;
 
 public:
-	bool abort;
+	bool calledPrecalc = false;
+	bool changes; // Pour savoir quand il y a une modif (caméra, rendu, nb samples)
+	bool precalculed; // Rendu précalculé ou pas
+	bool abort; // Exit
 	Renderer(QObject *parent = 0);
 	void render();
+	ColorRGB radiance(Ray r);
 	ColorRGB radiance(Point p, Point o);
 	float V(Point collide, Point l);
 	float delta(Point collide, Point l, float r);
@@ -49,13 +52,17 @@ public:
 	// Rotate la caméra
 	void RotateCam(const Point& pt_screen);
 
+	bool changeNbSamples(const int& nbToAdd);
+	void changeRenderMode();
+	bool IsRenderPrecalc();
+	int GetNbSamples();
+	void UpdatePrecalc();
 	~Renderer();
 
 signals:
 	void renderedImage(const QImage &image);
 
 protected:
-	bool changes;
 	void run();
 
 };

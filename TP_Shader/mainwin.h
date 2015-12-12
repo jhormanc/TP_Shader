@@ -30,9 +30,13 @@ protected:
 private:
 	Renderer thread;
 	QPixmap pixmap;
+	bool rendering;
 
 	void rotate(const QPoint& pt);
 	void move(const int& x = 0, const int& y = 0, const int& z = 0);
+	void changeNbSamples(const int& nbToAdd);
+	void changeRenderMode();
+	void updatePrecalc();
 	void closeEvent(QCloseEvent *event);
 };
 

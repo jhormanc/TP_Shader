@@ -1,5 +1,8 @@
 #include "Renderer.h"
 
+static bool renderPrecalculed = false;
+static int nbSamples = 1;
+
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
 {
@@ -23,14 +26,39 @@ Renderer::~Renderer()
 	wait();
 }
 
+ColorRGB Renderer::radiance(Ray r)
+{
+	ColorRGB acc = ColorRGB{ 0, 0, 0 };
+	float accli = 0.f;
+	Point sunshine(2500.f, 2500.f, 1000.f); // midi
+
+	float t;
+	if (terrain->intersect(r, &t))
+	{
+		Point p(r.o + r.d * t);
+
+		//#pragma omp parallel for schedule(static)
+		for (int i = 0; i < nbSamples; ++i)
+		{
+			Point l = samplerPoisson.next(); // 2 eme param a enlever
+			float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
+			float li = 0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
+			accli += li;
+			acc = acc + shade(p, terrain->getNormal(p), r.o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
+		}
+		return acc * (1.0f / accli);
+	}
+	return ColorRGB{ 0.f, 0.f, 0.f };
+}
+
 ColorRGB Renderer::radiance(Point p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0, 0, 0 };
 	float accli = 0.f;
-	Point sunshine(2500, 2500, 1000); // midi
+	Point sunshine(2500.f, 2500.f, 1000.f); // midi
 
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < nbEchantillon; ++i)
+	for (int i = 0; i < nbSamples; ++i)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
 		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
@@ -94,7 +122,6 @@ float Renderer::V(Point collide, Point l)
 
 void Renderer::precalc()
 {
-
 	qDebug("start preprocessing ");
 	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
 	Camera precalcCam(Point(2500., 2500., 1000.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.));
@@ -102,6 +129,7 @@ void Renderer::precalc()
 	int w = terrain->terrain_width;
 	int h = terrain->terrain_height;
 	auto start = std::chrono::high_resolution_clock::now();
+
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < w; ++i)
 	{
@@ -121,15 +149,17 @@ void Renderer::precalc()
 
 void Renderer::render()
 {
-	
 	QMutexLocker locker(&mutex);
 	if (!isRunning()) 
 	{
 		samplerPoisson.genAleatoire();
-		if (!calledPrecalc)
+		if (renderPrecalculed)
 		{
-			precalc();
-			calledPrecalc = true;
+			if (!calledPrecalc)
+			{
+				precalc();
+				calledPrecalc = true;
+			}
 		}
 		start(HighestPriority);
 	}
@@ -142,23 +172,22 @@ void Renderer::render()
 
 void Renderer::run()
 {
-
 	qDebug("start render ");
 	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
 
-	
-		while (!abort)
+	while (!abort)
+	{
+		if (changes)
 		{
-			if (changes)
-			{
-				auto start = std::chrono::high_resolution_clock::now();
-				int h = film.yResolution;
-				int w = film.xResolution;
-				QImage image(w, h, QImage::Format_RGB32);
-				ColorRGB c;
+			auto start = std::chrono::high_resolution_clock::now();
+			int h = film.yResolution;
+			int w = film.xResolution;
+			QImage image(w, h, QImage::Format_RGB32);
+			ColorRGB c;
 
 			mutex.lock();
 			Camera camera(cam);
+			bool p(renderPrecalculed);
 			mutex.unlock();
 
 			Point cam_pt(camera.getOrigin());
@@ -172,11 +201,12 @@ void Renderer::run()
 				{
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
-					c = radiancePrecalculed(r);
+					c = p ? radiancePrecalculed(r) : radiance(r);
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
 			}
+
 
 
 			emit renderedImage(image);
@@ -184,14 +214,11 @@ void Renderer::run()
 			mesureFile << "render : " << std::chrono::duration<float, std::milli>(end - start).count() * 0.001 << " s" << std::endl;
 			mutex.lock();
 
-
-
-				
-				if (!restart)
-				{
-					changes = false;
-					condition.wait(&mutex);
-				}
+			if (!restart)
+			{
+				changes = false;
+				condition.wait(&mutex);
+			}
 			restart = false;
 
 			mutex.unlock();
@@ -220,4 +247,42 @@ void Renderer::RotateCam(const Point& pt)
 	changes = true;
 
 	mutex.unlock();
+}
+
+bool Renderer::changeNbSamples(const int& nbToAdd)
+{
+	if (nbToAdd > 0 || (nbSamples + nbToAdd) >= 1)
+	{
+		mutex.lock();
+		nbSamples += nbToAdd;
+		changes = true;
+		mutex.unlock();
+		return true;
+	}
+	return false;
+}
+
+void Renderer::changeRenderMode()
+{
+	mutex.lock();
+	renderPrecalculed = !renderPrecalculed;
+	changes = true;
+	mutex.unlock();
+}
+
+void Renderer::UpdatePrecalc()
+{
+	mutex.lock();
+	precalc();
+	changes = true;
+	mutex.unlock();
+}
+
+bool Renderer::IsRenderPrecalc()
+{
+	return renderPrecalculed;
+}
+int Renderer::GetNbSamples()
+{
+	return nbSamples;
 }
