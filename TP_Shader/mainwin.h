@@ -30,10 +30,24 @@ protected:
 private:
 	Renderer thread;
 	QPixmap pixmap;
+	bool rendering;
+	bool refresh;
 
 	void rotate(const QPoint& pt);
 	void move(const int& x = 0, const int& y = 0, const int& z = 0);
+	void changeNbSamples(const int& nbToAdd);
+	void changeRenderMode();
+	void updatePrecalc();
+	// diffus : diffus ou spéculaire
+	// coefToAdd : entre 0.f et 1.f
+	void addCoeff(const bool& diffus, const float& coefToAdd);
+	// intensityToAdd : 0.f < globalIntensity + sunIntensity < 1.f
+	void addIntensity(const float& intensityToAdd);
+	// sun : soleil ou spéculaire
+	// influenceToAdd : 10 < influenceSpec < 40
+	void addInfluence(const bool& sun, const int& influenceToAdd);
 	void closeEvent(QCloseEvent *event);
+	void moveSun(const float& x, const float& y, const float& z);
 };
 
 #endif // MAINWIN_H

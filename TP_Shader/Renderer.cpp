@@ -1,5 +1,15 @@
 #include "Renderer.h"
 
+static bool renderPrecalculed(false);
+static int nbSamples(1);
+static float coefDiffus(1.f);
+static float coefSpec(1.f);
+static int specInfluence(40);
+static int sunInfluence(4);
+static float sunIntensity(0.8f);
+static float globalIntensity(0.2f);
+static Point sunPoint(2500.f, 2500.f, 1000.f);
+
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
 {
@@ -9,6 +19,7 @@ film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(B
 	restart = false;
 	abort = false;
 	changes = true;
+	lastRenderTime = 0.f;
 }
 
 Renderer::~Renderer()
@@ -23,18 +34,41 @@ Renderer::~Renderer()
 	wait();
 }
 
+ColorRGB Renderer::radiance(Ray r)
+{
+	ColorRGB acc = ColorRGB{ 0, 0, 0 };
+	float accli = 0.f;
+
+	float t;
+	if (terrain->intersect(r, &t))
+	{
+		Point p(r.o + r.d * t);
+
+		//#pragma omp parallel for schedule(static)
+		for (int i = 0; i < nbSamples; ++i)
+		{
+			Point l = samplerPoisson.next(); // 2 eme param a enlever
+			float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
+			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
+			accli += li;
+			acc = acc + shade(p, terrain->getNormal(p), r.o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
+		}
+		return acc * (1.0f / accli);
+	}
+	return ColorRGB{ 0.f, 0.f, 0.f };
+}
+
 ColorRGB Renderer::radiance(Point p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0, 0, 0 };
 	float accli = 0.f;
-	Point sunshine(2500, 2500, 1000); // midi
 
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < nbEchantillon; ++i)
+	for (int i = 0; i < nbSamples; ++i)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
-		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
-		float li = 0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
+		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
+		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
 		acc = acc + shade(p, terrain->getNormal(p), o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
 	}
@@ -56,8 +90,8 @@ ColorRGB Renderer::radiancePrecalculed(Ray r)
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
 	return ambiant + color * clamp(
-		(dot(normalize(l - p), n) // diffus  
-		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), 40)) // speculaire
+		(dot(normalize(l - p), n) * coefDiffus // diffus  
+		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
 		, 0.f, 1.f);
 }
 
@@ -94,14 +128,14 @@ float Renderer::V(Point collide, Point l)
 
 void Renderer::precalc()
 {
-
 	qDebug("start preprocessing ");
 	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
-	Camera precalcCam(Point(2500., 2500., 1000.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.));
+
 	//BBox sceneSize = terrain->getBound();
 	int w = terrain->terrain_width;
 	int h = terrain->terrain_height;
 	auto start = std::chrono::high_resolution_clock::now();
+
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < w; ++i)
 	{
@@ -110,7 +144,7 @@ void Renderer::precalc()
 			
 		/*	Vector cam_dir = normalize( - precalcCam.getOrigin());
 			Ray r = Ray(precalcCam.getOrigin(), cam_dir);*/
-			terrain->precalc[i][j] = radiance(terrain->getPoint(i, j), precalcCam.getOrigin());
+			terrain->precalc[i][j] = radiance(terrain->getPoint(i, j), cam.getOrigin());
 		}
 	}
 	auto end = std::chrono::high_resolution_clock::now();
@@ -121,15 +155,17 @@ void Renderer::precalc()
 
 void Renderer::render()
 {
-	
 	QMutexLocker locker(&mutex);
 	if (!isRunning()) 
 	{
 		samplerPoisson.genAleatoire();
-		if (!calledPrecalc)
+		if (renderPrecalculed)
 		{
-			precalc();
-			calledPrecalc = true;
+			if (!calledPrecalc)
+			{
+				precalc();
+				calledPrecalc = true;
+			}
 		}
 		start(HighestPriority);
 	}
@@ -142,23 +178,22 @@ void Renderer::render()
 
 void Renderer::run()
 {
-
 	qDebug("start render ");
 	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
 
-	
-		while (!abort)
+	while (!abort)
+	{
+		if (changes)
 		{
-			if (changes)
-			{
-				auto start = std::chrono::high_resolution_clock::now();
-				int h = film.yResolution;
-				int w = film.xResolution;
-				QImage image(w, h, QImage::Format_RGB32);
-				ColorRGB c;
+			auto start = std::chrono::high_resolution_clock::now();
+			int h = film.yResolution;
+			int w = film.xResolution;
+			QImage image(w, h, QImage::Format_RGB32);
+			ColorRGB c;
 
 			mutex.lock();
 			Camera camera(cam);
+			bool p(renderPrecalculed);
 			mutex.unlock();
 
 			Point cam_pt(camera.getOrigin());
@@ -172,33 +207,44 @@ void Renderer::run()
 				{
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
-					c = radiancePrecalculed(r);
+					c = p ? radiancePrecalculed(r) : radiance(r);
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
 			}
 
-
 			emit renderedImage(image);
 			auto end = std::chrono::high_resolution_clock::now();
-			mesureFile << "render : " << std::chrono::duration<float, std::milli>(end - start).count() * 0.001 << " s" << std::endl;
+			float sec = std::chrono::duration<float, std::milli>(end - start).count() * 0.001;
+			mesureFile << "render : " << sec << " s" << std::endl;
+			lastRenderTime = sec;
+
 			mutex.lock();
-
-
-
-				
-				if (!restart)
-				{
-					changes = false;
-					condition.wait(&mutex);
-				}
+			if (!restart)
+			{
+				changes = false;
+				condition.wait(&mutex);
+			}
 			restart = false;
-
 			mutex.unlock();
-
 		}
 	}
 	mesureFile.close();
+}
+
+void Renderer::MoveSun(Vector dir)
+{
+	mutex.lock();
+	sunPoint.x += dir.x;
+	sunPoint.y += dir.y;
+	sunPoint.z += dir.z;
+	changes = true;
+	mutex.unlock();
+}
+
+Point Renderer::GetSunPoint()
+{
+	return sunPoint;
 }
 
 void Renderer::MoveCam(const int& x, const int& y, const int& z)
@@ -220,4 +266,137 @@ void Renderer::RotateCam(const Point& pt)
 	changes = true;
 
 	mutex.unlock();
+}
+
+bool Renderer::changeNbSamples(const int& nbToAdd)
+{
+	if (nbToAdd > 0 || (nbSamples + nbToAdd) >= 1)
+	{
+		mutex.lock();
+		nbSamples += nbToAdd;
+		changes = true;
+		mutex.unlock();
+		return true;
+	}
+	return false;
+}
+
+void Renderer::changeRenderMode()
+{
+	mutex.lock();
+	renderPrecalculed = !renderPrecalculed;
+	changes = true;
+	mutex.unlock();
+}
+
+void Renderer::UpdatePrecalc()
+{
+	mutex.lock();
+	precalc();
+	changes = true;
+	mutex.unlock();
+}
+
+bool Renderer::IsRenderPrecalc()
+{
+	return renderPrecalculed;
+}
+
+int Renderer::GetNbSamples()
+{
+	return nbSamples;
+}
+
+float Renderer::GetRenderTime()
+{
+	return lastRenderTime;
+}
+
+bool Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
+{
+	if (diffus)
+	{
+		if ((coefDiffus + coefToAdd) > 0.f && (coefDiffus + coefToAdd) < 1.f)
+		{
+			mutex.lock();
+			coefDiffus += coefToAdd;
+			changes = true;
+			mutex.unlock();
+			return true;
+		}
+	}
+	else
+	{
+		if ((coefSpec + coefToAdd) > 0.f && (coefSpec + coefToAdd) < 1.f)
+		{
+			mutex.lock();			
+			coefSpec += coefToAdd;
+			changes = true;
+			mutex.unlock();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Renderer::AddIntensity(const float& intensityToAdd)
+{
+	if ((sunIntensity + intensityToAdd) > 0.f 
+		&& (sunIntensity + intensityToAdd) < 1.f 
+		&& (globalIntensity - intensityToAdd) > 0.f 
+		&& (globalIntensity - intensityToAdd) < 1.f)
+	{
+		mutex.lock();
+		sunIntensity += intensityToAdd;
+		globalIntensity -= intensityToAdd;
+		changes = true;
+		mutex.unlock();
+		return true;
+	}
+
+	return false;
+}
+
+bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
+{
+	if (sun)
+	{
+		if ((sunInfluence + influenceToAdd) > 0)
+		{
+			mutex.lock();
+			sunInfluence += influenceToAdd;
+			changes = true;
+			mutex.unlock();
+			return true;
+		}
+	}
+	else
+	{
+		if ((specInfluence + influenceToAdd) >= 10 && (specInfluence + influenceToAdd) <= 40)
+		{
+			mutex.lock();
+			specInfluence += influenceToAdd;
+			changes = true;
+			mutex.unlock();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+float Renderer::GetIntensity(const bool& sun)
+{
+	return sun ? sunIntensity : globalIntensity;
+}
+
+float Renderer::GetCoeff(const bool& diffus)
+{
+	return diffus ? coefDiffus : coefSpec;
+}
+
+int Renderer::GetInfluence(const bool& sun)
+{
+	return sun ? sunInfluence : specInfluence;
 }

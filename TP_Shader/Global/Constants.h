@@ -13,7 +13,6 @@
 #ifndef INFINITY
 #define INFINITY FLT_MAX
 #endif
-
 const int nbRebondMax = 5;
 const int nbEchantillon = 15;
 const float r_delta = 10.f;
@@ -28,3 +27,18 @@ const Point noIntersectPoint(-10.0f);
 
 // Pas de déplacement de la caméra
 const int moveStep = 10;
+
+// Pas de déplacement du soleil
+const float sunMoveStep = 100.f;
+
+// Step coeff diffus / spéculaire
+const float coeffStep = 0.05f;
+
+// Step intensité soleil / global
+const float intensityStep = 0.05f;
+
+// Step influence soleil / spéculaire
+const int influenceStep = 1;
+
+// Step samples
+const int samplesStep = 1;

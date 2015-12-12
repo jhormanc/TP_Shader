@@ -23,17 +23,21 @@ private:
 	bool restart;
 	
 	float CameraX, CameraY, CameraZ;
-	bool calledPrecalc = false;
 	Camera cam;
 	Terrain * terrain;
 	Film film;
 	ColorRGB ambiant = ColorRGB{ 00.F, 00.f, 0.f };
 	SamplerPoisson samplerPoisson;
+	float lastRenderTime;
 
 public:
-	bool abort;
+	bool calledPrecalc = false;
+	bool changes; // Pour savoir quand il y a une modif (caméra, rendu, nb samples)
+	bool precalculed; // Rendu précalculé ou pas
+	bool abort; // Exit
 	Renderer(QObject *parent = 0);
 	void render();
+	ColorRGB radiance(Ray r);
 	ColorRGB radiance(Point p, Point o);
 	float V(Point collide, Point l);
 	float delta(Point collide, Point l, float r);
@@ -49,13 +53,34 @@ public:
 	// Rotate la caméra
 	void RotateCam(const Point& pt_screen);
 
+	bool changeNbSamples(const int& nbToAdd);
+	void changeRenderMode();
+	bool IsRenderPrecalc();
+	int GetNbSamples();
+	void UpdatePrecalc();
+	float GetRenderTime();
+	// diffus : diffus ou spéculaire
+	// coefToAdd : entre 0.f et 1.f
+	bool AddCoeff(const bool& diffus, const float& coefToAdd);
+	// intensityToAdd : 0.f < globalIntensity + sunIntensity < 1.f
+	bool AddIntensity(const float& intensityToAdd);
+	// sun : soleil ou spéculaire
+	// influenceToAdd : 10 < influenceSpec < 40
+	bool AddInfluence(const bool& sun, const int& influenceToAdd);
+
+	float GetIntensity(const bool& sun);
+	float GetCoeff(const bool& diffus);
+	int GetInfluence(const bool& sun);
+
+	Point GetSunPoint();
+	void MoveSun(Vector dir);
+
 	~Renderer();
 
 signals:
 	void renderedImage(const QImage &image);
 
 protected:
-	bool changes;
 	void run();
 
 };
