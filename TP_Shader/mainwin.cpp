@@ -34,8 +34,8 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 
 	painter.drawPixmap(QPoint(), pixmap);
 
-	QString text = tr("Use ZQSD or the '+' and '-' keys move camera"
-		"Left mouse click to rotate camera");
+	QString text = tr("Use ZQSD or the '+' and '-' keys move camera. "
+		"Left mouse click to rotate camera.");
 	QFontMetrics metrics = painter.fontMetrics();
 	int textWidth = metrics.width(text);
 
@@ -56,22 +56,22 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 	switch (event->key()) 
 	{
 	case Qt::Key_Z:
-		move(0, 100, 0);
+		move(0, moveStep, 0);
 		break;
 	case Qt::Key_S:
-		move(0, -100, 0);
+		move(0, -moveStep, 0);
 		break;
 	case Qt::Key_Q:
-		move(-100, 0, 0);
+		move(-moveStep, 0, 0);
 		break;
 	case Qt::Key_D:
-		move(100, 0, 0);
+		move(moveStep, 0, 0);
 		break;
 	case Qt::Key_Plus:
-		move(0, 0, 100);
+		move(0, 0, moveStep);
 		break;
 	case Qt::Key_Minus:
-		move(0, 0, -100);
+		move(0, 0, -moveStep);
 		break;
 	default:
 		QWidget::keyPressEvent(event);
@@ -101,7 +101,7 @@ void MainWin::mouseMoveEvent(QMouseEvent *event)
 
 void MainWin::mouseReleaseEvent(QMouseEvent *event)
 {
-
+	//rotate(event->pos());
 }
 
 void MainWin::updatePixmap(const QImage &image)
