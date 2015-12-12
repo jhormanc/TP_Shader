@@ -128,10 +128,10 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 			move(0, 0, -moveStep);
 			break;
 		case Qt::Key_Plus:
-			changeNbSamples(1);
+			changeNbSamples(samplesStep);
 			break;
 		case Qt::Key_Minus:
-			changeNbSamples(-1);
+			changeNbSamples(-samplesStep);
 			break;
 		case Qt::Key_Space:
 			changeRenderMode();
