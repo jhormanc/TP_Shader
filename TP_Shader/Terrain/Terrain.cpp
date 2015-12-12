@@ -202,39 +202,23 @@ ColorRGB Terrain::getColor ( const Point & p ) {
 	float rng2 = 40.0f + rand ( ) * 10;
 	float rng3 = .0f + rand ( ) * 10;
 */
+
 	float steps = low + (max * (20 / 100.));
 	
 	if ( z >= low + ( max * ( 80 / 100. ) ) ) {
-		if ( slope <= .8f )
 			color = neige;
-		else
-			color = ColorFade(roche_claire, neige, z - 4. * steps, steps);
 	}		
 	else if ( z >= low + ( max * ( 60 / 100. ) ) ) {
 		if (slope <= .1f)
 			color = neige;
-		else if (slope <= .3f)
-			color = roche_claire;
-		else
-			color = ColorFade(roche, neige, z - 3. * steps, steps);
+		else 	
+			color = ColorFadeHight(roche, neige,roche_claire, z - 3. * steps, steps, slope);
 	}	
 	else if ( z >= low + ( max * ( 40 / 100. ) ) ) {
-		if ( slope <= .25f )
-			color = ColorFade(terre, roche, z - 2. * steps, steps);
-		else
-			color = terre_claire;
-	}
-	else if (z >= low + (max * (20 / 100.))) {
-		if ( slope <= .15f )
-			color = ColorFade(herbe, terre, z - steps, steps);
-		else
-			color = terre;
-	}		
+		color = ColorFadeHight(terre, roche, roche_claire, z - 2. * steps, steps, slope);
+	}	
 	else if ( z >= 0.f ) {
-		if (slope <= .85f)
-			color = ColorFade(herbe, terre, z, steps);
-		else
-			color = ColorFade(terre, roche, z, steps);;
+		color = ColorFadeHight(herbe, terre, terre_claire, z-steps, steps, slope);
 	}		
 	else {
 		color = bleue;
@@ -243,10 +227,18 @@ ColorRGB Terrain::getColor ( const Point & p ) {
 	return color;
 }
 
-ColorRGB Terrain::ColorFade(ColorRGB c1, ColorRGB c2, double z ,double nb_step){
+/*
+*c1 and c2 are the color to do the fading
+*c3 is for the part where the slope is to hight.
+*/
+ColorRGB Terrain::ColorFadeHight(ColorRGB c1, ColorRGB c2,ColorRGB c3, double z ,double nb_step,double slope){
 	ColorRGB colorDiff = c2 - c1;
-	return c1 + ((colorDiff * z) / nb_step);
+	ColorRGB c = c1 + ((colorDiff * z) / nb_step);
+	c = c + c3 *slope;
+	
+	return c;
 }
+
 
 
 Terrain::~Terrain()

@@ -37,7 +37,7 @@ public:
 	 ColorRGB getColor(const Point & p);
 
 	 ColorRGB getColorPrecalculed(const Point & p);
-	 ColorRGB ColorFade(ColorRGB,ColorRGB,double,double);
+	 ColorRGB ColorFadeHight(ColorRGB,ColorRGB,ColorRGB,double,double,double);
 
 	// Renvoi la normal du terrain au point p
 	virtual Normals getNormal(Point p) const = 0;
