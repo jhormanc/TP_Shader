@@ -56,7 +56,7 @@ signals:
 
 protected:
 	bool changes;
-	void run() Q_DECL_OVERRIDE;
+	void run();
 
 };
 

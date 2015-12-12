@@ -176,7 +176,7 @@ ColorRGB Terrain::getColorPrecalculed(const Point & p) {
 	return precalc[(int)p.x][(int)p.y];
 }
 ColorRGB Terrain::getColor ( const Point & p ) {
-	return ColorRGB{ 255.f, 255.f, 255.f };
+//	return ColorRGB{ 255.f, 255.f, 255.f };
 	ColorRGB roche = { 100.f, 100.f, 100.f };
 	ColorRGB roche_claire = { 200.f, 200.f, 200.f };
 	ColorRGB terre = { 95.f, 62.f, 5.f };
