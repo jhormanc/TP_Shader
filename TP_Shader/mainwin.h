@@ -31,6 +31,7 @@ private:
 	Renderer thread;
 	QPixmap pixmap;
 	bool rendering;
+	bool refresh;
 
 	void rotate(const QPoint& pt);
 	void move(const int& x = 0, const int& y = 0, const int& z = 0);

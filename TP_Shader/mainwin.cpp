@@ -14,6 +14,7 @@ MainWin::MainWin(QWidget *parent)
 	connect(&thread, SIGNAL(renderedImage(QImage)), this, SLOT(updatePixmap(QImage)));
 
 	rendering = false;
+	refresh = false;
 
 	setWindowTitle(tr("Shader"));
 #ifndef QT_NO_CURSOR
@@ -40,7 +41,7 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 	int textWidth, textWidth2, textWidth3, textWidth4, textWidth5, textWidth6, textWidth7;
 	QFontMetrics metrics = painter.fontMetrics();
 
-	if (rendering == false)
+	if (!rendering || refresh)
 	{
 		text = QString("ZQSD and AE keys to move camera. "
 			"Left mouse click to rotate camera.");
@@ -83,7 +84,7 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 	painter.setPen(Qt::white);
 	painter.drawText((width() - textWidth) / 2, metrics.leading() + metrics.ascent(), text);
 
-	if (rendering == false)
+	if (!rendering || refresh)
 	{
 		painter.drawText((width() - textWidth2) / 2, metrics.leading() + metrics.ascent() + 15, text2);
 		painter.drawText((width() - textWidth3) / 2, metrics.leading() + metrics.ascent() + 30, text3);
@@ -223,6 +224,7 @@ void MainWin::changeNbSamples(const int& nbToAdd)
 	if (thread.changeNbSamples(nbToAdd) && !thread.IsRenderPrecalc())
 	{
 		rendering = true;
+		refresh = true;
 		update();
 		thread.render();
 	}
@@ -234,6 +236,7 @@ void MainWin::changeRenderMode()
 {
 	thread.changeRenderMode(); 
 	rendering = true;
+	refresh = false;
 	update();
 	if (thread.IsRenderPrecalc() && !thread.calledPrecalc)
 	{
@@ -249,7 +252,8 @@ void MainWin::updatePrecalc()
 {
 	if (thread.IsRenderPrecalc())
 	{
-		rendering = true;		
+		rendering = true;
+		refresh = false;
 		update();
 		repaint();
 		thread.UpdatePrecalc();
@@ -259,23 +263,36 @@ void MainWin::updatePrecalc()
 
 void MainWin::addCoeff(const bool& diffus, const float& coefToAdd)
 {
-	thread.AddCoeff(diffus, coefToAdd);
-	update();
-	thread.render();
+	if (thread.AddCoeff(diffus, coefToAdd))
+	{
+		rendering = true;
+		refresh = true;
+		update();
+		thread.render();
+	}
+
 }
 
 void MainWin::addIntensity(const float& intensityToAdd)
 {
-	thread.AddIntensity(intensityToAdd);
-	update();
-	thread.render();
+	if (thread.AddIntensity(intensityToAdd))
+	{
+		rendering = true;
+		refresh = true;
+		update();
+		thread.render();
+	}
 }
 
 void MainWin::addInfluence(const bool& sun, const int& influenceToAdd)
 {
-	thread.AddInfluence(sun, influenceToAdd);
-	update();
-	thread.render();
+	if (thread.AddInfluence(sun, influenceToAdd))
+	{
+		rendering = true;
+		refresh = true;
+		update();
+		thread.render();
+	}
 }
 
 void MainWin::closeEvent(QCloseEvent *event)

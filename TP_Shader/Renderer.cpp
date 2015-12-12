@@ -49,7 +49,7 @@ ColorRGB Renderer::radiance(Ray r)
 		{
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
 			float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
-			float li = 0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
+			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 			accli += li;
 			acc = acc + shade(p, terrain->getNormal(p), r.o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
 		}
@@ -69,7 +69,7 @@ ColorRGB Renderer::radiance(Point p, Point o)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
 		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
-		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence); //0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
+		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
 		acc = acc + shade(p, terrain->getNormal(p), o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
 	}
@@ -298,52 +298,63 @@ float Renderer::GetRenderTime()
 	return lastRenderTime;
 }
 
-void Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
+bool Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
 {
 	if (diffus)
 	{
-		if ((coefDiffus + coefToAdd) >= 0.f && (coefDiffus + coefToAdd) <= 1.f)
+		if ((coefDiffus + coefToAdd) > 0.f && (coefDiffus + coefToAdd) < 1.f)
 		{
 			mutex.lock();
 			coefDiffus += coefToAdd;
 			changes = true;
 			mutex.unlock();
+			return true;
 		}
 	}
 	else
 	{
-		if ((coefSpec + coefToAdd) >= 0.f && (coefSpec + coefToAdd) <= 1.f)
+		if ((coefSpec + coefToAdd) > 0.f && (coefSpec + coefToAdd) < 1.f)
 		{
 			mutex.lock();			
 			coefSpec += coefToAdd;
 			changes = true;
 			mutex.unlock();
+			return true;
 		}
 	}
+
+	return false;
 }
 
-void Renderer::AddIntensity(const float& intensityToAdd)
+bool Renderer::AddIntensity(const float& intensityToAdd)
 {
-	if ((sunIntensity + intensityToAdd) >= 0.f && (sunIntensity + intensityToAdd) <= 1.f)
+	if ((sunIntensity + intensityToAdd) > 0.f 
+		&& (sunIntensity + intensityToAdd) < 1.f 
+		&& (globalIntensity - intensityToAdd) > 0.f 
+		&& (globalIntensity - intensityToAdd) < 1.f)
 	{
 		mutex.lock();
 		sunIntensity += intensityToAdd;
 		globalIntensity -= intensityToAdd;
 		changes = true;
 		mutex.unlock();
+		return true;
 	}
+
+	return false;
 }
 
-void Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
+bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
 {
 	if (sun)
 	{
-		if ((sunInfluence + influenceToAdd) > 0.f)
+		if ((sunInfluence + influenceToAdd) > 0)
 		{
 			mutex.lock();
 			sunInfluence += influenceToAdd;
 			changes = true;
 			mutex.unlock();
+			return true;
 		}
 	}
 	else
@@ -354,8 +365,11 @@ void Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
 			specInfluence += influenceToAdd;
 			changes = true;
 			mutex.unlock();
+			return true;
 		}
 	}
+
+	return false;
 }
 
 float Renderer::GetIntensity(const bool& sun)

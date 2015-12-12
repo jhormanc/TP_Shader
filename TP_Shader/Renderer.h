@@ -61,12 +61,12 @@ public:
 	float GetRenderTime();
 	// diffus : diffus ou spéculaire
 	// coefToAdd : entre 0.f et 1.f
-	void AddCoeff(const bool& diffus, const float& coefToAdd);
+	bool AddCoeff(const bool& diffus, const float& coefToAdd);
 	// intensityToAdd : 0.f < globalIntensity + sunIntensity < 1.f
-	void AddIntensity(const float& intensityToAdd);
+	bool AddIntensity(const float& intensityToAdd);
 	// sun : soleil ou spéculaire
 	// influenceToAdd : 10 < influenceSpec < 40
-	void AddInfluence(const bool& sun, const int& influenceToAdd);
+	bool AddInfluence(const bool& sun, const int& influenceToAdd);
 
 	float GetIntensity(const bool& sun);
 	float GetCoeff(const bool& diffus);
