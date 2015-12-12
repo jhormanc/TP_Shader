@@ -8,6 +8,7 @@
 #include <QThread>
 #include <QWaitCondition>
 #include <QImage>
+#include <chrono>
 #include "Terrain\Terrain.h"
 #include "Terrain\TerrainFractal.h"
 #include "Film.h"

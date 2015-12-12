@@ -28,6 +28,7 @@ ColorRGB Renderer::radiance(Point p, Point o)
 	ColorRGB acc = ColorRGB{ 0, 0, 0 };
 	float accli = 0.f;
 	Point sunshine(2500, 2500, 1000); // midi
+#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbEchantillon; ++i)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
@@ -92,19 +93,29 @@ float Renderer::V(Point collide, Point l)
 
 void Renderer::precalc()
 {
+
+	qDebug("start preprocessing ");
+	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
 	Camera precalcCam(Point(2500., 2500., 1000.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.));
 	//BBox sceneSize = terrain->getBound();
 	int w = terrain->terrain_width;
 	int h = terrain->terrain_height;
+	auto start = std::chrono::high_resolution_clock::now();
+#pragma omp parallel for schedule(static)
 	for (int i = 0; i < w; ++i)
 	{
 		for (int j = 0; j < h; ++j)
 		{
+			
 		/*	Vector cam_dir = normalize( - precalcCam.getOrigin());
 			Ray r = Ray(precalcCam.getOrigin(), cam_dir);*/
 			terrain->precalc[i][j] = radiance(terrain->getPoint(i, j), precalcCam.getOrigin());
 		}
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	mesureFile << "preprocess : " << std::chrono::duration<float, std::milli>(end - start).count() * 0.001 << " s" << std::endl;
+	
+	mesureFile.close();
 }
 
 void Renderer::render()
@@ -130,11 +141,16 @@ void Renderer::render()
 
 void Renderer::run()
 {
+
+	qDebug("start render ");
+	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
+
+	
 		while (!abort)
 		{
 			if (changes)
 			{
-				
+				auto start = std::chrono::high_resolution_clock::now();
 				int h = film.yResolution;
 				int w = film.xResolution;
 				QImage image(w, h, QImage::Format_RGB32);
@@ -148,13 +164,16 @@ void Renderer::run()
 				Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
 
 				#pragma omp parallel for schedule(static)
-				for (int y = 0; y < h; y++)
+				for (int x = 0; x < w; x++)
 				{
 					//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
-					for (int x = 0; x < w; x++)
+					
+					for (int y = 0; y < h; y++)
 					{
+						
 						Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 						Ray r = Ray(cam_pt, cam_dir);
+
 						c = radiancePrecalculed(r);
 						image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 						//film.colors[x][y] = c;
@@ -162,9 +181,12 @@ void Renderer::run()
 				}
 
 				//film.writePpm();
-
+				
+				
 				if (!restart)
+				{
 					emit renderedImage(image);
+				}
 
 				mutex.lock();
 
@@ -176,8 +198,17 @@ void Renderer::run()
 				restart = false;
 
 				mutex.unlock();
+			
+
+
+
+
+				auto end = std::chrono::high_resolution_clock::now();
+				mesureFile << "render : " << std::chrono::duration<float, std::milli>(end - start).count() * 0.001 << " s" << std::endl;
+				
 			}
 		}
+		mesureFile.close();
 }
 
 void Renderer::MoveCam(const int& x, const int& y, const int& z)
