@@ -47,6 +47,7 @@ private:
 	// influenceToAdd : 10 < influenceSpec < 40
 	void addInfluence(const bool& sun, const int& influenceToAdd);
 	void closeEvent(QCloseEvent *event);
+	void moveSun(const float& x, const float& y, const float& z);
 };
 
 #endif // MAINWIN_H

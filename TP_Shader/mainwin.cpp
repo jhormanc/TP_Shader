@@ -48,9 +48,12 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		text2 = QString("Space to change rendering mode. "
 			"N to precalculate. "
 			"+ / - to change samples.");
-		text3 = QString("Mode = %1 - Samples = %2").arg(
+		text3 = QString("Mode = %1 - Samples = %2 - Sun = [%3 %4 %5]").arg(
 			QString(thread.IsRenderPrecalc() ? "Precalculated" : "Real-time"),
-			QString::number(thread.GetNbSamples()));
+			QString::number(thread.GetNbSamples()),
+			QString::number(thread.GetSunPoint().x),
+			QString::number(thread.GetSunPoint().y), 
+			QString::number(thread.GetSunPoint().z));
 		text4 = QString("Intensity : Sun = %1, Global = %2").arg(
 			QString::number(thread.GetIntensity(true)),
 			QString::number(thread.GetIntensity(false)));
@@ -137,34 +140,46 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 			updatePrecalc();
 			break;		
 		case Qt::Key_P:
-			addCoeff(true, 0.05f);
+			addCoeff(true, coeffStep);
 			break;
 		case Qt::Key_M:
-			addCoeff(true, -0.05f);
+			addCoeff(true, -coeffStep);
 			break;
 		case Qt::Key_O:
-			addCoeff(false, 0.05f);
+			addCoeff(false, coeffStep);
 			break;
 		case Qt::Key_L:
-			addCoeff(false, -0.05f);
+			addCoeff(false, -coeffStep);
 			break;
 		case Qt::Key_I:
-			addIntensity(0.05f);
+			addIntensity(intensityStep);
 			break;
 		case Qt::Key_K:
-			addIntensity(-0.05f);
+			addIntensity(-intensityStep);
 			break;
 		case Qt::Key_U:
-			addInfluence(true, 1);
+			addInfluence(true, influenceStep);
 			break;
 		case Qt::Key_J:
-			addInfluence(true, -1);
+			addInfluence(true, -influenceStep);
 			break;
 		case Qt::Key_Y:
-			addInfluence(false, 1);
+			addInfluence(false, influenceStep);
 			break;
 		case Qt::Key_H:
-			addInfluence(false, -1);
+			addInfluence(false, -influenceStep);
+			break;
+		case Qt::Key_Up:
+			moveSun(0.f, sunMoveStep, 0.f);
+			break;
+		case Qt::Key_Down:
+			moveSun(0.f, -sunMoveStep, 0.f);
+			break;
+		case Qt::Key_Left:
+			moveSun(-sunMoveStep, 0.f, 0.f);
+			break;
+		case Qt::Key_Right:
+			moveSun(sunMoveStep, 0.f, 0.f);
 			break;
 		default:
 			QWidget::keyPressEvent(event);
@@ -270,7 +285,6 @@ void MainWin::addCoeff(const bool& diffus, const float& coefToAdd)
 		update();
 		thread.render();
 	}
-
 }
 
 void MainWin::addIntensity(const float& intensityToAdd)
@@ -295,9 +309,19 @@ void MainWin::addInfluence(const bool& sun, const int& influenceToAdd)
 	}
 }
 
+void MainWin::moveSun(const float& x, const float& y, const float& z)
+{
+	rendering = true;
+	refresh = true;
+	thread.MoveSun(Vector(x, y, z));
+	update();
+	thread.render();
+}
+
 void MainWin::closeEvent(QCloseEvent *event)
 {
 	thread.abort = true;
 	thread.exit();
 	event->accept();
 }
+

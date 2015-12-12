@@ -1,13 +1,14 @@
 #include "Renderer.h"
 
-static bool renderPrecalculed = false;
-static int nbSamples = 1;
-static float coefDiffus = 1.f;
-static float coefSpec = 1.f;
-static int specInfluence = 40;
-static int sunInfluence = 4;
-static float sunIntensity = 0.8f;
-static float globalIntensity = 0.2f;
+static bool renderPrecalculed(false);
+static int nbSamples(1);
+static float coefDiffus(1.f);
+static float coefSpec(1.f);
+static int specInfluence(40);
+static int sunInfluence(4);
+static float sunIntensity(0.8f);
+static float globalIntensity(0.2f);
+static Point sunPoint(2500.f, 2500.f, 1000.f);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
@@ -37,7 +38,6 @@ ColorRGB Renderer::radiance(Ray r)
 {
 	ColorRGB acc = ColorRGB{ 0, 0, 0 };
 	float accli = 0.f;
-	Point sunshine(2500.f, 2500.f, 1000.f); // midi
 
 	float t;
 	if (terrain->intersect(r, &t))
@@ -48,7 +48,7 @@ ColorRGB Renderer::radiance(Ray r)
 		for (int i = 0; i < nbSamples; ++i)
 		{
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
-			float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
+			float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 			accli += li;
 			acc = acc + shade(p, terrain->getNormal(p), r.o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
@@ -62,13 +62,12 @@ ColorRGB Renderer::radiance(Point p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0, 0, 0 };
 	float accli = 0.f;
-	Point sunshine(2500.f, 2500.f, 1000.f); // midi
 
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbSamples; ++i)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
-		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
+		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
 		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
 		acc = acc + shade(p, terrain->getNormal(p), o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
@@ -131,7 +130,7 @@ void Renderer::precalc()
 {
 	qDebug("start preprocessing ");
 	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
-	Camera precalcCam(Point(2500., 2500., 1000.), Point(2500., 2500., 0.), 1., Vector(0., 0., -1.));
+
 	//BBox sceneSize = terrain->getBound();
 	int w = terrain->terrain_width;
 	int h = terrain->terrain_height;
@@ -145,7 +144,7 @@ void Renderer::precalc()
 			
 		/*	Vector cam_dir = normalize( - precalcCam.getOrigin());
 			Ray r = Ray(precalcCam.getOrigin(), cam_dir);*/
-			terrain->precalc[i][j] = radiance(terrain->getPoint(i, j), precalcCam.getOrigin());
+			terrain->precalc[i][j] = radiance(terrain->getPoint(i, j), cam.getOrigin());
 		}
 	}
 	auto end = std::chrono::high_resolution_clock::now();
@@ -231,6 +230,21 @@ void Renderer::run()
 		}
 	}
 	mesureFile.close();
+}
+
+void Renderer::MoveSun(Vector dir)
+{
+	mutex.lock();
+	sunPoint.x += dir.x;
+	sunPoint.y += dir.y;
+	sunPoint.z += dir.z;
+	changes = true;
+	mutex.unlock();
+}
+
+Point Renderer::GetSunPoint()
+{
+	return sunPoint;
 }
 
 void Renderer::MoveCam(const int& x, const int& y, const int& z)

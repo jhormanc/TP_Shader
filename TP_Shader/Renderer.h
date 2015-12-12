@@ -72,6 +72,9 @@ public:
 	float GetCoeff(const bool& diffus);
 	int GetInfluence(const bool& sun);
 
+	Point GetSunPoint();
+	void MoveSun(Vector dir);
+
 	~Renderer();
 
 signals:
