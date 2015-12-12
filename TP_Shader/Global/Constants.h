@@ -25,3 +25,6 @@ const Vector noIntersectVec (-10.0f);
 
 // Point d'intersection null
 const Point noIntersectPoint(-10.0f);
+
+// Pas de déplacement de la caméra
+const int moveStep = 10;

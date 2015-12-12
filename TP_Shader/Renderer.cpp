@@ -28,7 +28,8 @@ ColorRGB Renderer::radiance(Point p, Point o)
 	ColorRGB acc = ColorRGB{ 0, 0, 0 };
 	float accli = 0.f;
 	Point sunshine(2500, 2500, 1000); // midi
-#pragma omp parallel for schedule(static)
+
+	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbEchantillon; ++i)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
@@ -101,7 +102,7 @@ void Renderer::precalc()
 	int w = terrain->terrain_width;
 	int h = terrain->terrain_height;
 	auto start = std::chrono::high_resolution_clock::now();
-#pragma omp parallel for schedule(static)
+	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < w; ++i)
 	{
 		for (int j = 0; j < h; ++j)
@@ -156,59 +157,48 @@ void Renderer::run()
 				QImage image(w, h, QImage::Format_RGB32);
 				ColorRGB c;
 
-				mutex.lock();
-				Camera camera(cam);
-				mutex.unlock();
+			mutex.lock();
+			Camera camera(cam);
+			mutex.unlock();
 
-				Point cam_pt(camera.getOrigin());
-				Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
+			Point cam_pt(camera.getOrigin());
+			Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
 
-				#pragma omp parallel for schedule(static)
-				for (int x = 0; x < w; x++)
+			#pragma omp parallel for schedule(static)
+			for (int x = 0; x < w; x++)
+			{
+				//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
+				for (int y = 0; y < h; y++)
 				{
-					//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
-					
-					for (int y = 0; y < h; y++)
-					{
-						
-						Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
-						Ray r = Ray(cam_pt, cam_dir);
-
-						c = radiancePrecalculed(r);
-						image.setPixel(x, y, qRgb(c.x, c.y, c.z));
-						//film.colors[x][y] = c;
-					}
+					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
+					Ray r = Ray(cam_pt, cam_dir);
+					c = radiancePrecalculed(r);
+					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
+					//film.colors[x][y] = c;
 				}
+			}
 
-				//film.writePpm();
+
+			emit renderedImage(image);
+			auto end = std::chrono::high_resolution_clock::now();
+			mesureFile << "render : " << std::chrono::duration<float, std::milli>(end - start).count() * 0.001 << " s" << std::endl;
+			mutex.lock();
+
+
+
 				
-				
-				if (!restart)
-				{
-					emit renderedImage(image);
-				}
-
-				mutex.lock();
-
 				if (!restart)
 				{
 					changes = false;
 					condition.wait(&mutex);
 				}
-				restart = false;
+			restart = false;
 
-				mutex.unlock();
-			
+			mutex.unlock();
 
-
-
-
-				auto end = std::chrono::high_resolution_clock::now();
-				mesureFile << "render : " << std::chrono::duration<float, std::milli>(end - start).count() * 0.001 << " s" << std::endl;
-				
-			}
 		}
-		mesureFile.close();
+	}
+	mesureFile.close();
 }
 
 void Renderer::MoveCam(const int& x, const int& y, const int& z)

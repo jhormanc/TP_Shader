@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QObject>
 #include "Renderer.h"
+#include "Global\Constants.h"
 
 class MainWin : public QWidget
 {
