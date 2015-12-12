@@ -28,6 +28,7 @@ private:
 	Film film;
 	ColorRGB ambiant = ColorRGB{ 00.F, 00.f, 0.f };
 	SamplerPoisson samplerPoisson;
+	float lastRenderTime;
 
 public:
 	bool calledPrecalc = false;
@@ -57,6 +58,20 @@ public:
 	bool IsRenderPrecalc();
 	int GetNbSamples();
 	void UpdatePrecalc();
+	float GetRenderTime();
+	// diffus : diffus ou spéculaire
+	// coefToAdd : entre 0.f et 1.f
+	void AddCoeff(const bool& diffus, const float& coefToAdd);
+	// intensityToAdd : 0.f < globalIntensity + sunIntensity < 1.f
+	void AddIntensity(const float& intensityToAdd);
+	// sun : soleil ou spéculaire
+	// influenceToAdd : 10 < influenceSpec < 40
+	void AddInfluence(const bool& sun, const int& influenceToAdd);
+
+	float GetIntensity(const bool& sun);
+	float GetCoeff(const bool& diffus);
+	int GetInfluence(const bool& sun);
+
 	~Renderer();
 
 signals:

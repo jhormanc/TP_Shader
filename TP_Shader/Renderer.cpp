@@ -2,6 +2,12 @@
 
 static bool renderPrecalculed = false;
 static int nbSamples = 1;
+static float coefDiffus = 1.f;
+static float coefSpec = 1.f;
+static int specInfluence = 40;
+static int sunInfluence = 4;
+static float sunIntensity = 0.8f;
+static float globalIntensity = 0.2f;
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
@@ -12,6 +18,7 @@ film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(B
 	restart = false;
 	abort = false;
 	changes = true;
+	lastRenderTime = 0.f;
 }
 
 Renderer::~Renderer()
@@ -62,7 +69,7 @@ ColorRGB Renderer::radiance(Point p, Point o)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
 		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunshine - Point(0))));
-		float li = 0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
+		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence); //0.2f + 0.8f * cosLiS * cosLiS * cosLiS * cosLiS;
 		accli += li;
 		acc = acc + shade(p, terrain->getNormal(p), o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
 	}
@@ -84,8 +91,8 @@ ColorRGB Renderer::radiancePrecalculed(Ray r)
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
 	return ambiant + color * clamp(
-		(dot(normalize(l - p), n) // diffus  
-		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), 40)) // speculaire
+		(dot(normalize(l - p), n) * coefDiffus // diffus  
+		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
 		, 0.f, 1.f);
 }
 
@@ -207,22 +214,20 @@ void Renderer::run()
 				}
 			}
 
-
-
 			emit renderedImage(image);
 			auto end = std::chrono::high_resolution_clock::now();
-			mesureFile << "render : " << std::chrono::duration<float, std::milli>(end - start).count() * 0.001 << " s" << std::endl;
-			mutex.lock();
+			float sec = std::chrono::duration<float, std::milli>(end - start).count() * 0.001;
+			mesureFile << "render : " << sec << " s" << std::endl;
+			lastRenderTime = sec;
 
+			mutex.lock();
 			if (!restart)
 			{
 				changes = false;
 				condition.wait(&mutex);
 			}
 			restart = false;
-
 			mutex.unlock();
-
 		}
 	}
 	mesureFile.close();
@@ -282,7 +287,88 @@ bool Renderer::IsRenderPrecalc()
 {
 	return renderPrecalculed;
 }
+
 int Renderer::GetNbSamples()
 {
 	return nbSamples;
+}
+
+float Renderer::GetRenderTime()
+{
+	return lastRenderTime;
+}
+
+void Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
+{
+	if (diffus)
+	{
+		if ((coefDiffus + coefToAdd) >= 0.f && (coefDiffus + coefToAdd) <= 1.f)
+		{
+			mutex.lock();
+			coefDiffus += coefToAdd;
+			changes = true;
+			mutex.unlock();
+		}
+	}
+	else
+	{
+		if ((coefSpec + coefToAdd) >= 0.f && (coefSpec + coefToAdd) <= 1.f)
+		{
+			mutex.lock();			
+			coefSpec += coefToAdd;
+			changes = true;
+			mutex.unlock();
+		}
+	}
+}
+
+void Renderer::AddIntensity(const float& intensityToAdd)
+{
+	if ((sunIntensity + intensityToAdd) >= 0.f && (sunIntensity + intensityToAdd) <= 1.f)
+	{
+		mutex.lock();
+		sunIntensity += intensityToAdd;
+		globalIntensity -= intensityToAdd;
+		changes = true;
+		mutex.unlock();
+	}
+}
+
+void Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
+{
+	if (sun)
+	{
+		if ((sunInfluence + influenceToAdd) > 0.f)
+		{
+			mutex.lock();
+			sunInfluence += influenceToAdd;
+			changes = true;
+			mutex.unlock();
+		}
+	}
+	else
+	{
+		if ((specInfluence + influenceToAdd) >= 10 && (specInfluence + influenceToAdd) <= 40)
+		{
+			mutex.lock();
+			specInfluence += influenceToAdd;
+			changes = true;
+			mutex.unlock();
+		}
+	}
+}
+
+float Renderer::GetIntensity(const bool& sun)
+{
+	return sun ? sunIntensity : globalIntensity;
+}
+
+float Renderer::GetCoeff(const bool& diffus)
+{
+	return diffus ? coefDiffus : coefSpec;
+}
+
+int Renderer::GetInfluence(const bool& sun)
+{
+	return sun ? sunInfluence : specInfluence;
 }

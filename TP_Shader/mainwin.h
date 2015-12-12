@@ -37,6 +37,14 @@ private:
 	void changeNbSamples(const int& nbToAdd);
 	void changeRenderMode();
 	void updatePrecalc();
+	// diffus : diffus ou spéculaire
+	// coefToAdd : entre 0.f et 1.f
+	void addCoeff(const bool& diffus, const float& coefToAdd);
+	// intensityToAdd : 0.f < globalIntensity + sunIntensity < 1.f
+	void addIntensity(const float& intensityToAdd);
+	// sun : soleil ou spéculaire
+	// influenceToAdd : 10 < influenceSpec < 40
+	void addInfluence(const bool& sun, const int& influenceToAdd);
 	void closeEvent(QCloseEvent *event);
 };
 
