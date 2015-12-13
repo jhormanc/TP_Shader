@@ -219,10 +219,10 @@ ColorRGB Terrain::getColor(const Point & p)
 			if (slope <= .1f)
 				color = neige;
 			else
-				color = ColorFadeHight(roche, neige, roche_claire, z - 3. * steps, steps, slope);
+				color =  ColorFadeHight(roche, neige, roche_claire, z - 3. * steps, steps, slope);
 		}
 		else if (z >= low + (max * (40 / 100.))) {
-			color = ColorFadeHight(terre, roche, roche_claire, z - 2. * steps, steps, slope);
+			color =  ColorFadeHight(terre, roche, roche_claire, z - 2. * steps, steps, slope);
 		}
 		else if (z >= 0.f) {
 			color = ColorFadeHight(herbe, terre, terre_claire, z - steps, steps, slope);

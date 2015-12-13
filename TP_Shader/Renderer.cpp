@@ -201,7 +201,6 @@ void Renderer::run()
 			int h = film.yResolution;
 			int w = film.xResolution;
 			QImage image(w, h, QImage::Format_RGB32);
-			ColorRGB c;
 
 			mutex.lock();
 			Camera camera(cam);
@@ -219,7 +218,7 @@ void Renderer::run()
 				{
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
-					c = p ? radiancePrecalculed(r) : radiance(r);
+					ColorRGB c = p ? radiancePrecalculed(r) : radiance(r);
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
