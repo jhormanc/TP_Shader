@@ -36,7 +36,7 @@ Renderer::~Renderer()
 
 ColorRGB Renderer::radiance(Ray r)
 {
-	ColorRGB acc = ColorRGB{ 0, 0, 0 };
+	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 	float accli = 0.f;
 
 	float t;
@@ -44,7 +44,7 @@ ColorRGB Renderer::radiance(Ray r)
 	{
 		Point p(r.o + r.d * t);
 
-		//#pragma omp parallel for schedule(static)
+		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
@@ -55,12 +55,12 @@ ColorRGB Renderer::radiance(Ray r)
 		}
 		return acc * (1.0f / accli);
 	}
-	return ColorRGB{ 0.f, 0.f, 0.f };
+	return sky;
 }
 
 ColorRGB Renderer::radiance(Point p, Point o)
 {
-	ColorRGB acc = ColorRGB{ 0, 0, 0 };
+	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 	float accli = 0.f;
 
 	#pragma omp parallel for schedule(static)
@@ -85,7 +85,7 @@ ColorRGB Renderer::radiancePrecalculed(Ray r)
 		ColorRGB res = terrain->getColorPrecalculed(p);
 		return res;
 	}
-	return ColorRGB{ 0.f, 0.f, 0.f };
+	return sky;
 }
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
