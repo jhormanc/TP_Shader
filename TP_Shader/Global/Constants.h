@@ -29,19 +29,19 @@ const Point noIntersectPoint(-10.0f);
 const int moveStep = 10;
 
 // Pas de déplacement du soleil
-const float sunMoveStep = 100.f;
+const float sunMoveStep = 500.f;
 
 // Step coeff diffus / spéculaire
-const float coeffStep = 0.05f;
+const float coeffStep = 0.1f;
 
 // Step intensité soleil / global
-const float intensityStep = 0.05f;
+const float intensityStep = 0.1f;
 
 // Step influence soleil / spéculaire
-const int influenceStep = 1;
+const int influenceStep = 2;
 
 // Step nombre d'échantillons
-const int samplesStep = 1;
+const int samplesStep = 10;
 
 // Step delta r
 const float stepDeltaR = 5.f;
