@@ -11,6 +11,7 @@ float  Renderer::globalIntensity(0.2f);
 Point  Renderer::sunPoint(2500.f, 2500.f, 1000.f);
 float  Renderer::rDelta(r_delta);
 bool  Renderer::renderGrey(false);
+bool Renderer::renderNbIter(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
@@ -40,9 +41,9 @@ ColorRGB Renderer::radiance(Ray r)
 {
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 	float accli = 0.f;
-
+	int nbIter = 0;
 	float t;
-	if (terrain->intersect(r, &t))
+	if (terrain->intersect(r, &t, & nbIter))
 	{
 		Point p(r.o + r.d * t);
 
@@ -55,16 +56,19 @@ ColorRGB Renderer::radiance(Ray r)
 			accli += li;
 			acc = acc + shade(p, terrain->getNormal(p), r.o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
 		}
-		return acc * (1.0f / accli);
+		if (!renderNbIter)
+			return acc * (1.0f / accli);
 	}
-	return sky;
+	if (!renderNbIter)
+		return sky;
+	nbIter = clamp(nbIter, 0, 255);
+	return ColorRGB{ nbIter, nbIter, nbIter };
 }
 
 ColorRGB Renderer::radiance(Point p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 	float accli = 0.f;
-
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbSamples; ++i)
 	{
@@ -75,19 +79,25 @@ ColorRGB Renderer::radiance(Point p, Point o)
 		acc = acc + shade(p, terrain->getNormal(p), o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
 	}
 	return acc * (1.0f / accli);
+
 }
 
 
 ColorRGB Renderer::radiancePrecalculed(Ray r)
 {
 	float t;
-	if (terrain->intersect(r, &t))
+	int nbIter = 0;
+	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
 		ColorRGB res = terrain->getColorPrecalculed(p);
-		return res;
+		if(!renderNbIter)
+			return res;
 	}
-	return sky;
+	if (!renderNbIter)
+		return sky;
+	nbIter = clamp(nbIter, 0, 255);
+	return ColorRGB{ nbIter, nbIter, nbIter };
 }
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
@@ -104,7 +114,7 @@ float Renderer::delta(Point collide, Point l, float r)
 	Vector lightVec = normalize(l - collide);
 	Ray lightRay = Ray(collide + epsilon * lightVec, lightVec);
 
-	if (terrain->intersectSegment(lightRay, &t, r))
+	if (terrain->intersectSegment(lightRay, &t, r_delta))
 	{
 		return 0.f;
 	}
@@ -117,7 +127,7 @@ float Renderer::V(Point collide, Point l)
 	Vector lightVec = normalize(l - collide);
 	Ray lightRay = Ray(l, -lightVec);
 
-	if (terrain->intersect(lightRay, &t))
+	if (terrain->intersect(lightRay, &t, nullptr))
 	{
 		float distance1 = distance(lightRay.o, lightRay.o + lightRay.d * t);
 
@@ -396,6 +406,14 @@ void Renderer::ChangeRenderColor()
 	mutex.lock();
 	renderGrey = !renderGrey;
 	terrain->ChangeRenderColor(renderGrey);
+	changes = true;
+	mutex.unlock();
+}
+
+void Renderer::ChangeRenderIter()
+{
+	mutex.lock();
+	renderNbIter = !renderNbIter;
 	changes = true;
 	mutex.unlock();
 }

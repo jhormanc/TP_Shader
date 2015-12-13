@@ -86,9 +86,10 @@ void Terrain::calcK()
 }
 
 // Renvoie True si le Ray r touche le terrain
-bool Terrain::intersect(const Ray& r, float *tHit) const
+bool Terrain::intersect(const Ray& r, float *tHit, int * nbIter) const
 {
-	// a decommenter quand k sera = max des dérivées
+	int nbStep = 0;
+	// a decommenter quand k sera = max des derivees
 	if (r.d.z > k)
 	{
 		return false;
@@ -108,23 +109,29 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 
 	while (*tHit >= tmin && *tHit <= tmax)
 	{
+		++nbStep;
 		res = r.o + (r.d * *tHit);
 		Point tmp = getPoint(res.x, res.y);
 		if (tmp != noIntersectPoint)
 		{
 			double h = res.z - tmp.z;
 			if (h < 0.001f)
+			{
+				if (nbIter != nullptr) *nbIter = nbStep;
 				return true;
-			*tHit += h * k2;
+			}
+			*tHit +=  h * k2;
 		}
 		else
 		{
 			*tHit = noIntersect;
+			if (nbIter != nullptr) *nbIter = nbStep;
 			return false;
 		}
 
 	}
 	*tHit = noIntersect;
+	if (nbIter != nullptr) *nbIter = nbStep;
 	return false;
 }
 
@@ -140,6 +147,7 @@ bool Terrain::intersectSegment(const Ray& r, float * tHit, float tMax) const
 	if (!box.intersect(r, &t1, &t2))
 		return false;
 	float tmin = std::max(0.f, std::min(t1, t2));
+	tMax = std::min(tMax, t2);
 	if (tmin > tMax)
 		return false;
 	*tHit = tmin;

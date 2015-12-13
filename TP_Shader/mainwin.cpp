@@ -191,6 +191,9 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 		case Qt::Key_W:
 			changeRenderColor();
 			break;
+		case Qt::Key_X:
+			changeRenderIter();
+			break;
 		default:
 			QWidget::keyPressEvent(event);
 		}
@@ -344,6 +347,15 @@ void MainWin::changeRenderColor()
 	rendering = true;
 	refresh = true;
 	thread.ChangeRenderColor();
+	update();
+	thread.render();
+}
+
+void MainWin::changeRenderIter()
+{
+	rendering = true;
+	refresh = true;
+	thread.ChangeRenderIter();
 	update();
 	thread.render();
 }

@@ -71,6 +71,7 @@ public:
 	float GetRenderTime();
 	bool AddDeltaR(const float& delta);
 	void ChangeRenderColor();
+	void ChangeRenderIter();
 
 	static bool renderPrecalculed;
 	static int nbSamples;
@@ -83,6 +84,7 @@ public:
 	static Point sunPoint;
 	static float rDelta;
 	static bool renderGrey;
+	static bool renderNbIter;
 
 	~Renderer();
 

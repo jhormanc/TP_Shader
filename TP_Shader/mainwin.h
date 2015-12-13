@@ -50,6 +50,7 @@ private:
 	void moveSun(const float& x, const float& y, const float& z);
 	void addDeltaR(const float& delta);
 	void changeRenderColor();
+	void changeRenderIter();
 };
 
 #endif // MAINWIN_H

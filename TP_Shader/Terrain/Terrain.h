@@ -51,7 +51,7 @@ public:
 		return Point (0.); // TODO
 	}
 
-	virtual bool intersect(const Ray &ray, float * tHit) const;
+	virtual bool intersect(const Ray &ray, float * tHit, int * nbIter) const;
 	virtual BBox getBound() const
 	{
 		return BBox(getOrigin() + Point(0., 0., low), Point(terrain_width, terrain_height, high));
