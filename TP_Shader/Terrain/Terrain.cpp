@@ -97,21 +97,11 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 		return false;
 	float tmin = std::max(0.f, std::min(t1, t2));
 	float tmax = std::max(t1, t2);
-	if (tmax <= tmin)
+	if (tmax < tmin)
 		return false;
-	//qDebug(" min box : %f, %f, %f", box.pMin.x, box.pMin.y, box.pMin.z);
-	//qDebug(" max box : %f, %f, %f", box.pMax.x, box.pMax.y, box.pMax.z);
-	////qDebug(" res : %f, %f, %f", res.x, res.y, res.z);
-	//qDebug(" tmin : %f", tmin);
-	//qDebug(" tmax : %f", tmax);
-	//tmin = std::max(0.f, tmin);
 	*tHit = tmin;
-	Point res = r.o + (r.d * *tHit);/*
-	qDebug(" res : %f, %f, %f", res.x, res.y, res.z);*/
+	Point res = r.o + (r.d * *tHit);
 
-	//*tHit = 0.f;
-	//Point res;
-	//for (int i = 0; i < 1024; i++)
 	while (*tHit >= tmin && *tHit <= tmax)
 	{
 		res = r.o + (r.d * *tHit);
@@ -119,7 +109,7 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 		if (tmp != noIntersectPoint)
 		{
 			double h = res.z - tmp.z;
-			if (h < 0.001 * *tHit)
+			if (h < 0.001f)
 				return true;
 			*tHit +=  h * k2;
 		}
