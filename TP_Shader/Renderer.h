@@ -55,10 +55,7 @@ public:
 
 	bool changeNbSamples(const int& nbToAdd);
 	void changeRenderMode();
-	bool IsRenderPrecalc();
-	int GetNbSamples();
 	void UpdatePrecalc();
-	float GetRenderTime();
 	// diffus : diffus ou spéculaire
 	// coefToAdd : entre 0.f et 1.f
 	bool AddCoeff(const bool& diffus, const float& coefToAdd);
@@ -68,12 +65,24 @@ public:
 	// influenceToAdd : 10 < influenceSpec < 40
 	bool AddInfluence(const bool& sun, const int& influenceToAdd);
 
-	float GetIntensity(const bool& sun);
-	float GetCoeff(const bool& diffus);
-	int GetInfluence(const bool& sun);
 
 	Point GetSunPoint();
 	void MoveSun(Vector dir);
+	float GetRenderTime();
+	bool AddDeltaR(const float& delta);
+	void ChangeRenderColor();
+
+	static bool renderPrecalculed;
+	static int nbSamples;
+	static float coefDiffus;
+	static float coefSpec;
+	static int specInfluence;
+	static int sunInfluence;
+	static float sunIntensity;
+	static float globalIntensity;
+	static Point sunPoint;
+	static float rDelta;
+	static bool renderGrey;
 
 	~Renderer();
 

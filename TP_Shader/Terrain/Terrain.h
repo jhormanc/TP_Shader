@@ -7,12 +7,13 @@
 #include "..\Global\Global.h"
 #include "Global\Constants.h"
 #include <qdebug.h>
+
 class Terrain
 {
 
 protected:
 	
-	
+	bool renderGrey;
 	double k;						// Pente maximale
 	double high, low;				// Paramètre pour connaitre la hauteur max et min de la map
 
@@ -85,6 +86,8 @@ public:
 	void calcK();
 	virtual ~Terrain();
 	//Mesh* GetMesh ( );
+
+	void ChangeRenderColor(const bool& render_grey);
 	
 };
 

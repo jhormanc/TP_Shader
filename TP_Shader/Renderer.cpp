@@ -1,14 +1,16 @@
 #include "Renderer.h"
 
-static bool renderPrecalculed(false);
-static int nbSamples(nbEchantillon);
-static float coefDiffus(1.f);
-static float coefSpec(1.f);
-static int specInfluence(40);
-static int sunInfluence(4);
-static float sunIntensity(0.8f);
-static float globalIntensity(0.2f);
-static Point sunPoint(2500.f, 2500.f, 1000.f);
+bool Renderer::renderPrecalculed(false);
+int  Renderer::nbSamples(nbEchantillon);
+float  Renderer::coefDiffus(1.f);
+float  Renderer::coefSpec(1.f);
+int  Renderer::specInfluence(40);
+int  Renderer::sunInfluence(4);
+float  Renderer::sunIntensity(0.8f);
+float  Renderer::globalIntensity(0.2f);
+Point  Renderer::sunPoint(2500.f, 2500.f, 1000.f);
+float  Renderer::rDelta(r_delta);
+bool  Renderer::renderGrey(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
@@ -92,7 +94,7 @@ ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 	return ambiant + color * clamp(
 		(dot(normalize(l - p), n) * coefDiffus // diffus  
 		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
-		, 0.f, 1.f);
+		, 0.f, 1.f) * delta(p, l, rDelta);
 }
 
 float Renderer::delta(Point collide, Point l, float r)
@@ -297,16 +299,6 @@ void Renderer::UpdatePrecalc()
 	mutex.unlock();
 }
 
-bool Renderer::IsRenderPrecalc()
-{
-	return renderPrecalculed;
-}
-
-int Renderer::GetNbSamples()
-{
-	return nbSamples;
-}
-
 float Renderer::GetRenderTime()
 {
 	return lastRenderTime;
@@ -386,17 +378,24 @@ bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
 	return false;
 }
 
-float Renderer::GetIntensity(const bool& sun)
+bool Renderer::AddDeltaR(const float& delta)
 {
-	return sun ? sunIntensity : globalIntensity;
+	if ((rDelta + delta) >= 0.f)
+	{
+		mutex.lock();
+		rDelta += delta;
+		changes = true;
+		mutex.unlock();
+		return true;
+	}
+	return false;
 }
 
-float Renderer::GetCoeff(const bool& diffus)
+void Renderer::ChangeRenderColor()
 {
-	return diffus ? coefDiffus : coefSpec;
-}
-
-int Renderer::GetInfluence(const bool& sun)
-{
-	return sun ? sunInfluence : specInfluence;
+	mutex.lock();
+	renderGrey = !renderGrey;
+	terrain->ChangeRenderColor(renderGrey);
+	changes = true;
+	mutex.unlock();
 }

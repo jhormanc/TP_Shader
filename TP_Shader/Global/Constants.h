@@ -40,5 +40,8 @@ const float intensityStep = 0.05f;
 // Step influence soleil / spéculaire
 const int influenceStep = 1;
 
-// Step samples
+// Step nombre d'échantillons
 const int samplesStep = 1;
+
+// Step delta r
+const float stepDeltaR = 5.f;

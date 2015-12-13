@@ -48,21 +48,22 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		text2 = QString("Space to change rendering mode. "
 			"N to precalculate. "
 			"+ / - to change samples.");
-		text3 = QString("Mode = %1 - Samples = %2 - Sun = [%3 %4 %5]").arg(
-			QString(thread.IsRenderPrecalc() ? "Precalculated" : "Real-time"),
-			QString::number(thread.GetNbSamples()),
-			QString::number(thread.GetSunPoint().x),
-			QString::number(thread.GetSunPoint().y), 
-			QString::number(thread.GetSunPoint().z));
+		text3 = QString("Mode = %1 - Samples = %2 - Sun = [%3 %4 %5] - Delta R = %6").arg(
+			QString(Renderer::renderPrecalculed ? "Precalculated" : "Real-time"),
+			QString::number(Renderer::nbSamples),
+			QString::number(Renderer::sunPoint.x),
+			QString::number(Renderer::sunPoint.y),
+			QString::number(Renderer::sunPoint.z),
+			QString::number(Renderer::rDelta));
 		text4 = QString("Intensity : Sun = %1, Global = %2").arg(
-			QString::number(thread.GetIntensity(true)),
-			QString::number(thread.GetIntensity(false)));
+			QString::number(Renderer::sunIntensity),
+			QString::number(Renderer::globalIntensity));
 		text5 = QString("Coeff : Diffus = %1, Specular = %2").arg(
-			QString::number(thread.GetCoeff(true)),
-			QString::number(thread.GetCoeff(false)));
+			QString::number(Renderer::coefDiffus),
+			QString::number(Renderer::coefSpec));
 		text6 = QString("Influence : Sun = %1, Specular = %2").arg(
-			QString::number(thread.GetInfluence(true)), 
-			QString::number(thread.GetInfluence(false)));
+			QString::number(Renderer::sunInfluence),
+			QString::number(Renderer::specInfluence));
 
 		float t = thread.GetRenderTime();
 		text7 = QString("FPS : %1").arg(QString::number(t != 0.f ? 1.f / t : 0.f));
@@ -136,9 +137,6 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 		case Qt::Key_Space:
 			changeRenderMode();
 			break;
-		case Qt::Key_N:
-			updatePrecalc();
-			break;		
 		case Qt::Key_P:
 			addCoeff(true, coeffStep);
 			break;
@@ -169,6 +167,12 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 		case Qt::Key_H:
 			addInfluence(false, -influenceStep);
 			break;
+		case Qt::Key_T:
+			addDeltaR(stepDeltaR);
+			break;
+		case Qt::Key_G:
+			addDeltaR(-stepDeltaR);
+			break;
 		case Qt::Key_Up:
 			moveSun(0.f, sunMoveStep, 0.f);
 			break;
@@ -180,6 +184,12 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 			break;
 		case Qt::Key_Right:
 			moveSun(sunMoveStep, 0.f, 0.f);
+			break;
+		case Qt::Key_N:
+			updatePrecalc();
+			break;
+		case Qt::Key_W:
+			changeRenderColor();
 			break;
 		default:
 			QWidget::keyPressEvent(event);
@@ -236,7 +246,7 @@ void MainWin::rotate(const QPoint& pt)
 
 void MainWin::changeNbSamples(const int& nbToAdd)
 {
-	if (thread.changeNbSamples(nbToAdd) && !thread.IsRenderPrecalc())
+	if (thread.changeNbSamples(nbToAdd) && !Renderer::renderPrecalculed)
 	{
 		rendering = true;
 		refresh = true;
@@ -253,7 +263,7 @@ void MainWin::changeRenderMode()
 	rendering = true;
 	refresh = false;
 	update();
-	if (thread.IsRenderPrecalc() && !thread.calledPrecalc)
+	if (Renderer::renderPrecalculed && !thread.calledPrecalc)
 	{
 		repaint();
 		thread.UpdatePrecalc();
@@ -265,7 +275,7 @@ void MainWin::changeRenderMode()
 
 void MainWin::updatePrecalc()
 {
-	if (thread.IsRenderPrecalc())
+	if (Renderer::renderPrecalculed)
 	{
 		rendering = true;
 		refresh = false;
@@ -314,6 +324,26 @@ void MainWin::moveSun(const float& x, const float& y, const float& z)
 	rendering = true;
 	refresh = true;
 	thread.MoveSun(Vector(x, y, z));
+	update();
+	thread.render();
+}
+
+void MainWin::addDeltaR(const float& delta)
+{
+	if (thread.AddDeltaR(delta))
+	{
+		rendering = true;
+		refresh = true;
+		update();
+		thread.render();
+	}
+}
+
+void MainWin::changeRenderColor()
+{
+	rendering = true;
+	refresh = true;
+	thread.ChangeRenderColor();
 	update();
 	thread.render();
 }

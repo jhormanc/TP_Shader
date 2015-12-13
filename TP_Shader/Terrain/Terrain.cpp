@@ -2,7 +2,7 @@
 
 Terrain::Terrain()
 {
-
+	renderGrey = false;
 }
 
 Terrain::Terrain(const Terrain& terrain)
@@ -16,6 +16,8 @@ Terrain::Terrain(const Terrain& terrain)
 	for (unsigned int i = 0; i < terrain.terrain_width; ++i)
 		for (unsigned int j = 0; j < terrain.terrain_height; ++j)
 			precalc[i][j] = terrain.precalc[i][j];
+
+	renderGrey = false;
 }
 
 Terrain::Terrain(unsigned int terrain_width_, unsigned int terrain_height_) : terrain_width(terrain_width_), terrain_height(terrain_height_)
@@ -23,6 +25,8 @@ Terrain::Terrain(unsigned int terrain_width_, unsigned int terrain_height_) : te
 	precalc = new ColorRGB *[terrain_width_];
 	for (unsigned int i = 0; i < terrain_width_; i++)
 		precalc[i] = new ColorRGB[terrain_height_];
+
+	renderGrey = false;
 }
 
 Terrain & Terrain::operator=(const Terrain& terrain)
@@ -91,7 +95,7 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 	}
 	float k2 = 1.f / (k - r.d.z);
 	BBox box = getBound();
-	
+
 	float t1, t2;
 	if (!box.intersect(r, &t1, &t2))
 		return false;
@@ -111,7 +115,7 @@ bool Terrain::intersect(const Ray& r, float *tHit) const
 			double h = res.z - tmp.z;
 			if (h < 0.001f)
 				return true;
-			*tHit +=  h * k2;
+			*tHit += h * k2;
 		}
 		else
 		{
@@ -161,72 +165,85 @@ bool Terrain::intersectSegment(const Ray& r, float * tHit, float tMax) const
 	return false;
 }
 
-ColorRGB Terrain::getColorPrecalculed(const Point & p) {
+ColorRGB Terrain::getColorPrecalculed(const Point & p) 
+{
 	//Point intersect = getPoint(p.x, p.y);
 	return precalc[(int)p.x][(int)p.y];
 }
-ColorRGB Terrain::getColor ( const Point & p ) {
-//	return ColorRGB{ 255.f, 255.f, 255.f };
-	ColorRGB roche = { 100.f, 100.f, 100.f };
-	ColorRGB roche_claire = { 200.f, 200.f, 200.f };
-	ColorRGB terre = { 95.f, 62.f, 5.f };
-	ColorRGB terre_claire = { 195.f, 162.f, 105.f };
-	ColorRGB herbe = { 40.f, 150.f, 74.f };
-	ColorRGB neige = { 255.f, 255.f, 255.f };
-	ColorRGB bleue = { 0.f, 128.f, 220.f };
 
-	double z = getPoint ( p.x, p.y ).z;
+ColorRGB Terrain::getColor(const Point & p) 
+{
+	if (!renderGrey)
+	{
+		//	return ColorRGB{ 255.f, 255.f, 255.f };
+		ColorRGB roche = { 100.f, 100.f, 100.f };
+		ColorRGB roche_claire = { 200.f, 200.f, 200.f };
+		ColorRGB terre = { 95.f, 62.f, 5.f };
+		ColorRGB terre_claire = { 195.f, 162.f, 105.f };
+		ColorRGB herbe = { 40.f, 150.f, 74.f };
+		ColorRGB neige = { 255.f, 255.f, 255.f };
+		ColorRGB bleue = { 0.f, 128.f, 220.f };
 
-	double slope = std::max ( std::max ( std::max (
-		std::abs ( double ( z - getPoint ( p.x - 1, p.y ).z ) ),
-		std::abs ( double ( z - getPoint ( p.x + 1, p.y ).z ) ) ),
-		std::abs ( double ( z - getPoint ( p.x, p.y - 1 ).z ) ) ),
-		std::abs ( double ( z - getPoint ( p.x, p.y + 1 ).z ) ) );		
-	slope *= .5f;
-	
-	ColorRGB color;
+		double z = getPoint(p.x, p.y).z;
 
-	double max = high - low;
+		double slope = std::max(std::max(std::max(
+			std::abs(double(z - getPoint(p.x - 1, p.y).z)),
+			std::abs(double(z - getPoint(p.x + 1, p.y).z))),
+			std::abs(double(z - getPoint(p.x, p.y - 1).z))),
+			std::abs(double(z - getPoint(p.x, p.y + 1).z)));
+		slope *= .5f;
 
-	/*float rng1 = 60.0f + rand ( ) * 10;
-	float rng2 = 40.0f + rand ( ) * 10;
-	float rng3 = .0f + rand ( ) * 10;
-*/
+		ColorRGB color;
 
-	float steps = low + (max * (20 / 100.));
-	
-	if ( z >= low + ( max * ( 80 / 100. ) ) ) {
+		double max = high - low;
+
+		/*float rng1 = 60.0f + rand ( ) * 10;
+		float rng2 = 40.0f + rand ( ) * 10;
+		float rng3 = .0f + rand ( ) * 10;
+		*/
+
+		float steps = low + (max * (20 / 100.));
+
+		if (z >= low + (max * (80 / 100.))) {
 			color = neige;
-	}		
-	else if ( z >= low + ( max * ( 60 / 100. ) ) ) {
-		if (slope <= .1f)
-			color = neige;
-		else 	
-			color = ColorFadeHight(roche, neige,roche_claire, z - 3. * steps, steps, slope);
-	}	
-	else if ( z >= low + ( max * ( 40 / 100. ) ) ) {
-		color = ColorFadeHight(terre, roche, roche_claire, z - 2. * steps, steps, slope);
-	}	
-	else if ( z >= 0.f ) {
-		color = ColorFadeHight(herbe, terre, terre_claire, z-steps, steps, slope);
-	}		
-	else {
-		color = bleue;
-	}		
-		
-	return color;
+		}
+		else if (z >= low + (max * (60 / 100.))) {
+			if (slope <= .1f)
+				color = neige;
+			else
+				color = ColorFadeHight(roche, neige, roche_claire, z - 3. * steps, steps, slope);
+		}
+		else if (z >= low + (max * (40 / 100.))) {
+			color = ColorFadeHight(terre, roche, roche_claire, z - 2. * steps, steps, slope);
+		}
+		else if (z >= 0.f) {
+			color = ColorFadeHight(herbe, terre, terre_claire, z - steps, steps, slope);
+		}
+		else {
+			color = bleue;
+		}
+
+		return color;
+	}
+	else
+		return grey;
 }
 
 /*
 *c1 and c2 are the color to do the fading
 *c3 is for the part where the slope is to hight.
 */
-ColorRGB Terrain::ColorFadeHight(ColorRGB c1, ColorRGB c2,ColorRGB c3, double z ,double nb_step,double slope){
+ColorRGB Terrain::ColorFadeHight(ColorRGB c1, ColorRGB c2, ColorRGB c3, double z, double nb_step, double slope){
 	ColorRGB colorDiff = c2 - c1;
 	ColorRGB c = c1 + ((colorDiff * z) / nb_step);
 	c = c + c3 *slope;
-	
+
 	return c;
+}
+
+void Terrain::ChangeRenderColor(const bool& render_grey)
+{
+	renderGrey = render_grey;
 }
 
 

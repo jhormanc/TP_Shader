@@ -103,5 +103,6 @@ const ColorRGB blue = ColorRGB{ .25f, .25f, .75f } *255.f;
 const ColorRGB red = ColorRGB{ .75f, .25f, .25f } *255.f;
 const ColorRGB yellow = ColorRGB{ .9f, .1f, .9f } *255.f;
 const ColorRGB purple = ColorRGB{ .9f, .9f, .1f } *255.f;
+const ColorRGB grey = ColorRGB{ 105.f, 105.f, 105.f };
 
 const ColorRGB sky = ColorRGB{ 135.f, 206.f, 235.f };

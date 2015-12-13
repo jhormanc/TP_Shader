@@ -48,6 +48,8 @@ private:
 	void addInfluence(const bool& sun, const int& influenceToAdd);
 	void closeEvent(QCloseEvent *event);
 	void moveSun(const float& x, const float& y, const float& z);
+	void addDeltaR(const float& delta);
+	void changeRenderColor();
 };
 
 #endif // MAINWIN_H
