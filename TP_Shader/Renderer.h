@@ -29,6 +29,7 @@ private:
 	ColorRGB ambiant = ColorRGB{ 00.F, 00.f, 0.f };
 	SamplerPoisson samplerPoisson;
 	float lastRenderTime;
+	bool renderNbIter = true;
 
 public:
 	bool calledPrecalc = false;
