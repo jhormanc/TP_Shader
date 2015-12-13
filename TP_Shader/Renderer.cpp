@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 static bool renderPrecalculed(false);
-static int nbSamples(1);
+static int nbSamples(nbEchantillon);
 static float coefDiffus(1.f);
 static float coefSpec(1.f);
 static int specInfluence(40);
