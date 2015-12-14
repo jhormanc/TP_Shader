@@ -50,7 +50,7 @@ ColorRGB Renderer::radiance(Ray r)
 		// Fix trou noir
 		Point pt(terrain->getPoint(p.x, p.y));
 
-		ColorRGB shading = shade(p, terrain->getNormal(p), r.o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
+		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint, terrain->getColor(pt)).cclamp(0.f, 255.f);
 		
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)

@@ -106,3 +106,12 @@ const ColorRGB purple = ColorRGB{ .9f, .9f, .1f } *255.f;
 const ColorRGB grey = ColorRGB{ 105.f, 105.f, 105.f };
 
 const ColorRGB sky = ColorRGB{ 135.f, 206.f, 235.f };
+
+const ColorRGB roche = { 100.f, 100.f, 100.f };
+const ColorRGB roche_claire = { 200.f, 200.f, 200.f };
+const ColorRGB terre = { 95.f, 62.f, 5.f };
+const ColorRGB terre_claire = { 195.f, 162.f, 105.f };
+const ColorRGB roche_terre_claire = { 197.5f, 181.f, 152.5f };
+const ColorRGB herbe = { 0.f, 104.f, 10.f };
+const ColorRGB neige = { 255.f, 255.f, 255.f };
+const ColorRGB bleue = { 0.f, 128.f, 220.f };
