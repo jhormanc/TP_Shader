@@ -313,7 +313,7 @@ void MainWin::addIntensity(const float& intensityToAdd)
 
 void MainWin::addInfluence(const bool& sun, const int& influenceToAdd)
 {
-	if (thread.AddInfluence(sun, sun ? influenceToAdd * 5 : influenceToAdd))
+	if (thread.AddInfluence(sun, sun ? influenceToAdd : influenceToAdd * 5))
 	{
 		rendering = true;
 		refresh = true;

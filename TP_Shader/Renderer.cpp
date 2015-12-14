@@ -8,7 +8,7 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(10000.f, 10000.f, 1000.f);
+Point Renderer::sunPoint(5000.f, 5000.f, 500.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -51,19 +51,20 @@ ColorRGB Renderer::radiance(Ray r)
 		for (int i = 0; i < nbSamples; ++i)
 		{
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
-			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))) ;
-			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence)  * delta(p, l, rDelta);
+			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0)));
+			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 			//li = 1.f;
 			//qDebug("cos : %f, l : %f, %f, %f", cosLiS, l.x, l.y, l.z);
 			accli += li;
-			acc = acc + shading  * li;
+			acc = acc + shading * li * delta(p, l, rDelta);
 		}
 		if (!renderNbIter)
 			return acc * (1.0f / accli);
 	}
 	if (!renderNbIter)
 		return sky;
-	nbIter = clamp(nbIter, 0, 255);
+	nbIter = clamp(nbIter, 0.f, 255.f);
+
 	return ColorRGB{ nbIter, nbIter, nbIter };
 }
 
@@ -320,10 +321,10 @@ bool Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
 {
 	if (diffus)
 	{
-		if ((coefDiffus + coefToAdd) > 0.f && (coefDiffus + coefToAdd) < 1.f)
+		if ((coefDiffus > 0.f && coefToAdd < 0.f) || (coefDiffus < 1.f && coefToAdd > 0.f))
 		{
 			mutex.lock();
-			coefDiffus += coefToAdd;
+			coefDiffus = clamp(coefDiffus + coefToAdd, 0.f, 1.f);
 			changes = true;
 			mutex.unlock();
 			return true;
@@ -331,10 +332,10 @@ bool Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
 	}
 	else
 	{
-		if ((coefSpec + coefToAdd) > 0.f && (coefSpec + coefToAdd) < 1.f)
+		if ((coefSpec > 0.f && coefToAdd < 0.f) || (coefSpec < 1.f && coefToAdd > 0.f))
 		{
 			mutex.lock();			
-			coefSpec += coefToAdd;
+			coefSpec = clamp(coefSpec + coefToAdd, 0.f, 1.f);
 			changes = true;
 			mutex.unlock();
 			return true;
@@ -346,14 +347,11 @@ bool Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
 
 bool Renderer::AddIntensity(const float& intensityToAdd)
 {
-	if ((sunIntensity + intensityToAdd) > 0.f 
-		&& (sunIntensity + intensityToAdd) < 1.f 
-		&& (globalIntensity - intensityToAdd) > 0.f 
-		&& (globalIntensity - intensityToAdd) < 1.f)
+	if ((sunIntensity > 0.f && intensityToAdd < 0.f) || (sunIntensity < 1.f && intensityToAdd > 0.f))
 	{
 		mutex.lock();
-		sunIntensity += intensityToAdd;
-		globalIntensity -= intensityToAdd;
+		sunIntensity = clamp(sunIntensity + intensityToAdd, 0.f, 1.f);
+		globalIntensity = clamp(globalIntensity - intensityToAdd, 0.f, 1.f);
 		changes = true;
 		mutex.unlock();
 		return true;
@@ -366,10 +364,12 @@ bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
 {
 	if (sun)
 	{
-		if ((sunInfluence + influenceToAdd) > 0)
+		if (sunInfluence > 0 || influenceToAdd > 0)
 		{
 			mutex.lock();
 			sunInfluence += influenceToAdd;
+			if (sunInfluence < 0)
+				sunInfluence = 0;
 			changes = true;
 			mutex.unlock();
 			return true;
@@ -377,10 +377,10 @@ bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
 	}
 	else
 	{
-		if ((specInfluence + influenceToAdd) >= 10 && (specInfluence + influenceToAdd) <= 40)
+		if ((specInfluence > 10 && influenceToAdd < 0) || (specInfluence < 40 && influenceToAdd > 0))
 		{
 			mutex.lock();
-			specInfluence += influenceToAdd;
+			specInfluence = (int)clamp((float)(specInfluence + influenceToAdd), 10.f, 40.f);
 			changes = true;
 			mutex.unlock();
 			return true;
@@ -392,10 +392,12 @@ bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
 
 bool Renderer::AddDeltaR(const float& delta)
 {
-	if ((rDelta + delta) >= 0.f)
+	if (rDelta > 0.f || delta > 0.f)
 	{
 		mutex.lock();
 		rDelta += delta;
+		if (rDelta < 0.f)
+			rDelta = 0.f;
 		changes = true;
 		mutex.unlock();
 		return true;
