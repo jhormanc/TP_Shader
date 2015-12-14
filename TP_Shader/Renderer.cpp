@@ -5,10 +5,10 @@ int Renderer::nbSamples(nbEchantillon);
 float Renderer::coefDiffus(1.f);
 float Renderer::coefSpec(1.f);
 int Renderer::specInfluence(40);
-int Renderer::sunInfluence(1);
-float Renderer::sunIntensity(0.0f);
-float Renderer::globalIntensity(1.0f);
-Point Renderer::sunPoint(2500.f, 2500.f, 100.f);
+int Renderer::sunInfluence(4);
+float Renderer::sunIntensity(0.8f);
+float Renderer::globalIntensity(0.2f);
+Point Renderer::sunPoint(10000.f, 10000.f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -53,6 +53,7 @@ ColorRGB Renderer::radiance(Ray r)
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
 			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))) ;
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence)  * delta(p, l, rDelta);
+			//li = 1.f;
 			//qDebug("cos : %f, l : %f, %f, %f", cosLiS, l.x, l.y, l.z);
 			accli += li;
 			acc = acc + shading  * li;
