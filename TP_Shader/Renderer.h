@@ -65,8 +65,6 @@ public:
 	// influenceToAdd : 10 < influenceSpec < 40
 	bool AddInfluence(const bool& sun, const int& influenceToAdd);
 
-
-	Point GetSunPoint();
 	void MoveSun(Vector dir);
 	float GetRenderTime();
 	bool AddDeltaR(const float& delta);

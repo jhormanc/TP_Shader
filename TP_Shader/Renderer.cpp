@@ -14,7 +14,7 @@ bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 000.f),Point(5000.f, 5000.f, 1000.f)), 1.f), terrain(new TerrainFractal(5000, 5000))
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 1000.f)), 1.f), terrain(new TerrainFractal(5000, 5000))
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -43,23 +43,25 @@ ColorRGB Renderer::radiance(Ray r)
 	float accli = 0.f;
 	int nbIter = 0;
 	float t;
-	if (terrain->intersect(r, &t, & nbIter))
+
+	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
-		ColorRGB shading = shade(p, terrain->getNormal(p), r.o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
+		// Fix trou noir
+		Point pt(terrain->getPoint(p.x, p.y));
 
+		ColorRGB shading = shade(p, terrain->getNormal(p), r.o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
+		
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
-			Point l = samplerPoisson.next(); // 2 eme param a enlever
-
-			//float li = 1.F;
+			Point l = samplerPoisson.next();
+			
 			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))) ;
-			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);//  *delta(p, l, rDelta);
-			//li = 1.f;
-			//qDebug("cos : %f, l : %f, %f, %f", cosLiS, l.x, l.y, l.z);
+			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
+
 			accli += li;
-			acc = acc + shading * delta(p, l, rDelta)  * li;
+			acc = acc + shading * delta(pt, l, rDelta)  * li;
 		}
 
 		if (!renderNbIter)
@@ -87,6 +89,7 @@ ColorRGB Renderer::radiance(Point p, Point o)
 		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
 		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
+
 		acc = acc + shading * delta(p, l, rDelta) * li;
 	}
 
@@ -262,11 +265,6 @@ void Renderer::MoveSun(Vector dir)
 	sunPoint.z += dir.z;
 	changes = true;
 	mutex.unlock();
-}
-
-Point Renderer::GetSunPoint()
-{
-	return sunPoint;
 }
 
 void Renderer::MoveCam(const int& x, const int& y, const int& z)

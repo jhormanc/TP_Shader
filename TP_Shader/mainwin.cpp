@@ -80,11 +80,6 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 
 	
 	textWidth = metrics.width(text);
-
-
-	painter.setPen(Qt::NoPen);
-	painter.setBrush(QColor(0, 0, 0, 127));
-	painter.drawRect((width() - textWidth) / 2 - 5, 0, textWidth + 10, metrics.lineSpacing() + 5);
 	painter.setPen(Qt::white);
 	painter.drawText((width() - textWidth) / 2, metrics.leading() + metrics.ascent(), text);
 
