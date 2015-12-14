@@ -5,16 +5,16 @@ int Renderer::nbSamples(nbEchantillon);
 float Renderer::coefDiffus(1.f);
 float Renderer::coefSpec(1.f);
 int Renderer::specInfluence(40);
-int Renderer::sunInfluence(4);
-float Renderer::sunIntensity(0.8f);
-float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(2500.f, 2500.f, 1000.f);
+int Renderer::sunInfluence(1);
+float Renderer::sunIntensity(0.0f);
+float Renderer::globalIntensity(1.0f);
+Point Renderer::sunPoint(2500.f, 2500.f, 100.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 500.f)), 10.f), terrain(new TerrainFractal(5000, 5000))
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 000.f),Point(5000.f, 5000.f, 1000.f)), 1.f), terrain(new TerrainFractal(5000, 5000))
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -46,15 +46,16 @@ ColorRGB Renderer::radiance(Ray r)
 	if (terrain->intersect(r, &t, & nbIter))
 	{
 		Point p(r.o + r.d * t);
-
+		ColorRGB shading = shade(p, terrain->getNormal(p), r.o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
-			float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
-			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
+			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))) ;
+			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence)  * delta(p, l, rDelta);
+			//qDebug("cos : %f, l : %f, %f, %f", cosLiS, l.x, l.y, l.z);
 			accli += li;
-			acc = acc + shade(p, terrain->getNormal(p), r.o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
+			acc = acc + shading  * li;
 		}
 		if (!renderNbIter)
 			return acc * (1.0f / accli);
@@ -68,15 +69,16 @@ ColorRGB Renderer::radiance(Ray r)
 ColorRGB Renderer::radiance(Point p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
+	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
 	float accli = 0.f;
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbSamples; ++i)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
 		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
-		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
+		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence)  * delta(p, l, rDelta);
 		accli += li;
-		acc = acc + shade(p, terrain->getNormal(p), o, l, terrain->getColor(p)).cclamp(0.f, 255.f) * li;
+		acc = acc + shading * li;
 	}
 	return acc * (1.0f / accli);
 
@@ -104,7 +106,7 @@ ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 	return ambiant + color * clamp(
 		(dot(normalize(l - p), n) * coefDiffus // diffus  
 		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
-		, 0.f, 1.f) * delta(p, l, rDelta);
+		, 0.f, 1.f);
 }
 
 float Renderer::delta(Point collide, Point l, float r)
