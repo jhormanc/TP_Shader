@@ -8,7 +8,7 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(5000.f, 5000.f, 500.f);
+Point Renderer::sunPoint(5000.f, 5000.f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -47,22 +47,28 @@ ColorRGB Renderer::radiance(Ray r)
 	{
 		Point p(r.o + r.d * t);
 		ColorRGB shading = shade(p, terrain->getNormal(p), r.o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
+
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
-			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0)));
-			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
+
+			//float li = 1.F;
+			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))) ;
+			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);//  *delta(p, l, rDelta);
 			//li = 1.f;
 			//qDebug("cos : %f, l : %f, %f, %f", cosLiS, l.x, l.y, l.z);
 			accli += li;
-			acc = acc + shading * li * delta(p, l, rDelta);
+			acc = acc + shading * delta(p, l, rDelta)  * li;
 		}
+
 		if (!renderNbIter)
 			return acc * (1.0f / accli);
 	}
+
 	if (!renderNbIter)
 		return sky;
+
 	nbIter = clamp(nbIter, 0.f, 255.f);
 
 	return ColorRGB{ nbIter, nbIter, nbIter };
@@ -73,17 +79,18 @@ ColorRGB Renderer::radiance(Point p, Point o)
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
 	float accli = 0.f;
+
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbSamples; ++i)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
 		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
-		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence)  * delta(p, l, rDelta);
+		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
-		acc = acc + shading * li;
+		acc = acc + shading * delta(p, l, rDelta) * li;
 	}
-	return acc * (1.0f / accli);
 
+	return acc * (1.0f / accli);
 }
 
 
@@ -285,10 +292,12 @@ void Renderer::RotateCam(const Point& pt)
 
 bool Renderer::changeNbSamples(const int& nbToAdd)
 {
-	if (nbToAdd > 0 || (nbSamples + nbToAdd) >= 1)
+	if (nbSamples > 1 || nbToAdd > 0)
 	{
 		mutex.lock();
 		nbSamples += nbToAdd;
+		if (nbSamples < 1)
+			nbSamples = 1;
 		changes = true;
 		mutex.unlock();
 		return true;

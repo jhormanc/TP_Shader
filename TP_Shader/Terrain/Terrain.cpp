@@ -148,7 +148,7 @@ bool Terrain::intersectSegment(const Ray& r, float * tHit, float tMax) const
 		return false;
 	float tmin = std::max(0.f, std::min(t1, t2));
 	tMax = std::min(tMax, t2);
-	if (tmin > tMax)
+	if (tmin >= tMax)
 		return false;
 	*tHit = tmin;
 	while (*tHit >= tmin && *tHit <= tMax)
