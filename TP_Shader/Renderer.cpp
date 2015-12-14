@@ -8,7 +8,7 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(10000.f, 10000.f, 1000.f);
+Point Renderer::sunPoint(5000.f, 5000.f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -51,12 +51,13 @@ ColorRGB Renderer::radiance(Ray r)
 		for (int i = 0; i < nbSamples; ++i)
 		{
 			Point l = samplerPoisson.next(); // 2 eme param a enlever
+			//float li = 1.F;
 			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))) ;
-			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence)  * delta(p, l, rDelta);
+			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);//  *delta(p, l, rDelta);
 			//li = 1.f;
 			//qDebug("cos : %f, l : %f, %f, %f", cosLiS, l.x, l.y, l.z);
 			accli += li;
-			acc = acc + shading  * li;
+			acc = acc + shading * delta(p, l, r_delta)  * li;
 		}
 		if (!renderNbIter)
 			return acc * (1.0f / accli);
@@ -77,9 +78,9 @@ ColorRGB Renderer::radiance(Point p, Point o)
 	{
 		Point l = samplerPoisson.next(); // 2 eme param a enlever
 		float cosLiS = std::abs(dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))));
-		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence)  * delta(p, l, rDelta);
+		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
-		acc = acc + shading * li;
+		acc = acc + shading * delta(p, l, rDelta) * li;
 	}
 	return acc * (1.0f / accli);
 
