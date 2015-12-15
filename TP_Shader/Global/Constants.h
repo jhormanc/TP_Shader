@@ -41,7 +41,16 @@ const float intensityStep = 0.1f;
 const int influenceStep = 2;
 
 // Step nombre d'échantillons
-const int samplesStep = 10;
+const int samplesStep = 1;
 
 // Step delta r
 const float stepDeltaR = 5.f;
+
+// Distance post processing effects
+const float distMax = 6000.f;
+
+// Facteur d'assombrissement [0,1]
+const float shadowFactor = .2342f;
+
+// Facteur de brouillard ]0,1]
+const float fogFactor = .314f;
