@@ -83,6 +83,9 @@
     <ClCompile Include="SamplerPoisson.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shapes\Pixel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwin.h">
@@ -136,6 +139,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SamplerPoisson.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Global\ColorRGB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes\Pixel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

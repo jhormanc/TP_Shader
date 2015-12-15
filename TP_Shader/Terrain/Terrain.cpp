@@ -69,7 +69,7 @@ double Terrain::distance ( const Point &  p ) const
 // Calcul la pente maximale du terrain
 void Terrain::calcK() 
 {
-	k = std::abs(getPoint(0., 0.).z - getPoint(0., 1.).z);
+	k = getSlope(getPoint(0.f, 0.f));
 
 	#pragma omp parallel for schedule(static)
 	for (int j = 0; j < terrain_height - 1; j++) 
@@ -175,67 +175,72 @@ ColorRGB Terrain::getColorPrecalculed(const Point & p)
 	return precalc[(int)p.x][(int)p.y];
 }
 
+ColorRGB Terrain::initColor(const Point & p)
+{
+	double z = getPoint(p.x, p.y).z;
+
+	double slope = std::max(std::max(std::max(
+		std::abs(double(z - getPoint(p.x - 1, p.y).z)),
+		std::abs(double(z - getPoint(p.x + 1, p.y).z))),
+		std::abs(double(z - getPoint(p.x, p.y - 1).z))),
+		std::abs(double(z - getPoint(p.x, p.y + 1).z)));
+	slope *= .5f;
+
+	ColorRGB color;
+
+	double max = high - low;
+
+	float steps = low + (max * (20. / 100.));
+
+	if (z >= low + (max * (80. / 100.)))
+	{
+		color = neige;
+	}
+	else if (z >= low + (max * (60. / 100.)))
+	{
+		if (slope <= .1f)
+			color = neige;
+		else
+			color = ColorFadeHight(roche, neige, terre_claire, z - 3. * steps, steps, slope);
+	}
+	else if (z >= low + (max * (40. / 100.)))
+	{
+		color = ColorFadeHight(terre, roche, terre_claire, z - 2. * steps, steps, slope);
+	}
+	else if (z >= 0.f)
+	{
+		color = ColorFadeHight(herbe, terre, terre_claire, z, 2.f * steps, slope);
+	}
+	else
+	{
+		color = bleue;
+	}
+
+	return color;
+	//double z = getPoint(p.x, p.y).z;
+	//double slope = getSlope(p);
+
+	////float n = Noise::noise(p.x,p.y);
+	////float v = (n*(z / 1000) + 0.2*n*(z / 500) + 0.1*n*(z / 200));
+	//float v = (Noise::noise2(p.x / 1000.f, p.y / 1000.f) + 0.7*Noise::noise2(p.x / 500.f, p.y / 500.f) + 0.5*Noise::noise2(p.x / 100.f, p.y / 100.f)) / 2.2;
+	////v = (1.0 + sin(p.x / 100.0))*0.5;
+	////float v = 1.f;
+	//ColorRGB color;
+
+	//if (slope<0.2)
+	//	color = ColorRGB{ 91, 60, 17 } *v + ColorRGB{ 205	,133	,63 } *(1 - v);
+	//else
+	//	color = ColorRGB{ 246,	220,	18 } *v + ColorRGB{ 254, 248, 108 } *(1 - v);
+	////color hori = brun * v + brun clair * (1 - v);
+
+	//return color;
+}
+
 ColorRGB Terrain::getColor(const Point & p) 
 {
 	if (!renderGrey)
 	{
-		double z = getPoint(p.x, p.y).z;
-
-		double slope = std::max(std::max(std::max(
-			std::abs(double(z - getPoint(p.x - 1, p.y).z)),
-			std::abs(double(z - getPoint(p.x + 1, p.y).z))),
-			std::abs(double(z - getPoint(p.x, p.y - 1).z))),
-			std::abs(double(z - getPoint(p.x, p.y + 1).z)));
-		slope *= .5f;
-
-		ColorRGB color;
-
-		double max = high - low;
-
-		float steps = low + (max * (20. / 100.));
-
-		if (z >= low + (max * (80. / 100.))) 
-		{
-			color = neige;
-		}
-		else if (z >= low + (max * (60. / 100.))) 
-		{
-			if (slope <= .1f)
-				color = neige;
-			else
-				color = ColorFadeHight(roche, neige, terre_claire, z - 3. * steps, steps, slope);
-		}
-		else if (z >= low + (max * (40. / 100.))) 
-		{
-			color = ColorFadeHight(terre, roche, terre_claire, z - 2. * steps, steps, slope);
-		}
-		else if (z >= 0.f) 
-		{
-			color = ColorFadeHight(herbe, terre, terre_claire, z, 2.f * steps, slope);
-		}
-		else 
-		{
-			color = bleue;
-		}
-
-		return color;
-		//double z = getPoint(p.x, p.y).z;
-		//double slope = getSlope(p);
-
-		////float n = Noise::noise(p.x,p.y);
-		////float v = (n*(z / 1000) + 0.2*n*(z / 500) + 0.1*n*(z / 200));
-		//float v = (Noise::noise2(p.x / 1000.f, p.y / 1000.f) + 0.7*Noise::noise2(p.x / 500.f, p.y / 500.f) + 0.5*Noise::noise2(p.x / 100.f, p.y / 100.f)) / 2.2;
-		////v = (1.0 + sin(p.x / 100.0))*0.5;
-		////float v = 1.f;
-		//ColorRGB color;
-
-		//if (slope<0.2)
-		//	color = ColorRGB{ 91, 60, 17 } *v + ColorRGB{ 205	,133	,63 } *(1 - v);
-		//else
-		//	color = ColorRGB{ 246,	220,	18 } *v + ColorRGB{ 254, 248, 108 } *(1 - v);
-		////color hori = brun * v + brun clair * (1 - v);
-
-		//return color;
+		return getPoint(p.x, p.y).color;
 	}
 	else
 		return grey;

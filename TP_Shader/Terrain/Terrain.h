@@ -1,12 +1,12 @@
 #pragma once
 
 #include <math.h>
+#include <qdebug.h>
 #include "..\Geometry\Geometry.h"
 #include "..\Geometry\Vector.h"
 #include "..\Geometry\Normals.h"
-#include "..\Global\Global.h"
+#include "..\Shapes\Pixel.h"
 #include "Global\Constants.h"
-#include <qdebug.h>
 #include "..\Noise\Noise.h"
 
 class Terrain
@@ -17,7 +17,7 @@ protected:
 	bool renderGrey;
 	double k;						// Pente maximale
 	double high, low;				// Paramètre pour connaitre la hauteur max et min de la map
-
+	Pixel ** pointList;
 public:
 	unsigned int terrain_width;
 	unsigned int terrain_height;
@@ -37,17 +37,18 @@ public:
 
 	//	virtual Vector getColor ( const Vector & p ) const = 0;
 	 ColorRGB getColor(const Point & p);
+	 ColorRGB initColor(const Point & p);
 
 	 ColorRGB getColorPrecalculed(const Point & p);
-	 ColorRGB ColorFadeHight(ColorRGB,ColorRGB,ColorRGB,double,double,double);
+	 ColorRGB ColorFadeHight(ColorRGB, ColorRGB, ColorRGB, double, double, double);
 
 	// Renvoi la normal du terrain au point p
-	virtual Normals getNormal(Point p) const = 0;
+	 virtual Normals getNormal(Pixel p) const = 0;
 
 	// Renvoie le point x, y, z appartenant a pointList a partir du x, y (recherche matrice + interpolation).
-	virtual Point getPoint(float x, float y) const = 0;
+	virtual Pixel getPoint(float x, float y) const = 0;
 	virtual double getZ(float x, float y) const = 0;
-	virtual double getSlope(Point p) const = 0;
+	virtual double getSlope(Pixel p) const = 0;
 
 	Point getOrigin () const 
 	{

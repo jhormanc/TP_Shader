@@ -47,7 +47,7 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
-		z = Point::distance ( r.o, p );
+		z = Point::distance(r.o, p);
 		// Fix trou noir
 		Point pt(terrain->getPoint(p.x, p.y));
 
@@ -58,7 +58,7 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		{
 			Point l = samplerPoisson.next();
 			
-			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0))) ;
+			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0)));
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 
 			accli += li;

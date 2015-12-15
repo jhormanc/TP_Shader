@@ -25,7 +25,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -168,6 +168,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwin.cpp" />
     <ClCompile Include="Noise\Noise.cpp" />
+    <ClCompile Include="Shapes\Pixel.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SamplerPoisson.cpp" />
     <ClCompile Include="Shapes\Sphere.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="Geometry\Point.h" />
     <ClInclude Include="Geometry\Ray.h" />
     <ClInclude Include="Geometry\Vector.h" />
+    <ClInclude Include="Global\ColorRGB.h" />
     <ClInclude Include="Global\Constants.h" />
     <ClInclude Include="Global\Global.h" />
     <ClInclude Include="Noise\Noise.h" />
@@ -224,6 +226,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB  "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets" "-IC:\Program Files (x86)\Visual Leak Detector\include"</Command>
     </CustomBuild>
+    <ClInclude Include="Shapes\Pixel.h" />
     <ClInclude Include="SamplerPoisson.h" />
     <ClInclude Include="Shapes\Sphere.h" />
     <ClInclude Include="Terrain\Terrain.h" />

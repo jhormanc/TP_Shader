@@ -9,9 +9,9 @@ TerrainFractal::TerrainFractal(const TerrainFractal &terrain) : Terrain(terrain)
 {
 	terrain_width = terrain.terrain_width;
 	terrain_height = terrain.terrain_height;
-	pointList = new Vector *[terrain.terrain_width];
+	pointList = new Pixel *[terrain.terrain_width];
 	for (int i = 0; i < terrain.terrain_width; i++)
-		pointList[i] = new Vector [terrain.terrain_height];
+		pointList[i] = new Pixel[terrain.terrain_height];
 
 	for (int i = 0; i < terrain.terrain_width; ++i)
 		for (int j = 0; j < terrain.terrain_height; ++j)
@@ -35,9 +35,9 @@ TerrainFractal::TerrainFractal(unsigned int terrain_width_, unsigned int terrain
 {
 	high = (low = Noise::noise(0., 0.));
 
-	pointList = new Vector *[terrain_width_];
+	pointList = new Pixel *[terrain_width_];
 	for (int i = 0; i < terrain_width_; i++)
-		pointList[i] = new Vector[terrain_height_];
+		pointList[i] = new Pixel[terrain_height_];
 
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < terrain_width_; i++)
@@ -45,12 +45,23 @@ TerrainFractal::TerrainFractal(unsigned int terrain_width_, unsigned int terrain
 		for (int j = 0; j < terrain_height_; j++)
 		{
 			float z = Noise::noise(i, j);
-			pointList[i][j] = Vector(i, j, z);
+			Point p(i, j, z);
+			pointList[i][j] = Pixel(p);
 			MaxMin(z);
 		}
 	}
 
 	calcK();
+
+	#pragma omp parallel for schedule(static)
+	for (int i = 0; i < terrain_width_; i++)
+	{
+		for (int j = 0; j < terrain_height_; j++)
+		{
+			ColorRGB c(initColor(pointList[i][j]));
+			pointList[i][j].color = c;
+		}
+	}
 }
 
 /*!
@@ -68,10 +79,10 @@ double TerrainFractal::getZ(float x, float y) const
 	if (!(tmpI >= 0 && tmpI < terrain_width && tmpJ >= 0 && tmpJ < terrain_height))
 		return 0.0;
 
-	Vector & a(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ]);
-	Vector & b(pointList[tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
-	Vector & c(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
-	Vector & d(pointList[tmpI][tmpJ]);
+	Pixel & a(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ]);
+	Pixel & b(pointList[tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
+	Pixel & c(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
+	Pixel & d(pointList[tmpI][tmpJ]);
 
 	float x2 = x - (float)tmpI;
 	float y2 = y - (float)tmpJ;
@@ -87,18 +98,18 @@ double TerrainFractal::getZ(float x, float y) const
 /*!
 \brief
 */
-Point TerrainFractal::getPoint(float x, float y) const 
+Pixel TerrainFractal::getPoint(float x, float y) const 
 {
 	int tmpI = (int)x;
 	int tmpJ = (int)y;
 	if (!(tmpI >= 0 && tmpI < terrain_width && tmpJ >= 0 && tmpJ < terrain_height))
 		return noIntersectPoint;
 
-	return Point(x, y, getZ(x, y));
+	return Pixel(Point(x, y, getZ(x, y)), pointList[tmpI][tmpJ].color);
 }
 
 // Renvoi la normal du terrain au point p
-Normals TerrainFractal::getNormal(Point p) const 
+Normals TerrainFractal::getNormal(Pixel p) const
 {
 	float eps = .1f;
 	return Normals(normalize(Vector(-(getPoint(p.x + eps, p.y).z - getPoint(p.x - eps, p.y).z) / eps * 0.5f,
@@ -109,7 +120,7 @@ Normals TerrainFractal::getNormal(Point p) const
 
 
 //Renvoie la pente en un Point /*TotallementFaut*/
-double TerrainFractal::getSlope(Point p) const
+double TerrainFractal::getSlope(Pixel p) const
 {
 	Normals n = getNormal(p);
 	return sqrt(n.x * n.x + n.y * n.y); //recherche slope / gradiance / terrain

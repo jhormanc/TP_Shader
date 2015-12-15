@@ -29,8 +29,6 @@ inline float clamp(float val, float low, float high)
 	else return val;
 }
 
-
-
 inline int mod(int a, int b)
 {
 	int n = int(a / b);
@@ -53,67 +51,3 @@ inline float randf(float low, float high)
 {
 	return low + (float)rand() / (float)(RAND_MAX / (high - low));
 }
-struct ColorRGB
-{
-	float x, y, z;
-	ColorRGB operator*(float f)
-	{
-		return ColorRGB{ x * f, y * f, z * f };
-	}
-
-	ColorRGB operator*(ColorRGB c)
-	{
-		return ColorRGB{ x * c.x, y * c.y, z * c.z };
-	}
-
-	ColorRGB operator/(float f)
-	{
-		return ColorRGB{ x /f, y /f, z /f};
-	}
-
-	ColorRGB operator+(ColorRGB c)
-	{
-		return ColorRGB{ x + c.x, y + c.y, z + c.z };
-	}
-
-	ColorRGB operator-(ColorRGB c)
-	{
-		return ColorRGB{ x - c.x, y - c.y, z - c.z };
-	}
-
-	ColorRGB cclamp(float min, float max)
-	{
-		return ColorRGB{ clamp(x, min, max), clamp(y, min, max), clamp(z, min, max) };
-	}
-
-	ColorRGB applyGamma()
-	{
-		float p = 1.f / 2.2f;
-		return ColorRGB{ powf(x, p), powf(y, p), powf(z, p) };
-	}
-	ColorRGB toRgb()
-	{
-		return operator*(255.f);
-	}
-};
-
-const ColorRGB black = ColorRGB{ .0f, .0f, .0f };
-const ColorRGB white = ColorRGB{ 0.75f, 0.75f, 0.75f } *255.f;
-const ColorRGB blue = ColorRGB{ .25f, .25f, .75f } *255.f;
-const ColorRGB red = ColorRGB{ .75f, .25f, .25f } *255.f;
-const ColorRGB yellow = ColorRGB{ .9f, .1f, .9f } *255.f;
-const ColorRGB purple = ColorRGB{ .9f, .9f, .1f } *255.f;
-const ColorRGB grey = ColorRGB{ 105.f, 105.f, 105.f };
-const ColorRGB grey_light = ColorRGB { 190.f, 190.f, 190.f };
-const ColorRGB orange = ColorRGB { 255.f, 140.f, 0.f };
-
-const ColorRGB sky = ColorRGB{ 135.f, 206.f, 235.f };
-
-const ColorRGB roche = { 100.f, 100.f, 100.f };
-const ColorRGB roche_claire = { 200.f, 200.f, 200.f };
-const ColorRGB terre = { 95.f, 62.f, 5.f };
-const ColorRGB terre_claire = { 195.f, 162.f, 105.f };
-const ColorRGB roche_terre_claire = { 197.5f, 181.f, 152.5f };
-const ColorRGB herbe = { 0.f, 104.f, 10.f };
-const ColorRGB neige = { 255.f, 255.f, 255.f };
-const ColorRGB bleue = { 0.f, 128.f, 220.f };
