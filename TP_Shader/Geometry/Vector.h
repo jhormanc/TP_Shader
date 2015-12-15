@@ -74,5 +74,7 @@ public:
 		return sqrtf(lengthSquared()); 
 	}
 
+	
+
 	~Vector(){};
 };

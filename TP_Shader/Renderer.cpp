@@ -37,7 +37,7 @@ Renderer::~Renderer()
 	wait();
 }
 
-ColorRGB Renderer::radiance(Ray r)
+ColorRGB Renderer::radiance(Ray r, float &z)
 {
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 	float accli = 0.f;
@@ -47,6 +47,7 @@ ColorRGB Renderer::radiance(Ray r)
 	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
+		z = Point::distance ( r.o, p );
 		// Fix trou noir
 		Point pt(terrain->getPoint(p.x, p.y));
 
@@ -97,13 +98,14 @@ ColorRGB Renderer::radiance(Point p, Point o)
 }
 
 
-ColorRGB Renderer::radiancePrecalculed(Ray r)
+ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 {
 	float t;
 	int nbIter = 0;
 	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
+		z = Point::distance ( r.o, p );
 		ColorRGB res = terrain->getColorPrecalculed(p);
 		if(!renderNbIter)
 			return res;
@@ -202,6 +204,26 @@ void Renderer::render()
 	}
 }
 
+void Renderer::postprocess_lightning ( const float &z, ColorRGB &c ) {
+	float t = z / distMax;
+	ColorRGB c2 = grey_light;
+	c = c * ( 1 - t ) + c2 * t;
+}
+
+
+void Renderer::postprocess_shadowing ( const float &z, ColorRGB &c ) {
+	float t = z / distMax;
+	ColorRGB c2 = c  * shadowFactor;
+	c = c * ( 1 - t ) + c2 * t;
+}
+
+void Renderer::postprocess_fog ( const float &z, ColorRGB &c ) {
+	float t = exp ( -z / ( distMax * fogFactor ) );
+	ColorRGB c2 = grey_light;
+	c = c2 * ( 1 - t ) + c * t;
+}
+
+
 void Renderer::run()
 {
 	qDebug("start render ");
@@ -232,7 +254,11 @@ void Renderer::run()
 				{
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
-					ColorRGB c = p ? radiancePrecalculed(r) : radiance(r);
+					float z;
+					ColorRGB c = p ? radiancePrecalculed(r,z) : radiance(r,z);
+					//postprocess_lightning ( z, c );
+					//postprocess_shadowing ( z, c );
+					postprocess_fog ( z, c );
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
