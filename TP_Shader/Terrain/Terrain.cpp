@@ -76,13 +76,9 @@ void Terrain::calcK()
 	{
 		for (int i = 0; i < terrain_width - 1; i++) 
 		{
-			k = std::max(std::max(std::max(k, 
-				std::abs(double(getPoint(i, j).z - getPoint(i, j + 1).z))),
-				std::abs(double(getPoint(i, j).z - getPoint(i + 1, j).z) )),
-				std::abs(double(getPoint(i, j).z - getPoint(i + 1, j + 1).z)));
+			k = std::max(getSlope(getPoint(i, j)), k);
 		}
 	}
-	k *= 0.5f;
 }
 
 // Renvoie True si le Ray r touche le terrain

@@ -101,8 +101,8 @@ Point TerrainFractal::getPoint(float x, float y) const
 Normals TerrainFractal::getNormal(Point p) const 
 {
 	float eps = .1f;
-	return Normals(normalize(Vector(-(getPoint(p.x + eps, p.y).z - getPoint(p.x - eps, p.y).z)*eps*0.5f,
-		-(getPoint(p.x, p.y + eps).z - getPoint(p.x, p.y - eps).z)*eps*0.5f,
+	return Normals(normalize(Vector(-(getPoint(p.x + eps, p.y).z - getPoint(p.x - eps, p.y).z) / eps * 0.5f,
+		-(getPoint(p.x, p.y + eps).z - getPoint(p.x, p.y - eps).z) / eps * 0.5f,
 		1.f)
 		));
 }
@@ -111,8 +111,8 @@ Normals TerrainFractal::getNormal(Point p) const
 //Renvoie la pente en un Point /*TotallementFaut*/
 double TerrainFractal::getSlope(Point p) const
 {
-	Normals n =getNormal(p);
-	return sqrt(n.x*n.x + n.y*n.y);
+	Normals n = getNormal(p);
+	return sqrt(n.x * n.x + n.y * n.y);
 }
 
 TerrainFractal::~TerrainFractal()
