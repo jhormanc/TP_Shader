@@ -47,7 +47,7 @@ const int samplesStep = 1;
 const float stepDeltaR = 5.f;
 
 // Distance post processing effects
-const float distMax = 5000.f;
+const float distMax = 6000.f;
 
 // Facteur d'assombrissement [0,1]
 const float shadowFactor = .2342f;

@@ -206,7 +206,7 @@ void Renderer::render()
 
 void Renderer::postprocess_lightning ( const float &z, ColorRGB &c ) {
 	float t = z / distMax;
-	ColorRGB c2 = grey_light;
+	ColorRGB c2 = orange;
 	c = c * ( 1 - t ) + c2 * t;
 }
 
@@ -222,7 +222,6 @@ void Renderer::postprocess_fog ( const float &z, ColorRGB &c ) {
 	ColorRGB c2 = grey_light;
 	c = c2 * ( 1 - t ) + c * t;
 }
-
 
 void Renderer::run()
 {
@@ -258,7 +257,7 @@ void Renderer::run()
 					ColorRGB c = p ? radiancePrecalculed(r,z) : radiance(r,z);
 					//postprocess_lightning ( z, c );
 					//postprocess_shadowing ( z, c );
-					postprocess_fog ( z, c );
+					//postprocess_fog ( z, c );
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
