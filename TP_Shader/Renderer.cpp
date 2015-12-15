@@ -14,7 +14,7 @@ bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 1000.f)), 1.f), terrain(new TerrainFractal(5000, 5000))
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 1000.f)), 1.f), terrain(new TerrainFractal(5000, 5000, 10))
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -105,7 +105,7 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
-		z = Point::distance ( r.o, p );
+		z = Point::distance(r.o, p);
 		ColorRGB res = terrain->getColorPrecalculed(p);
 		if(!renderNbIter)
 			return res;
@@ -119,7 +119,7 @@ ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
 	return ambiant + color * clamp(
 		(dot(normalize(l - p), n) * coefDiffus // diffus  
-		+ std::pow(dot(reflect(normalize(l-p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
+		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
 		, 0.f, 1.f);
 }
 
@@ -160,8 +160,9 @@ void Renderer::precalc()
 	std::ofstream mesureFile("mesureFile.txt", std::ios::out | std::ios::app);
 
 	//BBox sceneSize = terrain->getBound();
-	int w = terrain->terrain_width;
-	int h = terrain->terrain_height;
+	int w = terrain->getPointsWidth();
+	int h = terrain->getPointsHeight();
+	int steps = terrain->getSteps();
 	auto start = std::chrono::high_resolution_clock::now();
 
 	#pragma omp parallel for schedule(static)
@@ -172,7 +173,7 @@ void Renderer::precalc()
 			
 		/*	Vector cam_dir = normalize( - precalcCam.getOrigin());
 			Ray r = Ray(precalcCam.getOrigin(), cam_dir);*/
-			terrain->precalc[i][j] = radiance(terrain->getPoint(i, j), cam.getOrigin());
+			terrain->precalc[i][j] = radiance(terrain->getPoint((float)(i * steps), (float)(j * steps)), cam.getOrigin());
 		}
 	}
 	auto end = std::chrono::high_resolution_clock::now();

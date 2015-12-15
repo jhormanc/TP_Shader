@@ -9,12 +9,16 @@ TerrainFractal::TerrainFractal(const TerrainFractal &terrain) : Terrain(terrain)
 {
 	terrain_width = terrain.terrain_width;
 	terrain_height = terrain.terrain_height;
-	pointList = new Pixel *[terrain.terrain_width];
-	for (int i = 0; i < terrain.terrain_width; i++)
-		pointList[i] = new Pixel[terrain.terrain_height];
+	pointList = new Pixel *[terrain.points_width];
+	points_width = terrain.points_width;
+	points_height = terrain.points_height;
+	steps = terrain.steps;
 
-	for (int i = 0; i < terrain.terrain_width; ++i)
-		for (int j = 0; j < terrain.terrain_height; ++j)
+	for (int i = 0; i < terrain.points_width; i++)
+		pointList[i] = new Pixel[terrain.points_height];
+
+	for (int i = 0; i < terrain.points_width; ++i)
+		for (int j = 0; j < terrain.points_height; ++j)
 			pointList[i][j] = terrain.pointList[i][j];
 }
 
@@ -22,30 +26,34 @@ TerrainFractal & TerrainFractal::operator=(const TerrainFractal & terrain)
 {
 	terrain_width = terrain.terrain_width;
 	terrain_height = terrain.terrain_height;
-	precalc = new ColorRGB *[terrain.terrain_width];
-	for (int i = 0; i < terrain.terrain_width; i++)
-		precalc[i] = new ColorRGB[terrain.terrain_height];
-	for (int i = 0; i < terrain.terrain_width; ++i)
-		for (int j = 0; j < terrain.terrain_height; ++j)
+	points_width = terrain.points_width;
+	points_height = terrain.points_height;
+	steps = terrain.steps;
+
+	precalc = new ColorRGB *[terrain.points_width];
+	for (int i = 0; i < terrain.points_width; i++)
+		precalc[i] = new ColorRGB[terrain.points_height];
+	for (int i = 0; i < terrain.points_width; ++i)
+		for (int j = 0; j < terrain.points_height; ++j)
 			precalc[i][j] = terrain.precalc[i][j];
 	return *this;
 }
 // Renvoi un terrain généré aléatoirement
-TerrainFractal::TerrainFractal(unsigned int terrain_width_, unsigned int terrain_height_) : Terrain(terrain_width_, terrain_height_)
+TerrainFractal::TerrainFractal(const int& terrain_width_, const int& terrain_height_, const int& _steps) : Terrain(terrain_width_, terrain_height_, _steps)
 {
 	high = (low = Noise::noise(0., 0.));
 
-	pointList = new Pixel *[terrain_width_];
-	for (int i = 0; i < terrain_width_; i++)
-		pointList[i] = new Pixel[terrain_height_];
+	pointList = new Pixel *[points_width];
+	for (int i = 0; i < points_width; i++)
+		pointList[i] = new Pixel[points_height];
 
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < terrain_width_; i++)
+	for (int i = 0; i < points_width; i++)
 	{
-		for (int j = 0; j < terrain_height_; j++)
+		for (int j = 0; j < points_height; j++)
 		{
-			float z = Noise::noise(i, j);
-			Point p(i, j, z);
+			float z = Noise::noise(i * steps, j * steps);
+			Point p(i * steps, j * steps, z);
 			pointList[i][j] = Pixel(p);
 			MaxMin(z);
 		}
@@ -54,9 +62,9 @@ TerrainFractal::TerrainFractal(unsigned int terrain_width_, unsigned int terrain
 	calcK();
 
 	#pragma omp parallel for schedule(static)
-	for (int i = 0; i < terrain_width_; i++)
+	for (int i = 0; i < points_width; i++)
 	{
-		for (int j = 0; j < terrain_height_; j++)
+		for (int j = 0; j < points_height; j++)
 		{
 			ColorRGB c(initColor(pointList[i][j]));
 			pointList[i][j].color = c;
@@ -73,19 +81,19 @@ double TerrainFractal::getZ(float x, float y) const
 	//return Point(x, y, 0.f);
 	//return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, 0.f ) : noIntersectPoint;
 
-	int tmpI = (int)x;
-	int tmpJ = (int)y;
+	int tmpI = (int)(x / steps);
+	int tmpJ = (int)(y / steps);
 
-	if (!(tmpI >= 0 && tmpI < terrain_width && tmpJ >= 0 && tmpJ < terrain_height))
+	if (!(tmpI >= 0 && tmpI < points_width && tmpJ >= 0 && tmpJ < points_height))
 		return 0.0;
 
-	Pixel & a(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ]);
-	Pixel & b(pointList[tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
-	Pixel & c(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
+	Pixel & a(pointList[tmpI < points_width - 1 ? tmpI + 1 : tmpI][tmpJ]);
+	Pixel & b(pointList[tmpI][tmpJ < points_height - 1 ? tmpJ + 1 : tmpJ]);
+	Pixel & c(pointList[tmpI < points_width - 1 ? tmpI + 1 : tmpI][tmpJ < points_height - 1 ? tmpJ + 1 : tmpJ]);
 	Pixel & d(pointList[tmpI][tmpJ]);
 
-	float x2 = x - (float)tmpI;
-	float y2 = y - (float)tmpJ;
+	float x2 = (x - d.x) / steps;
+	float y2 = (y - d.y) / steps;
 	float z = (1.f - x2) * (1.f - y2) * d.z
 		+ x2 * (1.f - y2) * a.z
 		+ (1.f - x2) * y2 * b.z
@@ -94,15 +102,15 @@ double TerrainFractal::getZ(float x, float y) const
 	return z;
 }
 
-
 /*!
 \brief
 */
 Pixel TerrainFractal::getPoint(float x, float y) const 
 {
-	int tmpI = (int)x;
-	int tmpJ = (int)y;
-	if (!(tmpI >= 0 && tmpI < terrain_width && tmpJ >= 0 && tmpJ < terrain_height))
+	int tmpI = (int)(x / steps);
+	int tmpJ = (int)(y / steps);
+
+	if (!(tmpI >= 0 && tmpI < points_width && tmpJ >= 0 && tmpJ < points_height))
 		return noIntersectPoint;
 
 	return Pixel(Point(x, y, getZ(x, y)), pointList[tmpI][tmpJ].color);
@@ -111,7 +119,7 @@ Pixel TerrainFractal::getPoint(float x, float y) const
 // Renvoi la normal du terrain au point p
 Normals TerrainFractal::getNormal(Pixel p) const
 {
-	float eps = .1f;
+	float eps = .1f * steps;
 	return Normals(normalize(Vector(-(getPoint(p.x + eps, p.y).z - getPoint(p.x - eps, p.y).z) / eps * 0.5f,
 		-(getPoint(p.x, p.y + eps).z - getPoint(p.x, p.y - eps).z) / eps * 0.5f,
 		1.f)
@@ -128,7 +136,7 @@ double TerrainFractal::getSlope(Pixel p) const
 
 TerrainFractal::~TerrainFractal()
 {
-	for (int i = 0; i < terrain_width; i++)
+	for (int i = 0; i < points_width; i++)
 		delete[] pointList[i];
 	delete[] pointList;
 }

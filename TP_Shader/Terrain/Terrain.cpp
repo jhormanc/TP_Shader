@@ -9,22 +9,32 @@ Terrain::Terrain(const Terrain& terrain)
 {
 	terrain_width = terrain.terrain_width;
 	terrain_height = terrain.terrain_height;
-	precalc = new ColorRGB *[terrain.terrain_width];
-	for (unsigned int i = 0; i < terrain.terrain_width; i++)
-		precalc[i] = new ColorRGB[terrain.terrain_height];
+	points_width = terrain.points_width;
+	points_height = terrain.points_height;
+	steps = terrain.steps;
 
-	for (unsigned int i = 0; i < terrain.terrain_width; ++i)
-		for (unsigned int j = 0; j < terrain.terrain_height; ++j)
+	precalc = new ColorRGB *[terrain.points_width];
+	for (int i = 0; i < terrain.points_width; i++)
+		precalc[i] = new ColorRGB[terrain.points_height];
+
+	for (int i = 0; i < terrain.points_width; ++i)
+		for (int j = 0; j < terrain.points_height; ++j)
 			precalc[i][j] = terrain.precalc[i][j];
 
 	renderGrey = false;
 }
 
-Terrain::Terrain(unsigned int terrain_width_, unsigned int terrain_height_) : terrain_width(terrain_width_), terrain_height(terrain_height_)
+Terrain::Terrain(const int& terrain_width_, const int& terrain_height_, const int& _steps) : terrain_width(terrain_width_), terrain_height(terrain_height_), steps(_steps)
 {
-	precalc = new ColorRGB *[terrain_width_];
-	for (unsigned int i = 0; i < terrain_width_; i++)
-		precalc[i] = new ColorRGB[terrain_height_];
+	if (steps <= 0)
+		steps = 1;
+
+	points_width = (int)(terrain_width / (float)steps);
+	points_height = (int)(terrain_height / (float)steps);
+
+	precalc = new ColorRGB *[points_width];
+	for (int i = 0; i < points_width; i++)
+		precalc[i] = new ColorRGB[points_height];
 
 	renderGrey = false;
 }
@@ -33,12 +43,16 @@ Terrain & Terrain::operator=(const Terrain& terrain)
 {
 	terrain_width = terrain.terrain_width;
 	terrain_height = terrain.terrain_height;
-	precalc = new ColorRGB *[terrain.terrain_width];
-	for (unsigned int i = 0; i < terrain.terrain_width; i++)
-		precalc[i] = new ColorRGB[terrain.terrain_height];
+	points_width = terrain.points_width;
+	points_height = terrain.points_height;
+	steps = terrain.steps;
 
-	for (unsigned int i = 0; i < terrain.terrain_width; ++i)
-		for (unsigned int j = 0; j < terrain.terrain_height; ++j)
+	precalc = new ColorRGB *[terrain.points_width];
+	for (int i = 0; i < terrain.points_width; i++)
+		precalc[i] = new ColorRGB[terrain.points_height];
+
+	for (int i = 0; i < terrain.points_width; ++i)
+		for (int j = 0; j < terrain.points_height; ++j)
 			precalc[i][j] = terrain.precalc[i][j];
 	return *this;
 }
@@ -72,11 +86,11 @@ void Terrain::calcK()
 	k = getSlope(getPoint(0.f, 0.f));
 
 	#pragma omp parallel for schedule(static)
-	for (int j = 0; j < terrain_height - 1; j++) 
+	for (int j = 0; j < points_height - 1; j++) 
 	{
-		for (int i = 0; i < terrain_width - 1; i++) 
+		for (int i = 0; i < points_width - 1; i++)
 		{
-			k = std::max(getSlope(getPoint(i, j)), k);
+			k = std::max(getSlope(getPoint(i * steps, j * steps)), k);
 		}
 	}
 }
@@ -171,19 +185,19 @@ bool Terrain::intersectSegment(const Ray& r, float * tHit, float tMax) const
 
 ColorRGB Terrain::getColorPrecalculed(const Point & p) 
 {
-	//Point intersect = getPoint(p.x, p.y);
-	return precalc[(int)p.x][(int)p.y];
+	return precalc[(int)(p.x / steps)][(int)(p.y / steps)];
 }
 
 ColorRGB Terrain::initColor(const Point & p)
 {
-	double z = getPoint(p.x, p.y).z;
+	Pixel pix(getPoint(p.x, p.y));
+	double z = p.z;
 
 	double slope = std::max(std::max(std::max(
-		std::abs(double(z - getPoint(p.x - 1, p.y).z)),
-		std::abs(double(z - getPoint(p.x + 1, p.y).z))),
-		std::abs(double(z - getPoint(p.x, p.y - 1).z))),
-		std::abs(double(z - getPoint(p.x, p.y + 1).z)));
+		std::abs(double(z - getPoint(pix.x - steps, pix.y).z)),
+		std::abs(double(z - getPoint(pix.x + steps, pix.y).z))),
+		std::abs(double(z - getPoint(pix.x, pix.y - steps).z))),
+		std::abs(double(z - getPoint(pix.x, pix.y + steps).z)));
 	slope *= .5f;
 
 	ColorRGB color;
@@ -240,7 +254,24 @@ ColorRGB Terrain::getColor(const Point & p)
 {
 	if (!renderGrey)
 	{
-		return getPoint(p.x, p.y).color;
+		int tmpI = (int)(p.x / steps);
+		int tmpJ = (int)(p.y / steps);
+
+		Pixel & a(pointList[tmpI < points_width - 1 ? tmpI + 1 : tmpI][tmpJ]);
+		Pixel & b(pointList[tmpI][tmpJ < points_height - 1 ? tmpJ + 1 : tmpJ]);
+		Pixel & c(pointList[tmpI < points_width - 1 ? tmpI + 1 : tmpI][tmpJ < points_height - 1 ? tmpJ + 1 : tmpJ]);
+		Pixel & d(pointList[tmpI][tmpJ]);
+
+		float x2 = (p.x - d.x) / steps;
+		float y2 = (p.y - d.y) / steps;
+		ColorRGB color = d.color * (1.f - x2) * (1.f - y2)
+			+ a.color * x2 * (1.f - y2)
+			+ b.color * (1.f - x2) * y2
+			+ c.color * y2 * x2;
+
+		return color;
+
+		//return getPoint(p.x, p.y).color;
 	}
 	else
 		return grey;
@@ -263,11 +294,9 @@ void Terrain::ChangeRenderColor(const bool& render_grey)
 	renderGrey = render_grey;
 }
 
-
-
 Terrain::~Terrain()
 {
-	for (unsigned int i = 0; i < terrain_width; i++)
+	for (unsigned int i = 0; i < points_width; i++)
 		delete[] precalc[i];
 	delete[] precalc;
 }

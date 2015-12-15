@@ -18,12 +18,14 @@ protected:
 	double k;						// Pente maximale
 	double high, low;				// Paramètre pour connaitre la hauteur max et min de la map
 	Pixel ** pointList;
+	int steps;
+	int terrain_width, terrain_height;
+	int points_width, points_height;
 public:
-	unsigned int terrain_width;
-	unsigned int terrain_height;
+
 	ColorRGB ** precalc;
 	Terrain();
-	Terrain(unsigned int terrain_width, unsigned int terrain_height);
+	Terrain(const int& terrain_width, const int& terrain_height, const int& _teps);
 	Terrain(const Terrain&);
 	Terrain & operator=(const Terrain&);
 	//Pour definir un max et un min
@@ -65,16 +67,21 @@ public:
 	// Renvoie vrai si le Ray r touche le terrain.
 	//bool intersection(Ray r, double &t) const;
 
-	// DEBUG
-	unsigned int getWidth() const 
+	inline int getPointsWidth() const
 	{
-		return terrain_width;
+		return points_width;
 	}
 
-	unsigned int getHeight() const 
+	inline int getPointsHeight() const 
 	{
-		return terrain_height;
+		return points_height;
 	}
+
+	inline int getSteps() const
+	{
+		return steps;
+	}
+		
 
 	double getLow() const 
 	{
@@ -85,6 +92,8 @@ public:
 	{
 		return high;
 	}
+
+
 	
 	// Calcul la pente maximale du terrain
 	void calcK();

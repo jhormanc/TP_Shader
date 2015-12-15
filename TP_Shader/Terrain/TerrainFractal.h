@@ -10,7 +10,7 @@ class TerrainFractal : public Terrain
 public:
 	TerrainFractal();
 	// Renvoi un terrain géneré aléatoirement
-	TerrainFractal (unsigned terrain_width_, unsigned int terrain_height_);
+	TerrainFractal(const int& terrain_width_, const int& terrain_height_, const int& _steps);
 	TerrainFractal(const TerrainFractal &);
 	TerrainFractal & operator=(const TerrainFractal &);
 	Pixel getPoint(float x, float y) const;
