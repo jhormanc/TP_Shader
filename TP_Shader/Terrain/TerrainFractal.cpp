@@ -53,7 +53,11 @@ TerrainFractal::TerrainFractal(unsigned int terrain_width_, unsigned int terrain
 	calcK();
 }
 
-Point TerrainFractal::getPoint(float x, float y) const 
+/*!
+\brief
+*/
+
+double TerrainFractal::getZ(float x, float y) const
 {
 	//return Point(x, y, 0.f);
 	//return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, 0.f ) : noIntersectPoint;
@@ -62,7 +66,7 @@ Point TerrainFractal::getPoint(float x, float y) const
 	int tmpJ = (int)y;
 
 	if (!(tmpI >= 0 && tmpI < terrain_width && tmpJ >= 0 && tmpJ < terrain_height))
-		return noIntersectPoint;
+		return 0.0;
 
 	Vector & a(pointList[tmpI < terrain_width - 1 ? tmpI + 1 : tmpI][tmpJ]);
 	Vector & b(pointList[tmpI][tmpJ < terrain_height - 1 ? tmpJ + 1 : tmpJ]);
@@ -76,14 +80,39 @@ Point TerrainFractal::getPoint(float x, float y) const
 		+ (1.f - x2) * y2 * b.z
 		+ x2 * y2 * c.z;
 
-	return Point(x, y, z);
+	return z;
+}
+
+
+/*!
+\brief
+*/
+Point TerrainFractal::getPoint(float x, float y) const 
+{
+	int tmpI = (int)x;
+	int tmpJ = (int)y;
+	if (!(tmpI >= 0 && tmpI < terrain_width && tmpJ >= 0 && tmpJ < terrain_height))
+		return noIntersectPoint;
+
+	return Point(x, y, getZ(x, y));
 }
 
 // Renvoi la normal du terrain au point p
 Normals TerrainFractal::getNormal(Point p) const 
 {
 	float eps = .1f;
-	return Normals( normalize(Vector( getPoint ( p.x - eps, p.y - eps ) + getPoint ( p.x + eps, p.y + eps ) - Point(0.f)) / ( 2 * eps )));
+	return Normals(normalize(Vector(-(getPoint(p.x + eps, p.y).z - getPoint(p.x - eps, p.y).z)*eps*0.5f,
+		-(getPoint(p.x, p.y + eps).z - getPoint(p.x, p.y - eps).z)*eps*0.5f,
+		1.f)
+		));
+}
+
+
+//Renvoie la pente en un Point /*TotallementFaut*/
+double TerrainFractal::getSlope(Point p) const
+{
+	Normals n =getNormal(p);
+	return sqrt(n.x*n.x + n.y*n.y);
 }
 
 TerrainFractal::~TerrainFractal()

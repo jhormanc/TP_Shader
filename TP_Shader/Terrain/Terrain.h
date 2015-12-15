@@ -7,6 +7,7 @@
 #include "..\Global\Global.h"
 #include "Global\Constants.h"
 #include <qdebug.h>
+#include "..\Noise\Noise.h"
 
 class Terrain
 {
@@ -45,6 +46,8 @@ public:
 
 	// Renvoie le point x, y, z appartenant a pointList a partir du x, y (recherche matrice + interpolation).
 	virtual Point getPoint(float x, float y) const = 0;
+	virtual double getZ(float x, float y) const = 0;
+	virtual double getSlope(Point p) const = 0;
 
 	Point getOrigin () const 
 	{

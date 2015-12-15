@@ -8,7 +8,7 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(5000.f, 5000.f, 1000.f);
+Point Renderer::sunPoint(2500.f, 2500.f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -117,7 +117,7 @@ ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
 	return ambiant + color * clamp(
 		(dot(normalize(l - p), n) * coefDiffus // diffus  
-		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
+		+ std::pow(dot(reflect(normalize(l-p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
 		, 0.f, 1.f);
 }
 

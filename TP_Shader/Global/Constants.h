@@ -14,7 +14,7 @@
 #define INFINITY FLT_MAX
 #endif
 const int nbRebondMax = 5;
-const int nbEchantillon = 15;
+const int nbEchantillon = 1;
 const float r_delta = 10.f;
 // Distance d'intersection null
 const double noIntersect = -10.0f;

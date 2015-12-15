@@ -223,6 +223,23 @@ ColorRGB Terrain::getColor(const Point & p)
 		}
 
 		return color;
+		//double z = getPoint(p.x, p.y).z;
+		//double slope = getSlope(p);
+
+		////float n = Noise::noise(p.x,p.y);
+		////float v = (n*(z / 1000) + 0.2*n*(z / 500) + 0.1*n*(z / 200));
+		//float v = (Noise::noise2(p.x / 1000.f, p.y / 1000.f) + 0.7*Noise::noise2(p.x / 500.f, p.y / 500.f) + 0.5*Noise::noise2(p.x / 100.f, p.y / 100.f)) / 2.2;
+		////v = (1.0 + sin(p.x / 100.0))*0.5;
+		////float v = 1.f;
+		//ColorRGB color;
+
+		//if (slope<0.2)
+		//	color = ColorRGB{ 91, 60, 17 } *v + ColorRGB{ 205	,133	,63 } *(1 - v);
+		//else
+		//	color = ColorRGB{ 246,	220,	18 } *v + ColorRGB{ 254, 248, 108 } *(1 - v);
+		////color hori = brun * v + brun clair * (1 - v);
+
+		//return color;
 	}
 	else
 		return grey;
