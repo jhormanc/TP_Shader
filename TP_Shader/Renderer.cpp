@@ -39,7 +39,7 @@ Renderer::~Renderer()
 
 ColorRGB Renderer::radiance(Ray r, float &z)
 {
-	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
+	float acc = 0.f;
 	float accli = 0.f;
 	int nbIter = 0;
 	float t;
@@ -62,11 +62,11 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 
 			accli += li;
-			acc = acc + shading * delta(pt, l, rDelta)  * li;
+			acc = acc + delta(pt, l, rDelta)  * li;
 		}
 
 		if (!renderNbIter)
-			return acc * (1.0f / accli);
+			return shading * (acc / accli);
 	}
 
 	if (!renderNbIter)
