@@ -112,7 +112,7 @@ Normals TerrainFractal::getNormal(Point p) const
 double TerrainFractal::getSlope(Point p) const
 {
 	Normals n = getNormal(p);
-	return sqrt(n.x * n.x + n.y * n.y);
+	return sqrt(n.x * n.x + n.y * n.y); //recherche slope / gradiance / terrain
 }
 
 TerrainFractal::~TerrainFractal()
