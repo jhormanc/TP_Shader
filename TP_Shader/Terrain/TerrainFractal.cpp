@@ -83,7 +83,11 @@ Point TerrainFractal::getPoint(float x, float y) const
 Normals TerrainFractal::getNormal(Point p) const 
 {
 	float eps = .1f;
-	return Normals( normalize(Vector( getPoint ( p.x - eps, p.y - eps ) + getPoint ( p.x + eps, p.y + eps ) - Point(0.f)) / ( 2 * eps )));
+	return Normals(normalize(Vector(-(getPoint(p.x + eps, p.y).z - getPoint(p.x - eps, p.y).z) * eps * 0.5f,
+		-(getPoint(p.x, p.y + eps).z - getPoint(p.x , p.y - eps).z) * eps * 0.5f,
+		1.f)
+		));
+	//return Normals( normalize(Vector( getPoint ( p.x - eps, p.y - eps ) + getPoint ( p.x + eps, p.y + eps ) - Point(0.f)) / ( 2 * eps )));
 }
 
 TerrainFractal::~TerrainFractal()

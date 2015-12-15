@@ -39,7 +39,7 @@ Renderer::~Renderer()
 
 ColorRGB Renderer::radiance(Ray r, float &z)
 {
-	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
+	float acc = 0.f;
 	float accli = 0.f;
 	int nbIter = 0;
 	float t;
@@ -62,11 +62,11 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 
 			accli += li;
-			acc = acc + shading * delta(pt, l, rDelta)  * li;
+			acc = acc + delta(pt, l, rDelta)  * li;
 		}
 
 		if (!renderNbIter)
-			return acc * (1.0f / accli);
+			return shading * (acc / accli);
 	}
 
 	if (!renderNbIter)
@@ -206,7 +206,7 @@ void Renderer::render()
 
 void Renderer::postprocess_lightning ( const float &z, ColorRGB &c ) {
 	float t = z / distMax;
-	ColorRGB c2 = grey_light;
+	ColorRGB c2 = ColorRGB{ 255, 140, 0 };
 	c = c * ( 1 - t ) + c2 * t;
 }
 
@@ -258,7 +258,7 @@ void Renderer::run()
 					ColorRGB c = p ? radiancePrecalculed(r,z) : radiance(r,z);
 					//postprocess_lightning ( z, c );
 					//postprocess_shadowing ( z, c );
-					postprocess_fog ( z, c );
+					//postprocess_fog ( z, c );
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
