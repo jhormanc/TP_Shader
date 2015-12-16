@@ -12,9 +12,10 @@ public:
 	static float noise1(const float x, const float y);
 	static float noise3(const float x, const float y);
 	static float noise2(const float x, const float y);
-	static float noiseMountains(const float x, const float y);
+	static float noiseAmbient(const float x, const float y);
+	static float noiseMountains(const float x, const float y, const float z_plains);
 	static float noisePlains(const float x, const float y);
-
+	static float noiseWater(const float, const float y);
 	static Vector warp(const Vector p, const float c, const float f, const bool perlin);
 	static float smooth(const float z, const float zmin, const float zmax);
 
