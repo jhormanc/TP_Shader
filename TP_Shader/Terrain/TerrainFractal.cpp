@@ -131,7 +131,7 @@ Normals TerrainFractal::getNormal(Pixel p) const
 double TerrainFractal::getSlope(Pixel p) const
 {
 	Normals n = getNormal(p);
-	return sqrt(n.x * n.x + n.y * n.y); //recherche slope / gradiance / terrain
+	return atan(sqrt(n.x * n.x + n.y * n.y)); //recherche slope / gradiance / terrain
 }
 
 TerrainFractal::~TerrainFractal()
