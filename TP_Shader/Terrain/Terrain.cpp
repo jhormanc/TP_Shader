@@ -234,29 +234,32 @@ ColorRGB Terrain::initColor(const Point & p)
 
 	float slope = getSlope(p);
 	float h = (high - low);
-	h = (p.z - low) / h;
+	h = (p.z - low) / (200.f - low);
 
 	//float v = (Noise::noise2(p.x / 1000.f, p.y / 1000.f) + 0.7*Noise::noise2(p.x / 500.f, p.y / 500.f) + 0.5*Noise::noise2(p.x / 100.f, p.y / 100.f)) / 2.2; //Effet Profondeur 
-	float v = Noise::simplex(p.x / 12.5f, p.y / 12.5f)
-	+ Noise::simplex(p.x / 25.f, p.y / 25.f)
-	+ Noise::simplex(p.x / 50.f, p.y / 50.f)
-	+ Noise::simplex(p.x / 100.f, p.y / 100.f);
+	Vector w = Noise::warp(Vector(p.x, p.y, 0.f), 2.f, 1.f / 200.f, false);
+	float v = Noise::simplex(w.x / 12.5f, w.y / 12.5f)
+		+ Noise::simplex(w.x / 25.f, w.y / 25.f)
+		+ Noise::simplex(w.x / 50.f, w.y / 50.f)
+		+ Noise::simplex(w.x / 100.f, w.y / 100.f);
 	v = (v + 4.f) * 0.125f;
+
 	ColorRGB color;
 
 	if (p.z < 200.f)
 	{
-		if (slope < 0.3f)
-			color = ColorRGB(grass) * v + ColorRGB(grass_bright) * (1.f - v);
-		else
-			color = ColorRGB(roche) * v + ColorRGB(roche_claire) * (1.f - v);
+		ColorRGB color_grass = ColorRGB(grass) * v + ColorRGB(grass_bright) * (1.f - v);
+
+		ColorRGB color_mountain = ColorRGB(rock) * v + ColorRGB(rock_bright) * (1.f - v);
+
+		color = color_mountain * slope + color_grass * (1.f - slope);
 	}
 	else
 	{
 		if (slope < 0.5f)
 			color = ColorRGB(neige) * v + ColorRGB(neige_dark) * (1.f - v);
 		else
-			color = ColorRGB(roche) * v + ColorRGB(roche_claire) * (1.f - v);
+			color = ColorRGB(rock) * v + ColorRGB(rock_bright) * (1.f - v);
 	}
 	
 	return color;

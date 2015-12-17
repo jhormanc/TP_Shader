@@ -80,4 +80,6 @@ const ColorRGB bleue = { 0.f, 128.f, 220.f };
 
 const ColorRGB grass_bright = { 188.f, 184.f, 95.f }; 
 const ColorRGB grass = { 63.f, 82.f, 26.f };
-const ColorRGB rock = { 63.f, 82.f, 26.f };
+
+const ColorRGB rock = { 86.f, 85.f, 83.f };
+const ColorRGB rock_bright = { 155.f, 147.f, 100.f };
