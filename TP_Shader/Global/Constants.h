@@ -74,7 +74,7 @@ const ColorRGB terre = { 95.f, 62.f, 5.f };
 const ColorRGB terre_claire = { 195.f, 162.f, 105.f };
 const ColorRGB roche_terre_claire = { 197.5f, 181.f, 152.5f };
 const ColorRGB herbe = { 0.f, 104.f, 10.f };
-const ColorRGB neige = { 255.f, 250.f, 250.f };
+const ColorRGB neige = { 255.f, 255.f, 255.f };
 const ColorRGB neige_dark = { 255.f, 250.f, 239.f };
 const ColorRGB bleue = { 0.f, 128.f, 220.f };
 

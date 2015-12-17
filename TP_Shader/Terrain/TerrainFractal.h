@@ -3,6 +3,7 @@
 #include "Terrain.h"
 #include "..\Noise\Noise.h"
 #include "Shapes\Pixel.h"
+#include "Global\Constants.h"
 
 class TerrainFractal : public Terrain 
 {

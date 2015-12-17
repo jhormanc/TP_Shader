@@ -249,15 +249,26 @@ ColorRGB Terrain::initColor(const Point & p)
 	if (p.z < 200.f)
 	{
 		ColorRGB color_grass = ColorRGB(grass) * v + ColorRGB(grass_bright) * (1.f - v);
-
 		ColorRGB color_mountain = ColorRGB(rock) * v + ColorRGB(rock_bright) * (1.f - v);
 
-		color = color_mountain * slope + color_grass * (1.f - slope);
+		if (slope < 0.05f)
+			color = color_grass;
+		else if (slope < 0.2f)
+			color = color_mountain * slope + color_grass * (1.f - slope);
+		else
+			color = color_mountain;
 	}
 	else
 	{
-		if (slope < 0.5f)
+		if (slope < 0.3f) // 0.4f
 			color = ColorRGB(neige) * v + ColorRGB(neige_dark) * (1.f - v);
+		else if (slope < 0.5f) // 0.6f
+		{
+			ColorRGB color_snow = ColorRGB(neige) * v + ColorRGB(neige_dark) * (1.f - v);
+			ColorRGB color_mountain = ColorRGB(rock) * v + ColorRGB(rock_bright) * (1.f - v);
+
+			color = color_mountain * slope + color_snow * (1.f - slope);
+		}
 		else
 			color = ColorRGB(rock) * v + ColorRGB(rock_bright) * (1.f - v);
 	}

@@ -43,13 +43,15 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 	float accli = 0.f;
 	int nbIter = 0;
 	float t;
+	Point pt(noIntersectPoint);
 
 	if (terrain->intersect(r, &t, &nbIter))
 	{
+		
 		Point p(r.o + r.d * t);
 		z = Point::distance(r.o, p);
 		// Fix trou noir
-		Point pt(terrain->getPoint(p.x, p.y));
+		pt = Point(terrain->getPoint(p.x, p.y));
 
 		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint, terrain->getColor(pt)).cclamp(0.f, 255.f);
 		
@@ -62,7 +64,7 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 
 			accli += li;
-			acc = acc + delta(pt, l, rDelta)  * li;
+			acc = acc + delta(pt, l, rDelta) * li;
 		}
 
 		if (!renderNbIter)
@@ -73,7 +75,6 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		return sky;
 
 	nbIter = clamp(nbIter, 0.f, 255.f);
-
 	return ColorRGB{ nbIter, nbIter, nbIter };
 }
 
@@ -102,6 +103,7 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 {
 	float t;
 	int nbIter = 0;
+
 	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
@@ -110,11 +112,14 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 		if(!renderNbIter)
 			return res;
 	}
+
 	if (!renderNbIter)
 		return sky;
+
 	nbIter = clamp(nbIter, 0, 255);
 	return ColorRGB{ nbIter, nbIter, nbIter };
 }
+
 ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
 {
 	return ambiant + color * clamp(
