@@ -76,7 +76,7 @@ TerrainFractal::TerrainFractal(const int& terrain_width_, const int& terrain_hei
 \brief
 */
 
-double TerrainFractal::getZ(float x, float y) const
+float TerrainFractal::getZ(float x, float y) const
 {
 	//return Point(x, y, 0.f);
 	//return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, 0.f ) : noIntersectPoint;
@@ -128,7 +128,7 @@ Normals TerrainFractal::getNormal(Pixel p) const
 
 
 //Renvoie la pente en un Point /*TotallementFaut*/
-double TerrainFractal::getSlope(Pixel p) const
+float TerrainFractal::getSlope(Pixel p) const
 {
 	Normals n = getNormal(p);
 	return atan(sqrt(n.x * n.x + n.y * n.y)); //recherche slope / gradiance / terrain

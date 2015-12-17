@@ -18,7 +18,7 @@ const int nbRebondMax = 5;
 const int nbEchantillon = 1;
 const float r_delta = 10.f;
 // Distance d'intersection null
-const double noIntersect = -10.0f;
+const float noIntersect = -10.0f;
 
 // Vecteur d'intersection null
 const Vector noIntersectVec (-10.0f);
@@ -68,11 +68,16 @@ const ColorRGB orange = ColorRGB{ 255.f, 140.f, 0.f };
 
 const ColorRGB sky = ColorRGB{ 135.f, 206.f, 235.f };
 
-const ColorRGB roche = { 100.f, 100.f, 100.f };
-const ColorRGB roche_claire = { 200.f, 200.f, 200.f };
+const ColorRGB roche = { 35.f, 26.f, 29.f };
+const ColorRGB roche_claire = { 78.f, 59.f, 61.f };
 const ColorRGB terre = { 95.f, 62.f, 5.f };
 const ColorRGB terre_claire = { 195.f, 162.f, 105.f };
 const ColorRGB roche_terre_claire = { 197.5f, 181.f, 152.5f };
 const ColorRGB herbe = { 0.f, 104.f, 10.f };
-const ColorRGB neige = { 255.f, 255.f, 255.f };
+const ColorRGB neige = { 255.f, 250.f, 250.f };
+const ColorRGB neige_dark = { 255.f, 250.f, 239.f };
 const ColorRGB bleue = { 0.f, 128.f, 220.f };
+
+const ColorRGB grass_bright = { 188.f, 184.f, 95.f }; 
+const ColorRGB grass = { 63.f, 82.f, 26.f };
+const ColorRGB rock = { 63.f, 82.f, 26.f };

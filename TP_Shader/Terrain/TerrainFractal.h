@@ -14,8 +14,8 @@ public:
 	TerrainFractal(const TerrainFractal &);
 	TerrainFractal & operator=(const TerrainFractal &);
 	Pixel getPoint(float x, float y) const;
-	double getZ(float x, float y) const;
-	double getSlope(Pixel p) const;
+	float getZ(float x, float y) const;
+	float getSlope(Pixel p) const;
 
 	// Renvoi la normal du terrain au point p
 	Normals getNormal(Pixel p) const;

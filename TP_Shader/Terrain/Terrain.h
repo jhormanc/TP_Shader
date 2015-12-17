@@ -15,8 +15,8 @@ class Terrain
 protected:
 	
 	bool renderGrey;
-	double k;						// Pente maximale
-	double high, low;				// Paramètre pour connaitre la hauteur max et min de la map
+	float k;						// Pente maximale
+	float high, low;				// Paramètre pour connaitre la hauteur max et min de la map
 	Pixel ** pointList;
 	int steps;
 	int terrain_width, terrain_height;
@@ -29,28 +29,28 @@ public:
 	Terrain(const Terrain&);
 	Terrain & operator=(const Terrain&);
 	//Pour definir un max et un min
-	void MaxMin(double);
+	void MaxMin(float);
 
 	// Renvoie vrai si le point p est en dehors du terrain, faux sinon.
 	virtual bool inside(const Point & p) const;
 
 	// calcul la distance en hauteur entre le point p et le terrain
-	virtual double distance (const Point & p) const;
+	virtual float distance(const Point & p) const;
 
 	//	virtual Vector getColor ( const Vector & p ) const = 0;
 	 ColorRGB getColor(const Point & p);
 	 ColorRGB initColor(const Point & p);
 
 	 ColorRGB getColorPrecalculed(const Point & p);
-	 ColorRGB ColorFadeHight(ColorRGB, ColorRGB, ColorRGB, double, double, double);
+	 ColorRGB ColorFadeHight(ColorRGB, ColorRGB, ColorRGB, float, float, float);
 
 	// Renvoi la normal du terrain au point p
 	 virtual Normals getNormal(Pixel p) const = 0;
 
 	// Renvoie le point x, y, z appartenant a pointList a partir du x, y (recherche matrice + interpolation).
 	virtual Pixel getPoint(float x, float y) const = 0;
-	virtual double getZ(float x, float y) const = 0;
-	virtual double getSlope(Pixel p) const = 0;
+	virtual float getZ(float x, float y) const = 0;
+	virtual float getSlope(Pixel p) const = 0;
 
 	Point getOrigin () const 
 	{
@@ -83,12 +83,12 @@ public:
 	}
 		
 
-	double getLow() const 
+	float getLow() const
 	{
 		return low;
 	}
 
-	double getHigh() const 
+	float getHigh() const
 	{
 		return high;
 	}

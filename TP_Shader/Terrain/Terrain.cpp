@@ -57,10 +57,10 @@ Terrain & Terrain::operator=(const Terrain& terrain)
 	return *this;
 }
 // Fonction pour trouver la hauteur max et min
-void Terrain::MaxMin(double x) 
+void Terrain::MaxMin(float x)
 {
-	high = std::max(high, x);
-	low = std::min(low, x);
+	high = std::fmaxf(high, x);
+	low = std::fminf(low, x);
 }
 
 // Renvoie vrai si le point p est en dehors du terrain, faux sinon.
@@ -70,7 +70,7 @@ bool Terrain::inside(const Point& p) const
 }
 
 // calcul la distance en hauteur entre le point p et le terrain
-double Terrain::distance ( const Point &  p ) const 
+float Terrain::distance(const Point &  p) const
 {
 	Point pointTerrain = getPoint ( p.x, p.y );
 
@@ -124,7 +124,7 @@ bool Terrain::intersect(const Ray& r, float *tHit, int * nbIter) const
 		Point tmp = getPoint(res.x, res.y);
 		if (tmp != noIntersectPoint)
 		{
-			double h = res.z - tmp.z;
+			float h = res.z - tmp.z;
 			if (h < 0.001f)
 			{
 				if (nbIter != nullptr) *nbIter = nbStep;
@@ -167,7 +167,7 @@ bool Terrain::intersectSegment(const Ray& r, float * tHit, float tMax) const
 		Point tmp = getPoint(res.x, res.y);
 		if (tmp != noIntersectPoint)
 		{
-			double h = res.z - tmp.z;
+			float h = res.z - tmp.z;
 			if (h < 0.001)
 				return true;
 			*tHit += h * k2;
@@ -232,17 +232,33 @@ ColorRGB Terrain::initColor(const Point & p)
 
 	return color;*/
 
-	double slope = getSlope(p);
+	float slope = getSlope(p);
+	float h = (high - low);
+	h = (p.z - low) / h;
 
 	//float v = (Noise::noise2(p.x / 1000.f, p.y / 1000.f) + 0.7*Noise::noise2(p.x / 500.f, p.y / 500.f) + 0.5*Noise::noise2(p.x / 100.f, p.y / 100.f)) / 2.2; //Effet Profondeur 
-	float v = Noise::noise2(p.x / 1000.f, p.y / 1000.f);
+	float v = Noise::simplex(p.x / 12.5f, p.y / 12.5f)
+	+ Noise::simplex(p.x / 25.f, p.y / 25.f)
+	+ Noise::simplex(p.x / 50.f, p.y / 50.f)
+	+ Noise::simplex(p.x / 100.f, p.y / 100.f);
+	v = (v + 4.f) * 0.125f;
 	ColorRGB color;
 
-	if (slope<0.3)
-		color = ColorRGB{ 91, 60, 17 } *v + ColorRGB{ 205	,133	,63 } *(1 - v);
+	if (p.z < 200.f)
+	{
+		if (slope < 0.3f)
+			color = ColorRGB(grass) * v + ColorRGB(grass_bright) * (1.f - v);
+		else
+			color = ColorRGB(roche) * v + ColorRGB(roche_claire) * (1.f - v);
+	}
 	else
-		color = ColorRGB{ 246,	220,	18 } *v + ColorRGB{ 254, 248, 108 } *(1 - v);
-
+	{
+		if (slope < 0.5f)
+			color = ColorRGB(neige) * v + ColorRGB(neige_dark) * (1.f - v);
+		else
+			color = ColorRGB(roche) * v + ColorRGB(roche_claire) * (1.f - v);
+	}
+	
 	return color;
 }
 
@@ -277,7 +293,8 @@ ColorRGB Terrain::getColor(const Point & p)
 *c1 and c2 are the color to do the fading
 *c3 is for the part where the slope is to hight.
 */
-ColorRGB Terrain::ColorFadeHight(ColorRGB c1, ColorRGB c2, ColorRGB c3, double z, double nb_step, double slope){
+ColorRGB Terrain::ColorFadeHight(ColorRGB c1, ColorRGB c2, ColorRGB c3, float z, float nb_step, float slope)
+{
 	ColorRGB colorDiff = c2 - c1;
 	ColorRGB c = c1 + ((colorDiff * z) / nb_step);
 	c = c + c3 *slope;
