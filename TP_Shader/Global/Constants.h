@@ -14,9 +14,20 @@
 #ifndef INFINITY
 #define INFINITY FLT_MAX
 #endif
-const int nbRebondMax = 5;
+
+// Taille du terrain
+const int terrainWidth = 5000;
+const int terrainHeight = 5000;
+
+// Pas du terrain
+const int stepsTerrain = 5;
+
+// Nombre de samples par défaut pour le sampler poisson
 const int nbEchantillon = 1;
+
+// Rayon de visibilité (en m)
 const float r_delta = 10.f;
+
 // Distance d'intersection null
 const float noIntersect = -10.0f;
 
@@ -83,3 +94,6 @@ const ColorRGB grass = { 63.f, 82.f, 26.f };
 
 const ColorRGB rock = { 86.f, 85.f, 83.f };
 const ColorRGB rock_bright = { 155.f, 147.f, 100.f };
+
+const ColorRGB water = { 0.f, 31.f, 148.f };
+const ColorRGB water_bright = { 0.f, 148.f, 117.f };

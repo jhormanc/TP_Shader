@@ -37,11 +37,11 @@ public:
 	bool abort; // Exit
 	Renderer(QObject *parent = 0);
 	void render();
-	ColorRGB radiance ( Ray r, float &z );
-	ColorRGB radiance (Point p, Point o);
+	ColorRGB radiance(Ray r, float &z);
+	ColorRGB radiance(Pixel p, Point o);
 	float V(Point collide, Point l);
 	float delta(Point collide, Point l, float r);
-	ColorRGB shade(Point p, Normals n, Point eye, Point l, ColorRGB color);
+	ColorRGB shade(Pixel p, Normals n, Point eye, Point l);
 	void precalc();
 	
 	ColorRGB radiancePrecalculed ( Ray r, float &z );

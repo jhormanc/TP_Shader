@@ -188,55 +188,12 @@ ColorRGB Terrain::getColorPrecalculed(const Point & p)
 	return precalc[(int)(p.x / steps)][(int)(p.y / steps)];
 }
 
-ColorRGB Terrain::initColor(const Point & p)
+void Terrain::initColor(Pixel& p)
 {
-	Pixel pix(getPoint(p.x, p.y));
-	/*double z = p.z;
-
-	double slope = std::max(std::max(std::max(
-		std::abs(double(z - getPoint(pix.x - steps, pix.y).z)),
-		std::abs(double(z - getPoint(pix.x + steps, pix.y).z))),
-		std::abs(double(z - getPoint(pix.x, pix.y - steps).z))),
-		std::abs(double(z - getPoint(pix.x, pix.y + steps).z)));
-	slope *= .5f;
-
-	ColorRGB color;
-
-	double max = high - low;
-
-	float steps = low + (max * (20. / 100.));
-
-	if (z >= low + (max * (80. / 100.)))
-	{
-		color = neige;
-	}
-	else if (z >= low + (max * (60. / 100.)))
-	{
-		if (slope <= .1f)
-			color = neige;
-		else
-			color = ColorFadeHight(roche, neige, terre_claire, z - 3. * steps, steps, slope);
-	}
-	else if (z >= low + (max * (40. / 100.)))
-	{
-		color = ColorFadeHight(terre, roche, terre_claire, z - 2. * steps, steps, slope);
-	}
-	else if (z >= 0.f)
-	{
-		color = ColorFadeHight(herbe, terre, terre_claire, z, 2.f * steps, slope);
-	}
-	else
-	{
-		color = bleue;
-	}
-
-	return color;*/
-
 	float slope = getSlope(p);
 	float h = (high - low);
 	h = (p.z - low) / (200.f - low);
 
-	//float v = (Noise::noise2(p.x / 1000.f, p.y / 1000.f) + 0.7*Noise::noise2(p.x / 500.f, p.y / 500.f) + 0.5*Noise::noise2(p.x / 100.f, p.y / 100.f)) / 2.2; //Effet Profondeur 
 	Vector w = Noise::warp(Vector(p.x, p.y, 0.f), 2.f, 1.f / 200.f, false);
 	float v = Noise::simplex(w.x / 12.5f, w.y / 12.5f)
 		+ Noise::simplex(w.x / 25.f, w.y / 25.f)
@@ -246,7 +203,12 @@ ColorRGB Terrain::initColor(const Point & p)
 
 	ColorRGB color;
 
-	if (p.z < 200.f)
+	if (p.z < 0.f)
+	{
+		color = ColorRGB(water) * v + ColorRGB(water_bright) * (1.f - v);
+		p.alpha = 0.1f;
+	}
+	else if (p.z < 200.f)
 	{
 		ColorRGB color_grass = ColorRGB(grass) * v + ColorRGB(grass_bright) * (1.f - v);
 		ColorRGB color_mountain = ColorRGB(rock) * v + ColorRGB(rock_bright) * (1.f - v);
@@ -273,7 +235,7 @@ ColorRGB Terrain::initColor(const Point & p)
 			color = ColorRGB(rock) * v + ColorRGB(rock_bright) * (1.f - v);
 	}
 	
-	return color;
+	p.color = color;
 }
 
 ColorRGB Terrain::getColor(const Point & p) 

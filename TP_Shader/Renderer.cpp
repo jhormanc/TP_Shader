@@ -13,8 +13,8 @@ float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, 2500.f, 1000.f), Point(2500.f, 2500.f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
-film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f),Point(5000.f, 5000.f, 1000.f)), 1.f), terrain(new TerrainFractal(5000, 5000, 1))
+Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, terrainHeight * 0.5f, 1000.f), Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
+film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))
 {
 	CameraX = -20;
 	CameraY = 500;
@@ -43,17 +43,15 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 	float accli = 0.f;
 	int nbIter = 0;
 	float t;
-	Point pt(noIntersectPoint);
 
 	if (terrain->intersect(r, &t, &nbIter))
 	{
-		
 		Point p(r.o + r.d * t);
 		z = Point::distance(r.o, p);
 		// Fix trou noir
-		pt = Point(terrain->getPoint(p.x, p.y));
+		Pixel pt = terrain->getPoint(p.x, p.y);
 
-		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint, terrain->getColor(pt)).cclamp(0.f, 255.f);
+		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint).cclamp(0.f, 255.f);
 		
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
@@ -78,10 +76,10 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 	return ColorRGB{ nbIter, nbIter, nbIter };
 }
 
-ColorRGB Renderer::radiance(Point p, Point o)
+ColorRGB Renderer::radiance(Pixel p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
-	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint, terrain->getColor(p)).cclamp(0.f, 255.f);
+	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint).cclamp(0.f, 255.f);
 	float accli = 0.f;
 
 	#pragma omp parallel for schedule(static)
@@ -120,9 +118,9 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 	return ColorRGB{ nbIter, nbIter, nbIter };
 }
 
-ColorRGB Renderer::shade(Point p, Normals n, Point eye, Point l, ColorRGB color)
+ColorRGB Renderer::shade(Pixel p, Normals n, Point eye, Point l)
 {
-	return ambiant + color * clamp(
+	return ambiant + p.color * clamp(
 		(dot(normalize(l - p), n) * coefDiffus // diffus  
 		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
 		, 0.f, 1.f);
@@ -250,6 +248,7 @@ void Renderer::run()
 
 			Point cam_pt(camera.getOrigin());
 			Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
+			
 
 			#pragma omp parallel for schedule(static)
 			for (int x = 0; x < w; x++)
@@ -257,10 +256,11 @@ void Renderer::run()
 				//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 				for (int y = 0; y < h; y++)
 				{
+					Pixel pt;
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
 					float z;
-					ColorRGB c = p ? radiancePrecalculed(r,z) : radiance(r,z);
+					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z);
 					//postprocess_lightning ( z, c );
 					//postprocess_shadowing ( z, c );
 					//postprocess_fog ( z, c );

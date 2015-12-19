@@ -213,15 +213,17 @@ float Noise::perlin2D(const float x, const float y)
 float Noise::noise(const float x, const float y)
 {
 	Vector w = warp(Vector(x, y, 0.f), 1.f, 1.f / 100.f, false);
+
 	float plains = noisePlains(w.x, w.y);
 	float mountains = noiseMountains(w.x, w.y, plains);
 
 	float noise_ambient = noiseAmbient(w.x, w.y, plains);
 
-	float z = plains + mountains + noise_ambient;// *smooth(plains, 0.f, 5.f);
-	//z -= ridge(z * (1.f - smooth(z, 0.f, 2.f)), 2.f);
+	float z = plains + mountains + noise_ambient;
 
-	return z;
+	float z_water = noiseWater(w.x, w.y, z);
+
+	return z + z_water;
 }
 
 float Noise::noiseAmbient(const float x, const float y, const float z_plains)
@@ -233,18 +235,37 @@ float Noise::noiseAmbient(const float x, const float y, const float z_plains)
 
 	float z_hills2 = simplex(w.x / 20.f, w.y / 20.f) * 0.1f;
 
-	return z + z_hills// * (1.f - smooth(z_plains, 0.f, 5.f))
-		+ z_hills2;// * (1.f - smooth(z_plains, 0.f, 5.f));
+	return z + z_hills
+		+ z_hills2;
 }
 
-float Noise::noiseWater(const float x, const float y)
+float Noise::noiseWater(const float x, const float y, const float z)
 {
 	float tmp;
+	Vector w = warp(Vector(x, y, 0.f), 2.f, 1.f / 50.f, false);
 
-	tmp = (simplex(x / 750.f, y / 750.f) + 1.f) * 0.5f;
-	float z0 = ridge(300.f * tmp, 250.f);
+	tmp = simplex(w.x / 500.f, w.y / 500.f);
+	float z0 = tmp; 
 
-	return z0;
+	tmp = simplex(w.x / 700.f, w.y / 700.f);
+	float z1 = tmp;
+
+	tmp = simplex(w.x / 1000.f, w.y / 1000.f);
+	float z2 = tmp;
+
+	tmp = simplex(w.x / 1200.f, w.y / 1200.f);
+	float z3 = tmp;
+
+	tmp = (simplex(w.x / 850.f, w.y / 850.f) + 2.f) * 0.25f;
+	float z4 = tmp;
+
+	float z_res = 4.f * (z0 + z1 + z2 + z3 + z4);
+
+	if (z_res > 0.f)
+		z_res = 0.f;
+
+	z_res = z_res * (1.f - smooth(z, 3.f, 5.f));
+	return z_res - z * (1.f - smooth(z_res, -16.f, 0.f));
 }
 
 float Noise::noisePlains(const float x, const float y)
@@ -259,13 +280,11 @@ float Noise::noisePlains(const float x, const float y)
 	float z1 = 5.f * tmp;
 
 	return z0 + z1 * smooth(z1, 0.f, 5.f);
-//	return (z1 + z0) * smooth(z0, 0.f, 5.f) * smooth(z1, 0.f, 5.f);
 }
 
 float Noise::noiseMountains(const float x, const float y, const float z_plains)
 {
-	float v = hash(y);
-	float h = smooth(z_plains, -0.5f, 5.f);
+	float h = smooth(z_plains, 1.f, 5.f);
 
 	Vector w = warp(Vector(x, y, 0.f), 5.f, 1.f / 100.f, false);
 	float tmp;
@@ -299,9 +318,8 @@ float Noise::noiseMountains(const float x, const float y, const float z_plains)
 	float z = z0
 		+ z1
 		+ z2 * smooth(z0, 50.f, 200.f);
-		//+ z_hills * (1.f - smooth(z_plains, 0.f, 5.f))
-		//+ z_hills2 * (1.f - smooth(z_plains, 0.f, 5.f));
-	z += z3  * smooth(h, 0.f, 1.f);
+
+	z += z3 * smooth(h, 0.f, 1.f);
 	z += z4 * smooth(z, 100.f, 150.f);
 	z += z_ridge * smooth(z, 200.f, 250.f);
 	z += z5 * smooth(z, 120.f, 250.f);

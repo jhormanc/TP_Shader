@@ -66,8 +66,9 @@ TerrainFractal::TerrainFractal(const int& terrain_width_, const int& terrain_hei
 	{
 		for (int j = 0; j < points_height; j++)
 		{
-			ColorRGB c(initColor(pointList[i][j]));
-			pointList[i][j].color = c;
+			initColor(pointList[i][j]);
+			//ColorRGB c(initColor(pointList[i][j]));
+			//pointList[i][j].color = c;
 		}
 	}
 }

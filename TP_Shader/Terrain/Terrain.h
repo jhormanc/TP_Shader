@@ -39,7 +39,7 @@ public:
 
 	//	virtual Vector getColor ( const Vector & p ) const = 0;
 	 ColorRGB getColor(const Point & p);
-	 ColorRGB initColor(const Point & p);
+	 void initColor(Pixel &p);
 
 	 ColorRGB getColorPrecalculed(const Point & p);
 	 ColorRGB ColorFadeHight(ColorRGB, ColorRGB, ColorRGB, float, float, float);
