@@ -47,17 +47,18 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 	if (terrain->intersect(r, &t, &nbIter))
 	{
 		Point p(r.o + r.d * t);
-		z = Point::distance(r.o, p);
+
 		// Fix trou noir
 		Pixel pt = terrain->getPoint(p.x, p.y);
+		z = Point::distance(r.o, pt);
 
 		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint).cclamp(0.f, 255.f);
-		
+
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
 			Point l = samplerPoisson.next();
-			
+
 			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0)));
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 
@@ -68,6 +69,8 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		if (!renderNbIter)
 			return shading * (acc / accli);
 	}
+	else
+		z = distMax;
 
 	if (!renderNbIter)
 		return sky;
@@ -110,6 +113,8 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 		if(!renderNbIter)
 			return res;
 	}
+	else
+		z = distMax;
 
 	if (!renderNbIter)
 		return sky;
@@ -221,7 +226,8 @@ void Renderer::postprocess_shadowing ( const float &z, ColorRGB &c ) {
 	c = c * ( 1 - t ) + c2 * t;
 }
 
-void Renderer::postprocess_fog ( const float &z, ColorRGB &c ) {
+void Renderer::postprocess_fog ( const float &z, ColorRGB &c ) 
+{
 	float t = exp ( -z / ( distMax * fogFactor ) );
 	ColorRGB c2 = grey_light;
 	c = c2 * ( 1 - t ) + c * t;
@@ -263,7 +269,7 @@ void Renderer::run()
 					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z);
 					//postprocess_lightning ( z, c );
 					//postprocess_shadowing ( z, c );
-					//postprocess_fog ( z, c );
+					postprocess_fog ( z, c );
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}

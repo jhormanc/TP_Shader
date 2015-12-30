@@ -16,11 +16,11 @@
 #endif
 
 // Taille du terrain
-const int terrainWidth = 10000;
-const int terrainHeight = 10000;
+const int terrainWidth = 5000;
+const int terrainHeight = 5000;
 
 // Pas du terrain
-const int stepsTerrain = 2;
+const int stepsTerrain = 5;
 
 // Nombre de samples par défaut pour le sampler poisson
 const int nbEchantillon = 1;
