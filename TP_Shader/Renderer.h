@@ -74,6 +74,7 @@ public:
 	bool AddDeltaR(const float& delta);
 	void ChangeRenderColor();
 	void ChangeRenderIter();
+	void ChangeRenderAuto();
 
 	static bool renderPrecalculed;
 	static int nbSamples;
@@ -87,6 +88,7 @@ public:
 	static float rDelta;
 	static bool renderGrey;
 	static bool renderNbIter;
+	static bool refreshAuto;
 
 	~Renderer();
 

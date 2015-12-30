@@ -65,7 +65,7 @@ const float distMax = 6000.f;
 const float shadowFactor = .2342f;
 
 // Facteur de brouillard ]0,1]
-const float fogFactor = .314f;
+const float fogFactor = 0.8f;// .314f;
 
 const ColorRGB black = ColorRGB{ .0f, .0f, .0f };
 const ColorRGB white = ColorRGB{ 0.75f, 0.75f, 0.75f } *255.f;

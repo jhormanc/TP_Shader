@@ -12,6 +12,7 @@ Point Renderer::sunPoint(2500.f, 2500.f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
+bool Renderer::refreshAuto(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, terrainHeight * 0.5f, 1000.f), Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
 film(Film(768, 768, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))
@@ -52,6 +53,18 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		Pixel pt = terrain->getPoint(p.x, p.y);
 		z = Point::distance(r.o, pt);
 
+		if (pt.z < 0)
+		{
+			float delta = std::cosf((float)clock());
+			//pt = pt - Vector(delta, delta, delta);
+			Vector v = Vector(pt.x, pt.y, pt.z);
+			v = v - Vector(delta, delta, delta);
+			v = Noise::warp(v, 2.f, 1.f / 100.f, false);
+			Pixel pix = terrain->getPoint(v.x, v.y);
+			if (pix != noIntersectPoint)
+				pt = pix;
+		}
+			
 		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint).cclamp(0.f, 255.f);
 
 		#pragma omp parallel for schedule(static)
@@ -240,7 +253,7 @@ void Renderer::run()
 
 	while (!abort)
 	{
-		if (changes)
+		if (changes || refreshAuto) // changes
 		{
 			auto start = std::chrono::high_resolution_clock::now();
 			int h = film.yResolution;
@@ -250,12 +263,10 @@ void Renderer::run()
 			mutex.lock();
 			Camera camera(cam);
 			bool p(renderPrecalculed);
-			mutex.unlock();
 
 			Point cam_pt(camera.getOrigin());
 			Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
 			
-
 			#pragma omp parallel for schedule(static)
 			for (int x = 0; x < w; x++)
 			{
@@ -268,12 +279,14 @@ void Renderer::run()
 					float z;
 					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z);
 					//postprocess_lightning ( z, c );
-					//postprocess_shadowing ( z, c );
-					postprocess_fog ( z, c );
+					//postprocess_shadowing(z, c);
+					//postprocess_fog ( z, c );
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
 			}
+
+			mutex.unlock();
 
 			emit renderedImage(image);
 			auto end = std::chrono::high_resolution_clock::now();
@@ -281,14 +294,17 @@ void Renderer::run()
 			mesureFile << "render : " << sec << " s" << std::endl;
 			lastRenderTime = sec;
 
-			mutex.lock();
-			if (!restart)
+			if (!refreshAuto)
 			{
-				changes = false;
-				condition.wait(&mutex);
+				mutex.lock();
+				if (!restart)
+				{
+					changes = false;
+					condition.wait(&mutex);
+				}
+				restart = false;
+				mutex.unlock();
 			}
-			restart = false;
-			mutex.unlock();
 		}
 	}
 	mesureFile.close();
@@ -462,6 +478,14 @@ void Renderer::ChangeRenderIter()
 {
 	mutex.lock();
 	renderNbIter = !renderNbIter;
+	changes = true;
+	mutex.unlock();
+}
+
+void Renderer::ChangeRenderAuto()
+{
+	mutex.lock();
+	refreshAuto = !refreshAuto;
 	changes = true;
 	mutex.unlock();
 }

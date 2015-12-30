@@ -101,7 +101,9 @@ void MainWin::resizeEvent(QResizeEvent * /* event */)
 
 void MainWin::keyPressEvent(QKeyEvent *event)
 {
-	if (!rendering)
+	if (thread.refreshAuto && event->key() == Qt::Key_C)
+		changeRenderAuto();
+	else if (!rendering)
 	{
 		switch (event->key())
 		{
@@ -188,6 +190,9 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 			break;
 		case Qt::Key_X:
 			changeRenderIter();
+			break;
+		case Qt::Key_C:
+			changeRenderAuto();
 			break;
 		default:
 			QWidget::keyPressEvent(event);
@@ -351,6 +356,15 @@ void MainWin::changeRenderIter()
 	rendering = true;
 	refresh = true;
 	thread.ChangeRenderIter();
+	update();
+	thread.render();
+}
+
+void MainWin::changeRenderAuto()
+{
+	rendering = true;
+	refresh = true;
+	thread.ChangeRenderAuto();
 	update();
 	thread.render();
 }

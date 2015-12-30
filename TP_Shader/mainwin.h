@@ -51,6 +51,7 @@ private:
 	void addDeltaR(const float& delta);
 	void changeRenderColor();
 	void changeRenderIter();
+	void changeRenderAuto();
 };
 
 #endif // MAINWIN_H
