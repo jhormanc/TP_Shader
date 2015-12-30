@@ -6,8 +6,8 @@ float Renderer::coefDiffus(1.f);
 float Renderer::coefSpec(1.f);
 int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
-float Renderer::sunIntensity(0.8f);
-float Renderer::globalIntensity(0.2f);
+float Renderer::sunIntensity(1.0f);
+float Renderer::globalIntensity(0.f);
 Point Renderer::sunPoint(2500.f, 2500.f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
@@ -66,7 +66,7 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		}
 			
 		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint);
-		ColorRGB colorTerrain = terrain->getColor(pt);
+		ColorRGB colorTerrain = terrain->getColor(pt) / 255.f;
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
@@ -75,13 +75,12 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 			float cosLiS = dot(normalize(l - Point(0)), normalize(sunPoint - Point(0)));
 			
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
-		//	qDebug(" cos li : %f, li %f ", cosLiS, li);
 			accli += li;
 			acc = acc + colorTerrain * delta(pt, l, rDelta) * li;
 		}
 
 		if (!renderNbIter)
-			return ((shading / 255.f).cclamp(0.f, 255.f) * (acc / (accli * 255.f)).cclamp(0.f, 255.f)) * 255.f;
+			return ((shading / 255.f).cclamp(0.f, 255.f) * (acc / (accli)).cclamp(0.f, 1.f)) * 255.f;
 	}
 	else
 		z = distMax;
@@ -99,7 +98,7 @@ ColorRGB Renderer::radiance(Pixel p, Point o)
 	//ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint).cclamp(0.f, 255.f);
 	float accli = 0.f;
 	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint);
-	ColorRGB colorTerrain = terrain->getColor(p);
+	ColorRGB colorTerrain = terrain->getColor(p) / 255.f;
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbSamples; ++i)
 	{
@@ -111,7 +110,7 @@ ColorRGB Renderer::radiance(Pixel p, Point o)
 		acc = acc + colorTerrain * delta(p, l, rDelta) * li;
 	}
 
-	return ((shading / 255.f).cclamp(0.f, 255.f) * (acc / (accli * 255.f)).cclamp(0.f, 255.f)) * 255.f;
+	return ((shading / 255.f).cclamp(0.f, 255.f) * (acc / (accli)).cclamp(0.f, 1.f)) * 255.f;
 }
 
 
