@@ -40,7 +40,7 @@ Renderer::~Renderer()
 
 ColorRGB Renderer::radiance(Ray r, float &z)
 {
-	float acc = 0.f;
+	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 	float accli = 0.f;
 	int nbIter = 0;
 	float t;
@@ -76,11 +76,11 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 
 			accli += li;
-			acc = acc + delta(pt, l, rDelta) * li;
+			acc = acc + shade(pt, terrain->getNormal(pt), r.o, l) * delta(pt, l, rDelta) * li;
 		}
 
 		if (!renderNbIter)
-			return shading * (acc / accli);
+			return (acc / accli).cclamp(0.f, 255.f);
 	}
 	else
 		z = distMax;
@@ -95,7 +95,7 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 ColorRGB Renderer::radiance(Pixel p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
-	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint).cclamp(0.f, 255.f);
+	//ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint).cclamp(0.f, 255.f);
 	float accli = 0.f;
 
 	#pragma omp parallel for schedule(static)
@@ -106,10 +106,10 @@ ColorRGB Renderer::radiance(Pixel p, Point o)
 		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
 
-		acc = acc + shading * delta(p, l, rDelta) * li;
+		acc = acc + shade(p, terrain->getNormal(p), o, l) * delta(p, l, rDelta) * li;
 	}
 
-	return acc * (1.0f / accli);
+	return (acc / accli).cclamp(0.f, 255.f);
 }
 
 
@@ -279,8 +279,9 @@ void Renderer::run()
 					float z;
 					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z);
 					//postprocess_lightning ( z, c );
-					//postprocess_shadowing(z, c);
+					//postprocess_shadowing ( z, c );
 					//postprocess_fog ( z, c );
+
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
 				}
