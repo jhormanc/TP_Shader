@@ -56,6 +56,7 @@ Terrain & Terrain::operator=(const Terrain& terrain)
 			precalc[i][j] = terrain.precalc[i][j];
 	return *this;
 }
+
 // Fonction pour trouver la hauteur max et min
 void Terrain::MaxMin(float x)
 {

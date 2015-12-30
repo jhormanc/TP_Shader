@@ -120,7 +120,7 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 
 ColorRGB Renderer::shade(Pixel p, Normals n, Point eye, Point l)
 {
-	return ambiant + p.color * clamp(
+	return ambiant + terrain->getColor(p) * clamp(
 		(dot(normalize(l - p), n) * coefDiffus // diffus  
 		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
 		, 0.f, 1.f);
