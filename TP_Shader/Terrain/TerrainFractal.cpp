@@ -65,23 +65,13 @@ TerrainFractal::TerrainFractal(const int& terrain_width_, const int& terrain_hei
 	for (int i = 0; i < points_width; i++)
 	{
 		for (int j = 0; j < points_height; j++)
-		{
 			initColor(pointList[i][j]);
-			//ColorRGB c(initColor(pointList[i][j]));
-			//pointList[i][j].color = c;
-		}
+
 	}
 }
 
-/*!
-\brief
-*/
-
 float TerrainFractal::getZ(float x, float y) const
 {
-	//return Point(x, y, 0.f);
-	//return x > 0 && x < terrain_width && y > 0 && y < terrain_height ? Point ( x, y, 0.f ) : noIntersectPoint;
-
 	int tmpI = (int)(x / steps);
 	int tmpJ = (int)(y / steps);
 
@@ -103,9 +93,6 @@ float TerrainFractal::getZ(float x, float y) const
 	return z;
 }
 
-/*!
-\brief
-*/
 Pixel TerrainFractal::getPoint(float x, float y) const 
 {
 	int tmpI = (int)(x / steps);

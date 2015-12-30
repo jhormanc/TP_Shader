@@ -16,11 +16,11 @@
 #endif
 
 // Taille du terrain
-const int terrainWidth = 5000;
-const int terrainHeight = 5000;
+const int terrainWidth = 10000;
+const int terrainHeight = 10000;
 
 // Pas du terrain
-const int stepsTerrain = 5;
+const int stepsTerrain = 2;
 
 // Nombre de samples par défaut pour le sampler poisson
 const int nbEchantillon = 1;
@@ -38,7 +38,7 @@ const Vector noIntersectVec (-10.0f);
 const Point noIntersectPoint(-10.0f);
 
 // Pas de déplacement de la caméra
-const int moveStep = 10;
+const int moveStep = 50;
 
 // Pas de déplacement du soleil
 const float sunMoveStep = 500.f;

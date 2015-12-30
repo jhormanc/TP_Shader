@@ -6,8 +6,8 @@ float Renderer::coefDiffus(1.f);
 float Renderer::coefSpec(1.f);
 int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
-float Renderer::sunIntensity(1.0f);
-float Renderer::globalIntensity(0.f);
+float Renderer::sunIntensity(0.8f);
+float Renderer::globalIntensity(0.2f);
 Point Renderer::sunPoint(2500.f, 2500.f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
@@ -52,21 +52,10 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		// Fix trou noir
 		Pixel pt = terrain->getPoint(p.x, p.y);
 		z = Point::distance(r.o, pt);
-
-		if (pt.z < 0)
-		{
-			float delta = std::cosf((float)clock());
-			//pt = pt - Vector(delta, delta, delta);
-			Vector v = Vector(pt.x, pt.y, pt.z);
-			v = v - Vector(delta, delta, delta);
-			v = Noise::warp(v, 2.f, 1.f / 100.f, false);
-			Pixel pix = terrain->getPoint(v.x, v.y);
-			if (pix != noIntersectPoint)
-				pt = pix;
-		}
 			
 		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint);
 		ColorRGB colorTerrain = terrain->getColor(pt) / 255.f;
+
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
@@ -95,7 +84,6 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 ColorRGB Renderer::radiance(Pixel p, Point o)
 {
 	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
-	//ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint).cclamp(0.f, 255.f);
 	float accli = 0.f;
 	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint);
 	ColorRGB colorTerrain = terrain->getColor(p) / 255.f;
@@ -274,7 +262,6 @@ void Renderer::run()
 				//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 				for (int y = 0; y < h; y++)
 				{
-					Pixel pt;
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
 					float z;

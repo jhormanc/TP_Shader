@@ -82,7 +82,6 @@ public:
 		return steps;
 	}
 		
-
 	float getLow() const
 	{
 		return low;
@@ -93,8 +92,6 @@ public:
 		return high;
 	}
 
-
-	
 	// Calcul la pente maximale du terrain
 	void calcK();
 	virtual ~Terrain();
