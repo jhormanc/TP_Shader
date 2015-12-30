@@ -94,6 +94,7 @@ void Terrain::calcK()
 			k = std::max(getSlope(getPoint(i * steps, j * steps)), k);
 		}
 	}
+	k *= 2.f;
 }
 
 // Renvoie True si le Ray r touche le terrain
@@ -105,7 +106,7 @@ bool Terrain::intersect(const Ray& r, float *tHit, int * nbIter) const
 	{
 		return false;
 	}
-	float k2 = 1.f / (k - r.d.z);
+	float k2 = 1.f / (k * Vector(r.d.x, r.d.y, 0.f).length() - r.d.z);
 	BBox box = getBound();
 
 	float t1, t2;
@@ -153,7 +154,7 @@ bool Terrain::intersectSegment(const Ray& r, float * tHit, float tMax) const
 	{
 		return false;
 	}
-	float k2 = 1.f / (k - r.d.z);
+	float k2 = 1.f / (k * Vector(r.d.x, r.d.y, 0.f).length() - r.d.z);
 	BBox box = getBound();
 	if (!box.intersect(r, &t1, &t2))
 		return false;
