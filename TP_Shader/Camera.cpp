@@ -8,7 +8,7 @@ Camera::Camera(Point o_, Point a_, float dw, Vector _up)
 
 	Init();
 
-	lu = windowWidth / windowHeight;
+	lu = (float)(windowWidth / (float)windowHeight);
 	lv = 1.f;
 	lw = dw;
 }
