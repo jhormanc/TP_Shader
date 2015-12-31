@@ -23,6 +23,10 @@ const int windowHeight = 1080;
 const int terrainWidth = 10000;
 const int terrainHeight = 10000;
 
+// Origine et direction de la caméra
+const Point camOrigin = Point(-20.f, terrainHeight * 0.5f, 1000.f); // Point(-20.f, terrainHeight * 0.5f, 1000.f)
+const Point camTarget = Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f); // Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f)
+
 // Pas du terrain
 const int stepsTerrain = 2;
 

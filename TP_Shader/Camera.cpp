@@ -6,12 +6,9 @@ Camera::Camera(Point o_, Point a_, float dw, Vector _up)
 	pt_view = a_;
 	up = _up;
 
-	w = normalize(pt_view - origin);
-	u = normalize(-cross(w, up));
-	v = cross(w, u);
-	u = -u;
+	Init();
 
-	lu = 4.f / 3.f;
+	lu = windowWidth / windowHeight;
 	lv = 1.f;
 	lw = dw;
 }
@@ -34,11 +31,6 @@ void Camera::Init()
 	u = normalize(-cross(w, up));
 	v = cross(w, u);
 	u = -u;
-}
-
-Point Camera::getOrigin()
-{
-	return origin;
 }
 
 // Déplace l'origine dans la direction de la caméra
@@ -69,9 +61,4 @@ void Camera::Rotate(const Vector& pt_screen)
 	pt_view = Point(pt_screen.x, pt_screen.y, pt_screen.z);
 
 	Init();
-}
-
-Vector Camera::Forward() const
-{
-	return u;
 }

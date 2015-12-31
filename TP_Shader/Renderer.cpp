@@ -8,14 +8,17 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(windowWidth * 0.5f, windowHeight * 0.5f, 1000.f);
+Point Renderer::sunPoint(terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 bool Renderer::refreshAuto(false);
 
-Renderer::Renderer(QObject *parent) : QThread(parent), cam(Point(-20.f, terrainHeight * 0.5f, 1000.f), Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f), 1., Vector(0.f, 0.f, -1.f)),
-film(Film(windowWidth, windowHeight, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))
+Renderer::Renderer(QObject *parent) : QThread(parent), 
+	cam(camOrigin, camTarget, 1., Vector(0.f, 0.f, -1.f)),
+	film(Film(windowWidth, windowHeight, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), 
+	samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), 
+	terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))
 {
 	restart = false;
 	abort = false;

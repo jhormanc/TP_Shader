@@ -37,16 +37,16 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 
 	painter.drawPixmap(QPoint(), pixmap);
 
-	QString text, text2, text3, text4, text5, text6, text7;
-	int textWidth, textWidth2, textWidth3, textWidth4, textWidth5, textWidth6, textWidth7;
+	QString text, text2, text3, text4, text5, text6, text7, text8;
+	int textWidth, textWidth2, textWidth3, textWidth4, textWidth5, textWidth6, textWidth7, textWidth8;
 	QFontMetrics metrics = painter.fontMetrics();
 
 	if (!rendering || refresh)
 	{
 		text = QString("ZQSD and AE keys to move camera. "
 			"Left mouse click to rotate camera.");
-		text2 = QString("Space to change rendering mode. "
-			"N to precalculate. "
+		text2 = QString("Space and WXC to change rendering mode. "
+			"N to precalculate."
 			"+ / - to change samples.");
 		text3 = QString("Mode = %1 - Samples = %2 - Sun = [%3 %4 %5] - Delta R = %6").arg(
 			QString(Renderer::renderPrecalculed ? "Precalculated" : "Real-time"),
@@ -65,8 +65,18 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 			QString::number(Renderer::sunInfluence),
 			QString::number(Renderer::specInfluence));
 
+		Point cam_org = thread.GetCamOrigin();
+		Point cam_target = thread.GetCamTarget();
+		text7 = QString("Cam : origin = [%1 %2 %3], target = [%4 %5 %6]").arg(
+			QString::number(cam_org.x),
+			QString::number(cam_org.y),
+			QString::number(cam_org.z),
+			QString::number(cam_target.x),
+			QString::number(cam_target.y),
+			QString::number(cam_target.z));
+
 		float t = thread.GetRenderTime();
-		text7 = QString("FPS : %1").arg(QString::number(t != 0.f ? 1.f / t : 0.f));
+		text8 = QString("FPS : %1").arg(QString::number(t != 0.f ? 1.f / t : 0.f));
 
 		textWidth2 = metrics.width(text2);
 		textWidth3 = metrics.width(text3);
@@ -74,6 +84,7 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		textWidth5 = metrics.width(text5);
 		textWidth6 = metrics.width(text6);
 		textWidth7 = metrics.width(text7);
+		textWidth8 = metrics.width(text8);
 	}
 	else
 		text = tr("RENDERING, PLEASE WAIT...");
@@ -91,6 +102,7 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		painter.drawText((width() - textWidth5) / 2, metrics.leading() + metrics.ascent() + 60, text5);
 		painter.drawText((width() - textWidth6) / 2, metrics.leading() + metrics.ascent() + 75, text6);
 		painter.drawText((width() - textWidth7) / 2, metrics.leading() + metrics.ascent() + 90, text7);
+		painter.drawText((width() - textWidth8) / 2, metrics.leading() + metrics.ascent() + 115, text8);
 	}
 }
 

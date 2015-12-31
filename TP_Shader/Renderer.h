@@ -45,6 +45,16 @@ public:
 	ColorRGB radiancePrecalculed ( Ray r, float &z );
 	void CameraRotation(float rot);
 
+	inline Point GetCamOrigin()
+	{
+		return cam.getOrigin();
+	}
+
+	inline Point GetCamTarget()
+	{
+		return cam.getTarget();
+	}
+
 	// Déplace la caméra
 	void MoveCam(const int& x = 0, const int& y = 0, const int& z = 0);
 
