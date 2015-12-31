@@ -20,7 +20,7 @@ MainWin::MainWin(QWidget *parent)
 #ifndef QT_NO_CURSOR
 	setCursor(Qt::CrossCursor);
 #endif
-	resize(768, 768);
+	resize(windowWidth, windowHeight);
 }
 
 void MainWin::paintEvent(QPaintEvent * /* event */)

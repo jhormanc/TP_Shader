@@ -15,6 +15,10 @@
 #define INFINITY FLT_MAX
 #endif
 
+// Taille de la fenêtre
+const int windowWidth = 1920;
+const int windowHeight = 1080;
+
 // Taille du terrain
 const int terrainWidth = 10000;
 const int terrainHeight = 10000;

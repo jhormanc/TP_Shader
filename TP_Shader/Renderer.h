@@ -21,12 +21,10 @@ private:
 	QMutex mutex;
 	QWaitCondition condition;
 	bool restart;
-	
-	float CameraX, CameraY, CameraZ;
 	Camera cam;
 	Terrain * terrain;
 	Film film;
-	ColorRGB ambiant = ColorRGB{ 00.F, 00.f, 0.f };
+	ColorRGB ambiant = ColorRGB { 0.F, 0.f, 0.f };
 	SamplerPoisson samplerPoisson;
 	float lastRenderTime;
 
