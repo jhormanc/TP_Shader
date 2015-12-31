@@ -8,7 +8,7 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(5000.f, 5000.f, 1000.f);
+Point Renderer::sunPoint(windowWidth * 0.5f, windowHeight * 0.5f, 1000.f);
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
