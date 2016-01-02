@@ -8,14 +8,14 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f);
+Point Renderer::sunPoint(4500.f, 2000.f, 500.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 bool Renderer::refreshAuto(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), 
-	cam(camOrigin, camTarget, 1., Vector(0.f, 0.f, -1.f)),
+	cam(camOrigin, camTarget, 1., Vector(0.f, 0.f, -1.f)), 
 	film(Film(windowWidth, windowHeight, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), 
 	samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), 
 	terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))
