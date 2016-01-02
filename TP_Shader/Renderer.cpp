@@ -209,17 +209,18 @@ void Renderer::render()
 	}
 }
 
-void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, ColorRGB &c)
+void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, ColorRGB &c, Sphere & sun, const float & invDistMax)
 {
 	float t = z / distMax;
 
 	Vector w = Noise::warp(Vector(x, y, 0.f), 1.f, 1.f / 2000.f, false);
-	float v = Noise::simplex(w.x / 1000.f, w.y / 1000.f)
+	/*float v = Noise::simplex(w.x / 1000.f, w.y / 1000.f)
 		+ Noise::simplex(w.x / 5000.f, w.y / 5000.f)
 		+ Noise::simplex(w.x / 10000.f, w.y / 10000.f)
 		+ Noise::simplex(w.x / 50000.f, w.y / 50000.f);
-	v = (v + 4.f) * 0.125f;
-	ColorRGB c2 = ColorRGB(sunset) * v + ColorRGB(orange) * (1.f - v);
+	v = (v + 4.f) * 0.125f;*/
+	float v = std::max(0.f, sun.distanceToPoint(Point(x, y, sun.origin.z)) * invDistMax);
+	ColorRGB c2 = ColorRGB(red) * v + ColorRGB(orange) * (1.f - v);
 
 	c = c * (1 - t) + c2 * t;
 }
@@ -259,7 +260,8 @@ void Renderer::run()
 
 			Point cam_pt(camera.getOrigin());
 			Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
-			
+			Sphere sun(10.f, Point(windowWidth * 0.5f, windowHeight * 0.5f, 0.f));
+			float invDistMax = 1.f / sun.distanceToPoint(Point(0.f));
 			#pragma omp parallel for schedule(static)
 			for (int x = 0; x < w; x++)
 			{
@@ -270,7 +272,7 @@ void Renderer::run()
 					Ray r = Ray(cam_pt, cam_dir);
 					float z;
 					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z);
-					postprocess_lightning(x, y, z, c);
+					postprocess_lightning((float)x, (float)y, z, c, sun, invDistMax);
 					//postprocess_shadowing(z, c);
 					//postprocess_fog(z, c);
 

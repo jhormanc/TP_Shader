@@ -16,6 +16,7 @@ public:
 	BBox getBound() const;
 	Normals getNormal(Point p) const;
 	bool overlap(const Sphere& s) const;
+	float distanceToPoint(Point p) const;
 	~Sphere();
 };
 
