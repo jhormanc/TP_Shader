@@ -102,7 +102,7 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		painter.drawText((width() - textWidth5) / 2, metrics.leading() + metrics.ascent() + 60, text5);
 		painter.drawText((width() - textWidth6) / 2, metrics.leading() + metrics.ascent() + 75, text6);
 		painter.drawText((width() - textWidth7) / 2, metrics.leading() + metrics.ascent() + 90, text7);
-		painter.drawText((width() - textWidth8) / 2, metrics.leading() + metrics.ascent() + 115, text8);
+		painter.drawText((width() - textWidth8) / 2, metrics.leading() + metrics.ascent() + 105, text8);
 	}
 }
 
