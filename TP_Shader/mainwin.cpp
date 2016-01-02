@@ -48,9 +48,12 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		text2 = QString("Space and WXC to change rendering mode. "
 			"N to precalculate."
 			"+ / - to change samples.");
-		text3 = QString("Mode = %1 - Samples = %2 - Sun = [%3 %4 %5] - Delta R = %6").arg(
+		text3 = QString("Mode = %1 - Samples = %2 - Terrain [%3km %4km, steps = %5] - Sun = [%6 %7 %8] - Delta R = %9").arg(
 			QString(Renderer::renderPrecalculed ? "Precalculated" : "Real-time"),
 			QString::number(Renderer::nbSamples),
+			QString::number((float)(terrainWidth / 1000.f)),
+			QString::number((float)(terrainHeight / 1000.f)),
+			QString::number(stepsTerrain),
 			QString::number(Renderer::sunPoint.x),
 			QString::number(Renderer::sunPoint.y),
 			QString::number(Renderer::sunPoint.z),
@@ -89,7 +92,6 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 	else
 		text = tr("RENDERING, PLEASE WAIT...");
 
-	
 	textWidth = metrics.width(text);
 	painter.setPen(Qt::white);
 	painter.drawText((width() - textWidth) / 2, metrics.leading() + metrics.ascent(), text);

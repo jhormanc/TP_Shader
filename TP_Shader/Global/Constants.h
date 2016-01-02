@@ -24,8 +24,8 @@ const int terrainWidth = 10000;
 const int terrainHeight = 10000;
 
 // Origine et direction de la caméra
-const Point camOrigin = Point(-20.f, terrainHeight * 0.5f, 1000.f); // Point(-20.f, terrainHeight * 0.5f, 1000.f)
-const Point camTarget = Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f); // Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f)
+const Point camOrigin = Point(7406.78f, 5537.87f, 300.987f); // Point(-20.f, terrainHeight * 0.5f, 1000.f) // AO 3359.59f, 779.052f, 535.08f
+const Point camTarget = Point(7406.75f, 5536.88f, 300.552f); // Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f) // 3359.83f, 780.308f, 534.828f
 
 // Pas du terrain
 const int stepsTerrain = 2;
@@ -105,3 +105,5 @@ const ColorRGB rock_bright = { 155.f, 147.f, 100.f };
 
 const ColorRGB water = { 0.f, 31.f, 148.f };
 const ColorRGB water_bright = { 0.f, 148.f, 117.f };
+
+const ColorRGB sunset = { 255.f, 204.f, 51.f };

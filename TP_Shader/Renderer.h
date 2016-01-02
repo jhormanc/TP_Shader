@@ -73,9 +73,9 @@ public:
 	// influenceToAdd : 10 < influenceSpec < 40
 	bool AddInfluence(const bool& sun, const int& influenceToAdd);
 
-	void postprocess_shadowing ( const float &z, ColorRGB &c );
-	void postprocess_lightning ( const float &z, ColorRGB &c );
-	void postprocess_fog ( const float &z, ColorRGB &c );
+	void postprocess_shadowing(const float &z, ColorRGB &c);
+	void postprocess_lightning(const float &x, const float &y, const float &z, ColorRGB &c);
+	void postprocess_fog(const float &z, ColorRGB &c);
 
 	void MoveSun(Vector dir);
 	float GetRenderTime();

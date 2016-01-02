@@ -7,8 +7,8 @@ float Renderer::coefSpec(1.f);
 int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
-float Renderer::globalIntensity(0.2f);
-Point Renderer::sunPoint(4500.f, 2000.f, 500.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f
+float Renderer::globalIntensity(0.2f); 
+Point Renderer::sunPoint(11000.f, -500.f, 1000.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -52,7 +52,7 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		// Fix trou noir
 		Pixel pt = terrain->getPoint(p.x, p.y);
 		z = Point::distance(r.o, pt);
-			
+
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
@@ -66,7 +66,7 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		}
 
 		if (!renderNbIter)
-			return shade(pt, terrain->getNormal(pt), r.o, sunPoint).cclamp(0.f, 255.f) * clamp(acc / (accli), 0.f, 1.f);
+			return shade(pt, terrain->getNormal(pt), r.o, sunPoint).cclamp(0.f, 255.f) * clamp(acc / accli, 0.f, 1.f);
 	}
 	else
 		z = distMax;
@@ -209,24 +209,34 @@ void Renderer::render()
 	}
 }
 
-void Renderer::postprocess_lightning ( const float &z, ColorRGB &c ) {
-	float t = z / distMax;
-	ColorRGB c2 = orange;
-	c = c * ( 1 - t ) + c2 * t;
-}
-
-
-void Renderer::postprocess_shadowing ( const float &z, ColorRGB &c ) {
-	float t = z / distMax;
-	ColorRGB c2 = c  * shadowFactor;
-	c = c * ( 1 - t ) + c2 * t;
-}
-
-void Renderer::postprocess_fog ( const float &z, ColorRGB &c ) 
+void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, ColorRGB &c)
 {
-	float t = exp ( -z / ( distMax * fogFactor ) );
+	float t = z / distMax;
+
+	Vector w = Noise::warp(Vector(x, y, 0.f), 1.f, 1.f / 2000.f, false);
+	float v = Noise::simplex(w.x / 1000.f, w.y / 1000.f)
+		+ Noise::simplex(w.x / 5000.f, w.y / 5000.f)
+		+ Noise::simplex(w.x / 10000.f, w.y / 10000.f)
+		+ Noise::simplex(w.x / 50000.f, w.y / 50000.f);
+	v = (v + 4.f) * 0.125f;
+	ColorRGB c2 = ColorRGB(sunset) * v + ColorRGB(orange) * (1.f - v);
+
+	c = c * (1 - t) + c2 * t;
+}
+
+void Renderer::postprocess_shadowing(const float &z, ColorRGB &c) 
+{
+	float t = z / distMax;
+
+	ColorRGB c2 = c  * shadowFactor;
+	c = c * (1 - t) + c2 * t;
+}
+
+void Renderer::postprocess_fog(const float &z, ColorRGB &c) 
+{
+	float t = exp(-z / (distMax * fogFactor));
 	ColorRGB c2 = grey_light;
-	c = c2 * ( 1 - t ) + c * t;
+	c = c2 * (1 - t) + c * t;
 }
 
 void Renderer::run()
@@ -260,9 +270,9 @@ void Renderer::run()
 					Ray r = Ray(cam_pt, cam_dir);
 					float z;
 					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z);
-					//postprocess_lightning ( z, c );
-					//postprocess_shadowing ( z, c );
-					//postprocess_fog ( z, c );
+					postprocess_lightning(x, y, z, c);
+					//postprocess_shadowing(z, c);
+					//postprocess_fog(z, c);
 
 					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 					//film.colors[x][y] = c;
