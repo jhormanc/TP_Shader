@@ -40,7 +40,7 @@ Renderer::~Renderer()
 
 ColorRGB Renderer::radiance(Ray r, float &z)
 {
-	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
+	float acc = 0.f;
 	float accli = 0.f;
 	int nbIter = 0;
 	float t;
@@ -53,9 +53,6 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 		Pixel pt = terrain->getPoint(p.x, p.y);
 		z = Point::distance(r.o, pt);
 			
-		ColorRGB shading = shade(pt, terrain->getNormal(pt), r.o, sunPoint);
-		ColorRGB colorTerrain = terrain->getColor(pt) / 255.f;
-
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < nbSamples; ++i)
 		{
@@ -65,11 +62,11 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 			
 			float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 			accli += li;
-			acc = acc + colorTerrain * delta(pt, l, rDelta) * li;
+			acc = acc + delta(pt, l, rDelta) * li;
 		}
 
 		if (!renderNbIter)
-			return ((shading / 255.f).cclamp(0.f, 255.f) * (acc / (accli)).cclamp(0.f, 1.f)) * 255.f;
+			return shade(pt, terrain->getNormal(pt), r.o, sunPoint).cclamp(0.f, 255.f) * clamp(acc / (accli), 0.f, 1.f);
 	}
 	else
 		z = distMax;
@@ -83,10 +80,8 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 
 ColorRGB Renderer::radiance(Pixel p, Point o)
 {
-	ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
+	float acc = 0.f;
 	float accli = 0.f;
-	ColorRGB shading = shade(p, terrain->getNormal(p), o, sunPoint);
-	ColorRGB colorTerrain = terrain->getColor(p) / 255.f;
 	#pragma omp parallel for schedule(static)
 	for (int i = 0; i < nbSamples; ++i)
 	{
@@ -95,10 +90,9 @@ ColorRGB Renderer::radiance(Pixel p, Point o)
 		float li = globalIntensity + sunIntensity * std::pow(cosLiS, sunInfluence);
 		accli += li;
 
-		acc = acc + colorTerrain * delta(p, l, rDelta) * li;
+		acc = acc + delta(p, l, rDelta) * li;
 	}
-
-	return ((shading / 255.f).cclamp(0.f, 255.f) * (acc / (accli)).cclamp(0.f, 1.f)) * 255.f;
+	return shade(p, terrain->getNormal(p), o, sunPoint).cclamp(0.f, 255.f) * clamp(acc / (accli), 0.f, 1.f);
 }
 
 
