@@ -3,12 +3,12 @@
 bool Renderer::renderPrecalculed(false);
 int Renderer::nbSamples(nbEchantillon);
 float Renderer::coefDiffus(1.f);
-float Renderer::coefSpec(1.f);
+float Renderer::coefSpec(0.5f);
 int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
-float Renderer::sunIntensity(0.8f);
-float Renderer::globalIntensity(0.2f); 
-Point Renderer::sunPoint(11000.f, -500.f, 1000.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f
+float Renderer::sunIntensity(0.f);
+float Renderer::globalIntensity(1.f); 
+Point Renderer::sunPoint(11000.f, -500.f, 500.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -209,7 +209,7 @@ void Renderer::render()
 	}
 }
 
-void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c, Sphere &sun, const float &invDistMax)
+void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c, Sphere &sun, const float &invDistMax, const Vector &cam_pt, const Vector &dir)
 {
 	float t = z / distMax;
 
@@ -229,17 +229,28 @@ void Renderer::postprocess_lightning(const float &x, const float &y, const float
 
 	ColorRGB sun_color = ColorRGB(sun_yellow) * r + ColorRGB(sun_bright) * (1.f - r);
 
-	Vector pt = cam.PtScreen(x, y, windowWidth, windowHeight);
-	float s = std::max(0.f, sun.distanceToPoint(Point(x, y, sun.origin.z)) * invDistMax);
-	ColorRGB c3 = ColorRGB(c2) * s + ColorRGB(orange) * (1.f - s);
+	Vector pt = cam_pt + dir * distMax;
+	Ray ray = Ray(Point(cam_pt.x, cam_pt.y, cam_pt.z), dir);
+	float hit;
+	float dist = sun.distanceToPoint(Point(pt.x, pt.y, pt.z));
+	bool sun_intersect = sun.intersect(ray, &hit) && z == distMax;
+	float s = std::max(0.f, dist * invDistMax);
+	ColorRGB c3;
+
+	if (sun_intersect)
+		c3 = sun_color;// *distance(sunPoint, pt);
+	else
+		c3 = ColorRGB(c2) * s + ColorRGB(orange) * (1.f - s);
 
 	float v = clamp(nb_iter / 255.f, 0.f, 1.f);
 	ColorRGB c4;
-	if (z == distMax)
+
+	if (sun_intersect)
+		c4 = c3;
+	else if (z == distMax)
 		c4 = ColorRGB(sunset) * v + c3 * (1.f - v);
 	else
-		c4 = c3;
-
+		c4 = c2;
 
 	c = c * (1 - t) + c4 * t;
 }
@@ -279,9 +290,10 @@ void Renderer::run()
 
 			Point cam_pt(camera.getOrigin());
 			Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
-			Sphere sun(10.f, Point(windowWidth * 0.5f, windowHeight * 0.5f, 0.f));
-			Vector pt = cam.PtScreen(windowWidth - 1, windowHeight - 1, windowWidth, windowHeight);
-			float invDistMax = 1.f / sun.distanceToPoint(Point(0.f));
+			Sphere sun(250.f, sunPoint);
+			Vector pt = cam_vec + normalize(camera.PtScreen(0, 0, w, h) - cam_vec) * distMax;
+			float invDistMax = 1.f / sun.distanceToPoint(Point(pt.x, pt.y, pt.z));
+
 			#pragma omp parallel for schedule(static)
 			for (int x = 0; x < w; x++)
 			{
@@ -295,7 +307,7 @@ void Renderer::run()
 
 					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
 
-					postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax);
+					postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
 					//postprocess_shadowing(z, c);
 					//postprocess_fog(z, c);
 

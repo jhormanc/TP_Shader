@@ -75,7 +75,7 @@ public:
 
 	void postprocess_shadowing(const float &z, ColorRGB &c);
 
-	void postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c, Sphere &sun, const float &invDistMax);
+	void postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c, Sphere &sun, const float &invDistMax, const Vector &cam_pt, const Vector &dir);
 
 	void postprocess_fog(const float &z, ColorRGB &c);
 
