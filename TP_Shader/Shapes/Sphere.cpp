@@ -73,6 +73,10 @@ bool Sphere::intersect(const Ray &ray, float * tHit) const
 		}
 }
 
+float Sphere::distanceToPoint(Point p) const
+{
+	return distance(origin, p) - radius;
+}
 BBox Sphere::getBound() const
 {
 	return BBox(Point(-radius + origin.x, -radius + origin.y, -radius + origin.z), Point(radius + origin.x, radius + origin.y, radius + origin.z));

@@ -108,4 +108,10 @@ const ColorRGB water_bright = { 0.f, 148.f, 117.f };
 
 const ColorRGB sunset = { 255.f, 204.f, 51.f };
 
-const ColorRGB sunset_light = { 255, 170.f, 87.f };
+const ColorRGB sunset_bright = { 255, 170.f, 87.f };
+
+const ColorRGB sunset_dark = { 82.f, 51.f, 56.f };
+
+const ColorRGB sun_yellow = { 250.f, 249.f, 99.f };
+
+const ColorRGB sun_bright = { 255.f, 238.f, 213.f };

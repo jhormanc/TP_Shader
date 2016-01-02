@@ -209,7 +209,7 @@ void Renderer::render()
 	}
 }
 
-void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c)
+void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c, Sphere &sun, const float &invDistMax)
 {
 	float t = z / distMax;
 
@@ -219,16 +219,29 @@ void Renderer::postprocess_lightning(const float &x, const float &y, const float
 		+ Noise::simplex(w.x / 2000.f, w.y / 2000.f)
 		+ Noise::simplex(w.x / 5000.f, w.y / 5000.f);
 	u = (u + 4.f) * 0.125f;
-	ColorRGB c2 = ColorRGB(red) * u + ColorRGB(orange) * (1.f - u);
+	ColorRGB c2 = ColorRGB(red) * u + ColorRGB(sunset_bright) * (1.f - u);
+
+	float r = Noise::simplex(w.x / 500.f, w.y / 500.f)
+		+ Noise::simplex(w.x / 100.f, w.y / 100.f) 
+		+ Noise::simplex(w.x / 500.f, w.y / 500.f)
+		+ Noise::simplex(w.x / 700.f, w.y / 700.f);
+	r = (r + 4.f) * 0.125f;
+
+	ColorRGB sun_color = ColorRGB(sun_yellow) * r + ColorRGB(sun_bright) * (1.f - r);
+
+	Vector pt = cam.PtScreen(x, y, windowWidth, windowHeight);
+	float s = std::max(0.f, sun.distanceToPoint(Point(x, y, sun.origin.z)) * invDistMax);
+	ColorRGB c3 = ColorRGB(c2) * s + ColorRGB(orange) * (1.f - s);
 
 	float v = clamp(nb_iter / 255.f, 0.f, 1.f);
-	ColorRGB c3;
+	ColorRGB c4;
 	if (z == distMax)
-		c3 = ColorRGB(sunset) * v + c2 * (1.f - v);
+		c4 = ColorRGB(sunset) * v + c3 * (1.f - v);
 	else
-		c3 = c2;
+		c4 = c3;
 
-	c = c * (1 - t) + c3 * t;
+
+	c = c * (1 - t) + c4 * t;
 }
 
 void Renderer::postprocess_shadowing(const float &z, ColorRGB &c) 
@@ -266,7 +279,9 @@ void Renderer::run()
 
 			Point cam_pt(camera.getOrigin());
 			Vector cam_vec(cam_pt.x, cam_pt.y, cam_pt.z);
-			
+			Sphere sun(10.f, Point(windowWidth * 0.5f, windowHeight * 0.5f, 0.f));
+			Vector pt = cam.PtScreen(windowWidth - 1, windowHeight - 1, windowWidth, windowHeight);
+			float invDistMax = 1.f / sun.distanceToPoint(Point(0.f));
 			#pragma omp parallel for schedule(static)
 			for (int x = 0; x < w; x++)
 			{
@@ -277,8 +292,10 @@ void Renderer::run()
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
 					float z;
+
 					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
-					postprocess_lightning(x, y, z, nbIter, c);
+
+					postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax);
 					//postprocess_shadowing(z, c);
 					//postprocess_fog(z, c);
 
