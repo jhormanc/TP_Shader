@@ -35,7 +35,7 @@ public:
 	bool abort; // Exit
 	Renderer(QObject *parent = 0);
 	void render();
-	ColorRGB radiance(Ray r, float &z);
+	ColorRGB radiance(Ray r, float &z, int *nbIter);
 	ColorRGB radiance(Pixel p, Point o);
 	float V(Point collide, Point l);
 	float delta(Point collide, Point l, float r);
@@ -74,7 +74,7 @@ public:
 	bool AddInfluence(const bool& sun, const int& influenceToAdd);
 
 	void postprocess_shadowing(const float &z, ColorRGB &c);
-	void postprocess_lightning(const float &x, const float &y, const float &z, ColorRGB &c);
+	void postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c);
 	void postprocess_fog(const float &z, ColorRGB &c);
 
 	void MoveSun(Vector dir);

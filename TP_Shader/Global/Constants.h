@@ -28,7 +28,7 @@ const Point camOrigin = Point(7406.78f, 5537.87f, 300.987f); // Point(-20.f, ter
 const Point camTarget = Point(7406.75f, 5536.88f, 300.552f); // Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f) // 3359.83f, 780.308f, 534.828f
 
 // Pas du terrain
-const int stepsTerrain = 2;
+const int stepsTerrain = 10;
 
 // Nombre de samples par défaut pour le sampler poisson
 const int nbEchantillon = 1;
@@ -107,3 +107,5 @@ const ColorRGB water = { 0.f, 31.f, 148.f };
 const ColorRGB water_bright = { 0.f, 148.f, 117.f };
 
 const ColorRGB sunset = { 255.f, 204.f, 51.f };
+
+const ColorRGB sunset_light = { 255, 170.f, 87.f };

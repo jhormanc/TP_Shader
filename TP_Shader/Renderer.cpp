@@ -38,14 +38,14 @@ Renderer::~Renderer()
 	wait();
 }
 
-ColorRGB Renderer::radiance(Ray r, float &z)
+ColorRGB Renderer::radiance(Ray r, float &z, int *nbIter)
 {
 	float acc = 0.f;
 	float accli = 0.f;
-	int nbIter = 0;
+	*nbIter = 0;
 	float t;
 
-	if (terrain->intersect(r, &t, &nbIter))
+	if (terrain->intersect(r, &t, nbIter))
 	{
 		Point p(r.o + r.d * t);
 
@@ -74,8 +74,8 @@ ColorRGB Renderer::radiance(Ray r, float &z)
 	if (!renderNbIter)
 		return sky;
 
-	nbIter = clamp(nbIter, 0.f, 255.f);
-	return ColorRGB{ nbIter, nbIter, nbIter };
+	float n = clamp(*nbIter, 0.f, 255.f);
+	return ColorRGB{ n, n, n };
 }
 
 ColorRGB Renderer::radiance(Pixel p, Point o)
@@ -209,19 +209,26 @@ void Renderer::render()
 	}
 }
 
-void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, ColorRGB &c)
+void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c)
 {
 	float t = z / distMax;
 
-	Vector w = Noise::warp(Vector(x, y, 0.f), 1.f, 1.f / 2000.f, false);
-	float v = Noise::simplex(w.x / 1000.f, w.y / 1000.f)
-		+ Noise::simplex(w.x / 5000.f, w.y / 5000.f)
-		+ Noise::simplex(w.x / 10000.f, w.y / 10000.f)
-		+ Noise::simplex(w.x / 50000.f, w.y / 50000.f);
-	v = (v + 4.f) * 0.125f;
-	ColorRGB c2 = ColorRGB(sunset) * v + ColorRGB(orange) * (1.f - v);
+	Vector w = Noise::warp(Vector(x, y, 0.f), 1.f, 1.f / 500.f, false);
+	float u = Noise::simplex(w.x / 500.f, w.y / 500.f)
+		+ Noise::simplex(w.x / 1000.f, w.y / 1000.f)
+		+ Noise::simplex(w.x / 2000.f, w.y / 2000.f)
+		+ Noise::simplex(w.x / 5000.f, w.y / 5000.f);
+	u = (u + 4.f) * 0.125f;
+	ColorRGB c2 = ColorRGB(red) * u + ColorRGB(orange) * (1.f - u);
 
-	c = c * (1 - t) + c2 * t;
+	float v = clamp(nb_iter / 255.f, 0.f, 1.f);
+	ColorRGB c3;
+	if (z == distMax)
+		c3 = ColorRGB(sunset) * v + c2 * (1.f - v);
+	else
+		c3 = c2;
+
+	c = c * (1 - t) + c3 * t;
 }
 
 void Renderer::postprocess_shadowing(const float &z, ColorRGB &c) 
@@ -266,11 +273,12 @@ void Renderer::run()
 				//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 				for (int y = 0; y < h; y++)
 				{
+					int nbIter;
 					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 					Ray r = Ray(cam_pt, cam_dir);
 					float z;
-					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z);
-					postprocess_lightning(x, y, z, c);
+					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
+					postprocess_lightning(x, y, z, nbIter, c);
 					//postprocess_shadowing(z, c);
 					//postprocess_fog(z, c);
 
