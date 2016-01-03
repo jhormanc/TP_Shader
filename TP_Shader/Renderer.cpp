@@ -14,8 +14,8 @@ bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 bool Renderer::refreshAuto(false);
 
-Renderer::Renderer(QObject *parent) : QThread(parent), 
-	cam(camOrigin, camTarget, 1., Vector(0.f, 0.f, -1.f)), 
+Renderer::Renderer(QObject *parent) : QThread(parent),
+cam(camOrigin, camTarget, 1., Vector(0.f, 0.f, -1.f), 45.f),
 	film(Film(windowWidth, windowHeight, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), 
 	samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), 
 	terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))

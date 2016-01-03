@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera(Point o_, Point a_, float dw, Vector _up)
+Camera::Camera(Point o_, Point a_, float dw, Vector _up, float FoV)
 {
 	origin = o_;
 	pt_view = a_;
@@ -8,9 +8,10 @@ Camera::Camera(Point o_, Point a_, float dw, Vector _up)
 
 	Init();
 
-	lu = (float)(windowWidth / (float)windowHeight) * 0.5f;
-	lv = 0.5f;
 	lw = dw;
+
+	SetFov(FoV);
+	
 }
 
 Vector Camera::PtScreen(int i, int j, int width, int height)
@@ -23,6 +24,14 @@ Vector Camera::PtScreen(int i, int j, int width, int height)
 		+ v * (-lv * (1 - tv) + tv * lv);
 
 	return res;
+}
+
+void Camera::SetFov(float FoV)
+{
+	Vector tmp = (w * lw);
+	float c = tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z;
+	lu = std::sqrt((-cos(FoV) + c) / (u.x * u.x + u.y * u.y + u.z * u.z));
+	lv = lu * (float)(windowHeight / (float)windowWidth);
 }
 
 void Camera::Init()

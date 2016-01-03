@@ -11,10 +11,10 @@ class Camera
 	Point pt_view;
 	
 	void Init();
-
+	void SetFov(float FoV);
 public:
 	
-	Camera(Point o_, Point d, float dw, Vector up);
+	Camera(Point o_, Point d, float dw, Vector up, float FoV);
 
 	Vector PtScreen(int i, int j, int width, int height);
 
