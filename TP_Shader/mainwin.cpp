@@ -247,7 +247,7 @@ void MainWin::updatePixmap(const QImage &image)
 	update();
 }
 
-void MainWin::move(const int& x, const int& y, const int& z)
+void MainWin::move(const int x, const int y, const int z)
 {
 	thread.MoveCam(x, y, z);
 	update();
@@ -261,7 +261,7 @@ void MainWin::rotate(const QPoint& pt)
 	thread.render();
 }
 
-void MainWin::changeNbSamples(const int& nbToAdd)
+void MainWin::changeNbSamples(const int nbToAdd)
 {
 	if (thread.changeNbSamples(nbToAdd) && !Renderer::renderPrecalculed)
 	{
@@ -303,7 +303,7 @@ void MainWin::updatePrecalc()
 	}
 }
 
-void MainWin::addCoeff(const bool& diffus, const float& coefToAdd)
+void MainWin::addCoeff(const bool diffus, const float coefToAdd)
 {
 	if (thread.AddCoeff(diffus, coefToAdd))
 	{
@@ -314,7 +314,7 @@ void MainWin::addCoeff(const bool& diffus, const float& coefToAdd)
 	}
 }
 
-void MainWin::addIntensity(const float& intensityToAdd)
+void MainWin::addIntensity(const float intensityToAdd)
 {
 	if (thread.AddIntensity(intensityToAdd))
 	{
@@ -325,7 +325,7 @@ void MainWin::addIntensity(const float& intensityToAdd)
 	}
 }
 
-void MainWin::addInfluence(const bool& sun, const int& influenceToAdd)
+void MainWin::addInfluence(const bool sun, const int influenceToAdd)
 {
 	if (thread.AddInfluence(sun, sun ? influenceToAdd : influenceToAdd * 5))
 	{
@@ -336,7 +336,7 @@ void MainWin::addInfluence(const bool& sun, const int& influenceToAdd)
 	}
 }
 
-void MainWin::moveSun(const float& x, const float& y, const float& z)
+void MainWin::moveSun(const float x, const float y, const float z)
 {
 	rendering = true;
 	refresh = true;
@@ -345,7 +345,7 @@ void MainWin::moveSun(const float& x, const float& y, const float& z)
 	thread.render();
 }
 
-void MainWin::addDeltaR(const float& delta)
+void MainWin::addDeltaR(const float delta)
 {
 	if (thread.AddDeltaR(delta))
 	{

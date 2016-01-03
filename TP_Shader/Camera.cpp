@@ -34,7 +34,7 @@ void Camera::Init()
 }
 
 // Déplace l'origine dans la direction de la caméra
-void Camera::Move(const bool& move_target, const int& x, const int& y, const int& z)
+void Camera::Move(const bool move_target, const int x, const int y, const int z)
 {
 	Point dir(0.f);
 

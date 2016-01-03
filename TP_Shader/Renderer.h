@@ -56,32 +56,32 @@ public:
 	}
 
 	// Déplace la caméra
-	void MoveCam(const int& x = 0, const int& y = 0, const int& z = 0);
+	void MoveCam(const int x = 0, const int y = 0, const int z = 0);
 
 	// Rotate la caméra
 	void RotateCam(const Point& pt_screen);
 
-	bool changeNbSamples(const int& nbToAdd);
+	bool changeNbSamples(const int nbToAdd);
 	void changeRenderMode();
 	void UpdatePrecalc();
 	// diffus : diffus ou spéculaire
 	// coefToAdd : entre 0.f et 1.f
-	bool AddCoeff(const bool& diffus, const float& coefToAdd);
+	bool AddCoeff(const bool diffus, const float coefToAdd);
 	// intensityToAdd : 0.f < globalIntensity + sunIntensity < 1.f
-	bool AddIntensity(const float& intensityToAdd);
+	bool AddIntensity(const float intensityToAdd);
 	// sun : soleil ou spéculaire
 	// influenceToAdd : 10 < influenceSpec < 40
-	bool AddInfluence(const bool& sun, const int& influenceToAdd);
+	bool AddInfluence(const bool sun, const int influenceToAdd);
 
-	void postprocess_shadowing(const float &z, ColorRGB &c);
+	void postprocess_shadowing(const float z, ColorRGB &c);
 
-	void postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c, Sphere &sun, const float &invDistMax, const Vector &cam_pt, const Vector &dir);
+	void postprocess_lightning(const float x, const float y, const float z, const int nb_iter, ColorRGB &c, Sphere &sun, const float invDistMax, const Vector &cam_pt, const Vector &dir);
 
-	void postprocess_fog(const float &z, ColorRGB &c);
+	void postprocess_fog(const float z, ColorRGB &c);
 
 	void MoveSun(Vector dir);
 	float GetRenderTime();
-	bool AddDeltaR(const float& delta);
+	bool AddDeltaR(const float delta);
 	void ChangeRenderColor();
 	void ChangeRenderIter();
 	void ChangeRenderAuto();

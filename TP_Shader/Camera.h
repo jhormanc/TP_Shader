@@ -18,7 +18,7 @@ public:
 
 	Vector PtScreen(int i, int j, int width, int height);
 
-	void Move(const bool& move_target, const int& x = 0, const int& y = 0, const int& z = 0);
+	void Move(const bool move_target, const int x = 0, const int y = 0, const int z = 0);
 	void Rotate(const Vector& pt_screen);
 
 	inline Point getOrigin()

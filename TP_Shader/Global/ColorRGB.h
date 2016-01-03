@@ -36,11 +36,17 @@ struct ColorRGB
 	ColorRGB applyGamma()
 	{
 		float p = 1.f / 2.2f;
-		return ColorRGB{ powf(x, p), powf(y, p), powf(z, p) };
+		return ColorRGB{ powf(x / 255.f, p), powf(y / 255.f, p), powf(z / 255.f, p)} * 255.f;
 	}
+
 	ColorRGB toRgb()
 	{
 		return operator*(255.f);
+	}
+
+	bool isWhite() const
+	{
+		return (((int)x) >= 255 && ((int)y) >= 255 && ((int)z) >= 255);
 	}
 
 	inline float clamp(float val, float low, float high)

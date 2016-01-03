@@ -16,8 +16,8 @@
 #endif
 
 // Taille de la fenêtre
-const int windowWidth = 1920;
-const int windowHeight = 1080;
+const int windowWidth = 1920; // 1920;
+const int windowHeight = 1080; // 1080;
 
 // Taille du terrain
 const int terrainWidth = 10000;
@@ -34,7 +34,7 @@ const int stepsTerrain = 10;
 const int nbEchantillon = 1;
 
 // Rayon de visibilité (en m)
-const float r_delta = 10.f;
+const float r_delta = 20.f;
 
 // Distance d'intersection null
 const float noIntersect = -10.0f;
@@ -67,7 +67,7 @@ const int samplesStep = 10;
 const float stepDeltaR = 5.f;
 
 // Distance post processing effects
-const float distMax = 6000.f;
+const float distMax = 5000.f;
 
 // Facteur d'assombrissement [0,1]
 const float shadowFactor = .2342f;
@@ -76,7 +76,7 @@ const float shadowFactor = .2342f;
 const float fogFactor = 0.8f;// .314f;
 
 const ColorRGB black = ColorRGB{ .0f, .0f, .0f };
-const ColorRGB white = ColorRGB{ 0.75f, 0.75f, 0.75f } *255.f;
+const ColorRGB white = ColorRGB{ 255.f, 255.f, 255.f };
 const ColorRGB blue = ColorRGB{ .25f, .25f, .75f } *255.f;
 const ColorRGB red = ColorRGB{ .75f, .25f, .25f } *255.f;
 const ColorRGB yellow = ColorRGB{ .9f, .1f, .9f } *255.f;
@@ -110,8 +110,13 @@ const ColorRGB sunset = { 255.f, 204.f, 51.f };
 
 const ColorRGB sunset_bright = { 255, 170.f, 87.f };
 
-const ColorRGB sunset_dark = { 82.f, 51.f, 56.f };
+const ColorRGB sunset_dark = { 115.f, 49.f, 53.f }; //  82.f, 51.f, 56.f
+const ColorRGB sunset_red = { 175.f, 48.f, 31.f };
+const ColorRGB sunset_yellow = { 247.f, 165.f, 37.f };
+const ColorRGB sunset_orange = { 236.f, 105.f, 34.f };
 
 const ColorRGB sun_yellow = { 250.f, 249.f, 99.f };
-
 const ColorRGB sun_bright = { 255.f, 238.f, 213.f };
+
+// Couleur spéculaire
+const ColorRGB colorSpec = sunset_orange;

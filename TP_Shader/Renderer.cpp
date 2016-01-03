@@ -3,11 +3,11 @@
 bool Renderer::renderPrecalculed(false);
 int Renderer::nbSamples(nbEchantillon);
 float Renderer::coefDiffus(1.f);
-float Renderer::coefSpec(0.5f);
+float Renderer::coefSpec(1.f);
 int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
-float Renderer::sunIntensity(0.f);
-float Renderer::globalIntensity(1.f); 
+float Renderer::sunIntensity(0.8f);
+float Renderer::globalIntensity(0.2f); 
 Point Renderer::sunPoint(11000.f, -500.f, 500.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
@@ -15,7 +15,7 @@ bool Renderer::renderNbIter(false);
 bool Renderer::refreshAuto(false);
 
 Renderer::Renderer(QObject *parent) : QThread(parent), 
-	cam(camOrigin, camTarget, 1., Vector(0.f, 0.f, -1.f)), 
+	cam(camOrigin, camTarget, 1.f, Vector(0.f, 0.f, -1.f)), 
 	film(Film(windowWidth, windowHeight, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), 
 	samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), 
 	terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))
@@ -28,14 +28,13 @@ Renderer::Renderer(QObject *parent) : QThread(parent),
 
 Renderer::~Renderer()
 {
-	delete terrain;
 	mutex.lock();
+	delete terrain;
+	
 	changes = false;
 	abort = true;
 	condition.wakeOne();
 	mutex.unlock();
-
-	wait();
 }
 
 ColorRGB Renderer::radiance(Ray r, float &z, int *nbIter)
@@ -121,10 +120,12 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 
 ColorRGB Renderer::shade(Pixel p, Normals n, Point eye, Point l)
 {
-	return ambiant + terrain->getColor(p) * clamp(
-		(dot(normalize(l - p), n) * coefDiffus // diffus  
-		+ std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec)  // speculaire
-		, 0.f, 1.f);
+	ColorRGB c = terrain->getColor(p);
+	// Diffus 
+	ColorRGB ret = ambiant + c * clamp(dot(normalize(l - p), n) * coefDiffus, 0.f, 1.f);  
+	// Speculaire
+	ret = ret + (colorSpec.isWhite() ? c : ColorRGB(colorSpec)) * clamp(std::pow(dot(reflect(normalize(l - p), n), normalize(eye - p)), specInfluence) * coefSpec, 0.f, 1.f);
+	return ret;
 }
 
 float Renderer::delta(Point collide, Point l, float r)
@@ -209,7 +210,7 @@ void Renderer::render()
 	}
 }
 
-void Renderer::postprocess_lightning(const float &x, const float &y, const float &z, const int &nb_iter, ColorRGB &c, Sphere &sun, const float &invDistMax, const Vector &cam_pt, const Vector &dir)
+void Renderer::postprocess_lightning(const float x, const float y, const float z, const int nb_iter, ColorRGB &c, Sphere &sun, const float invDistMax, const Vector &cam_pt, const Vector &dir)
 {
 	float t = z / distMax;
 
@@ -219,12 +220,12 @@ void Renderer::postprocess_lightning(const float &x, const float &y, const float
 		+ Noise::simplex(w.x / 2000.f, w.y / 2000.f)
 		+ Noise::simplex(w.x / 5000.f, w.y / 5000.f);
 	u = (u + 4.f) * 0.125f;
-	ColorRGB c2 = ColorRGB(red) * u + ColorRGB(sunset_bright) * (1.f - u);
+	ColorRGB c2 = ColorRGB(sunset_red) * u + ColorRGB(sunset_dark) * (1.f - u);
 
-	float r = Noise::simplex(w.x / 500.f, w.y / 500.f)
-		+ Noise::simplex(w.x / 100.f, w.y / 100.f) 
-		+ Noise::simplex(w.x / 500.f, w.y / 500.f)
-		+ Noise::simplex(w.x / 700.f, w.y / 700.f);
+	float r = Noise::simplex(x / 200.f, y / 200.f)
+		+ Noise::simplex(x / 400.f, y / 400.f) 
+		+ Noise::simplex(x / 500.f, y / 500.f)
+		+ Noise::simplex(x / 700.f, y / 700.f);
 	r = (r + 4.f) * 0.125f;
 
 	ColorRGB sun_color = ColorRGB(sun_yellow) * r + ColorRGB(sun_bright) * (1.f - r);
@@ -232,17 +233,21 @@ void Renderer::postprocess_lightning(const float &x, const float &y, const float
 	Vector pt = cam_pt + dir * distMax;
 	Ray ray = Ray(Point(cam_pt.x, cam_pt.y, cam_pt.z), dir);
 	float hit;
-	float dist = sun.distanceToPoint(Point(pt.x, pt.y, pt.z));
+	Sphere fake_sun = Sphere(1.f, sun.origin);
+	float dist = fake_sun.distanceToPoint(Point(pt.x, pt.y, pt.z));
 	bool sun_intersect = sun.intersect(ray, &hit) && z == distMax;
 	float s = std::max(0.f, dist * invDistMax);
 	ColorRGB c3;
 
 	if (sun_intersect)
-		c3 = sun_color;// *distance(sunPoint, pt);
+		c3 = sun_color;
 	else
-		c3 = ColorRGB(c2) * s + ColorRGB(orange) * (1.f - s);
-
-	float v = clamp(nb_iter / 255.f, 0.f, 1.f);
+	{
+		ColorRGB c5 = ColorRGB(sunset_orange) * s + ColorRGB(sunset_yellow) * (1.f - s);
+		c3 = ColorRGB(c2) * s + ColorRGB(c5) * (1.f - s);
+	}
+		
+	float v = clamp(nb_iter/ 700.f, 0.f, 1.f);
 	ColorRGB c4;
 
 	if (sun_intersect)
@@ -250,12 +255,12 @@ void Renderer::postprocess_lightning(const float &x, const float &y, const float
 	else if (z == distMax)
 		c4 = ColorRGB(sunset) * v + c3 * (1.f - v);
 	else
-		c4 = c2;
+		c4 = c3;
 
-	c = c * (1 - t) + c4 * t;
+	c = (c * (1 - t) + c4 * t);
 }
 
-void Renderer::postprocess_shadowing(const float &z, ColorRGB &c) 
+void Renderer::postprocess_shadowing(const float z, ColorRGB &c) 
 {
 	float t = z / distMax;
 
@@ -263,7 +268,7 @@ void Renderer::postprocess_shadowing(const float &z, ColorRGB &c)
 	c = c * (1 - t) + c2 * t;
 }
 
-void Renderer::postprocess_fog(const float &z, ColorRGB &c) 
+void Renderer::postprocess_fog(const float z, ColorRGB &c) 
 {
 	float t = exp(-z / (distMax * fogFactor));
 	ColorRGB c2 = grey_light;
@@ -350,7 +355,7 @@ void Renderer::MoveSun(Vector dir)
 	mutex.unlock();
 }
 
-void Renderer::MoveCam(const int& x, const int& y, const int& z)
+void Renderer::MoveCam(const int x, const int y, const int z)
 {
 	mutex.lock();
 
@@ -371,7 +376,7 @@ void Renderer::RotateCam(const Point& pt)
 	mutex.unlock();
 }
 
-bool Renderer::changeNbSamples(const int& nbToAdd)
+bool Renderer::changeNbSamples(const int nbToAdd)
 {
 	if (nbSamples > 1 || nbToAdd > 0)
 	{
@@ -407,7 +412,7 @@ float Renderer::GetRenderTime()
 	return lastRenderTime;
 }
 
-bool Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
+bool Renderer::AddCoeff(const bool diffus, const float coefToAdd)
 {
 	if (diffus)
 	{
@@ -435,7 +440,7 @@ bool Renderer::AddCoeff(const bool& diffus, const float& coefToAdd)
 	return false;
 }
 
-bool Renderer::AddIntensity(const float& intensityToAdd)
+bool Renderer::AddIntensity(const float intensityToAdd)
 {
 	if ((sunIntensity > 0.f && intensityToAdd < 0.f) || (sunIntensity < 1.f && intensityToAdd > 0.f))
 	{
@@ -450,7 +455,7 @@ bool Renderer::AddIntensity(const float& intensityToAdd)
 	return false;
 }
 
-bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
+bool Renderer::AddInfluence(const bool sun, const int influenceToAdd)
 {
 	if (sun)
 	{
@@ -480,7 +485,7 @@ bool Renderer::AddInfluence(const bool& sun, const int& influenceToAdd)
 	return false;
 }
 
-bool Renderer::AddDeltaR(const float& delta)
+bool Renderer::AddDeltaR(const float delta)
 {
 	if (rDelta > 0.f || delta > 0.f)
 	{
