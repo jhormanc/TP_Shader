@@ -16,12 +16,14 @@
 #endif
 
 // Taille de la fenêtre
-const int windowWidth = 1920;
-const int windowHeight = 1080;
+const int windowWidth = 1600;
+const int windowHeight = 900;
 
 // Taille du terrain
 const int terrainWidth = 10000;
 const int terrainHeight = 10000;
+
+const int nbEchantillonAA = 5;
 
 // Origine et direction de la caméra
 const Point camOrigin = Point(7406.78f, 5537.87f, 300.987f); // Point(-20.f, terrainHeight * 0.5f, 1000.f) // AO 3359.59f, 779.052f, 535.08f

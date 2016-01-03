@@ -293,26 +293,35 @@ void Renderer::run()
 			Sphere sun(250.f, sunPoint);
 			Vector pt = cam_vec + normalize(camera.PtScreen(0, 0, w, h) - cam_vec) * distMax;
 			float invDistMax = 1.f / sun.distanceToPoint(Point(pt.x, pt.y, pt.z));
-
+			float sigma = 0.33f;
 			#pragma omp parallel for schedule(static)
 			for (int x = 0; x < w; x++)
 			{
 				//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 				for (int y = 0; y < h; y++)
 				{
-					int nbIter;
-					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
-					Ray r = Ray(cam_pt, cam_dir);
-					float z;
+					ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
+					for (int i = 0; i < nbEchantillonAA; i++)
+					{
+						float u = random_u();
+						float v = random_u();// (pi * random_u()) - (pi / 2);
+						float x2 = sqrt(-2 * log(u)) * cos(2.f * M_PI * v) * sigma;
+						float y2 = sqrt(-2 * log(u)) * sin(2.f * M_PI * v) * sigma;
+						int nbIter;
+						Vector cam_dir = normalize(camera.PtScreen(x + x2, y + y2, w, h) - cam_vec);
+						Ray r = Ray(cam_pt, cam_dir);
+						float z;
 
-					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
+						ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
 
-					postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
-					//postprocess_shadowing(z, c);
-					//postprocess_fog(z, c);
-
-					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
-					//film.colors[x][y] = c;
+						postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
+						//postprocess_shadowing(z, c);
+						//postprocess_fog(z, c);
+						acc = acc + c.cclamp(0.f, 255.f);
+					}
+					acc = acc / nbEchantillonAA;
+					image.setPixel(x, y, qRgb(acc.x, acc.y, acc.z));
+						//film.colors[x][y] = c;
 				}
 			}
 
