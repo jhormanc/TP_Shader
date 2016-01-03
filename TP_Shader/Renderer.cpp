@@ -16,7 +16,7 @@ bool Renderer::refreshAuto(false);
 int Renderer::samplesAA(1);
 
 Renderer::Renderer(QObject *parent) : QThread(parent),
-	cam(camOrigin, camTarget, 1.f, Vector(0.f, 0.f, -1.f), 45.f),
+	cam(camOrigin, camTarget, 1.f, Vector(0.f, 0.f, -1.f), 90.f),
 	film(Film(windowWidth, windowHeight, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), 
 	samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), 
 	terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))

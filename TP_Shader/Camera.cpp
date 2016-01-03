@@ -30,7 +30,13 @@ void Camera::SetFov(float FoV)
 {
 	Vector tmp = (w * lw);
 	float c = tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z;
-	lu = std::sqrt((-cos(FoV) + c) / (u.x * u.x + u.y * u.y + u.z * u.z));
+	//lu = std::sqrt((-cos(FoV) + c) / (u.x * u.x + u.y * u.y + u.z * u.z));
+
+	float sqrCos = std::cos(FoV) * std::cos(FoV);
+	float sqrLw = lw * lw;
+	float cos4 = sqrCos * sqrCos;
+	float lw4 = sqrLw * sqrLw;
+	lu = std::sqrt(((2.f * sqrCos * sqrLw) - std::sqrt((4.f * lw4 * cos4) - 4.f*(-1.f - sqrCos)*(lw4 - lw4 * sqrCos))) / (2.f * (-1.f - sqrCos)));
 	lv = lu * (float)(windowHeight / (float)windowWidth);
 }
 
