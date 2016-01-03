@@ -23,6 +23,8 @@ const int windowHeight = 1080; // 1080;
 const int terrainWidth = 10000;
 const int terrainHeight = 10000;
 
+const int nbEchantillonAA = 5;
+
 // Origine et direction de la caméra
 const Point camOrigin = Point(7406.78f, 5537.87f, 300.987f); // Point(-20.f, terrainHeight * 0.5f, 1000.f) // AO 3359.59f, 779.052f, 535.08f
 const Point camTarget = Point(7406.75f, 5536.88f, 300.552f); // Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f) // 3359.83f, 780.308f, 534.828f
@@ -67,7 +69,7 @@ const int samplesStep = 10;
 const float stepDeltaR = 5.f;
 
 // Distance post processing effects
-const float distMax = 5000.f;
+const float distMax = 6000.f;
 
 // Facteur d'assombrissement [0,1]
 const float shadowFactor = .2342f;

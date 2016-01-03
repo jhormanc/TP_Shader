@@ -13,9 +13,10 @@ float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
 bool Renderer::refreshAuto(false);
+int Renderer::samplesAA(1);
 
-Renderer::Renderer(QObject *parent) : QThread(parent), 
-	cam(camOrigin, camTarget, 1.f, Vector(0.f, 0.f, -1.f)), 
+Renderer::Renderer(QObject *parent) : QThread(parent),
+	cam(camOrigin, camTarget, 1.f, Vector(0.f, 0.f, -1.f), 45.f),
 	film(Film(windowWidth, windowHeight, "test.ppm", ColorRGB{ 0.0f, 0.0f, 0.0f })), 
 	samplerPoisson(BBox(Point(0.f, 0.f, 0.f), Point(terrainWidth, terrainHeight, 1000.f)), 1.f), 
 	terrain(new TerrainFractal(terrainWidth, terrainHeight, stepsTerrain))
@@ -298,28 +299,71 @@ void Renderer::run()
 			Sphere sun(250.f, sunPoint);
 			Vector pt = cam_vec + normalize(camera.PtScreen(0, 0, w, h) - cam_vec) * distMax;
 			float invDistMax = 1.f / sun.distanceToPoint(Point(pt.x, pt.y, pt.z));
+			float sigma = 0.33f;
 
-			#pragma omp parallel for schedule(static)
-			for (int x = 0; x < w; x++)
+			if (samplesAA == 1)
 			{
-				//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
-				for (int y = 0; y < h; y++)
+				#pragma omp parallel for schedule(static)
+				for (int x = 0; x < w; x++)
 				{
-					int nbIter;
-					Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
-					Ray r = Ray(cam_pt, cam_dir);
-					float z;
+					//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
+					for (int y = 0; y < h; y++)
+					{
+						ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 
-					ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
+						int nbIter;
+						Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
+						Ray r = Ray(cam_pt, cam_dir);
+						float z;
 
-					postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
-					//postprocess_shadowing(z, c);
-					//postprocess_fog(z, c);
+						ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
 
-					image.setPixel(x, y, qRgb(c.x, c.y, c.z));
-					//film.colors[x][y] = c;
+						postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
+						//postprocess_shadowing(z, c);
+						//postprocess_fog(z, c);
+						acc = acc + c.cclamp(0.f, 255.f);
+						acc = acc / samplesAA;
+						image.setPixel(x, y, qRgb(acc.x, acc.y, acc.z));
+						//film.colors[x][y] = c;
+					}
 				}
 			}
+			else
+			{
+				#pragma omp parallel for schedule(static)
+				for (int x = 0; x < w; x++)
+				{
+					//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
+					for (int y = 0; y < h; y++)
+					{
+						ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
+						for (int i = 0; i < samplesAA; i++)
+						{
+							float u = random_u();
+							float v = random_u();
+							float x2 = sqrt(-2 * log(u)) * cos(2.f * M_PI * v) * sigma;
+							float y2 = sqrt(-2 * log(u)) * sin(2.f * M_PI * v) * sigma;
+
+							int nbIter;
+							Vector cam_dir = normalize(camera.PtScreen(x + x2, y + y2, w, h) - cam_vec);
+							Ray r = Ray(cam_pt, cam_dir);
+							float z;
+
+							ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
+
+							postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
+							//postprocess_shadowing(z, c);
+							//postprocess_fog(z, c);
+							acc = acc + c.cclamp(0.f, 255.f);
+						}
+						acc = acc / samplesAA;
+						image.setPixel(x, y, qRgb(acc.x, acc.y, acc.z));
+						//film.colors[x][y] = c;
+					}
+				}
+			}
+
+			
 
 			mutex.unlock();
 
@@ -521,6 +565,17 @@ void Renderer::ChangeRenderAuto()
 {
 	mutex.lock();
 	refreshAuto = !refreshAuto;
+	changes = true;
+	mutex.unlock();
+}
+
+void Renderer::ChangeRenderAA()
+{
+	mutex.lock();
+	if (samplesAA == 1)
+		samplesAA = nbEchantillonAA;
+	else
+		samplesAA = 1;
 	changes = true;
 	mutex.unlock();
 }

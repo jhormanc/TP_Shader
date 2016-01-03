@@ -85,7 +85,8 @@ public:
 	void ChangeRenderColor();
 	void ChangeRenderIter();
 	void ChangeRenderAuto();
-
+	void ChangeRenderAA();
+	
 	static bool renderPrecalculed;
 	static int nbSamples;
 	static float coefDiffus;
@@ -99,6 +100,7 @@ public:
 	static bool renderGrey;
 	static bool renderNbIter;
 	static bool refreshAuto;
+	static int samplesAA;
 
 	~Renderer();
 

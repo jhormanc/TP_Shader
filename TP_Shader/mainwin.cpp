@@ -48,16 +48,19 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		text2 = QString("Space and WXC to change rendering mode. "
 			"N to precalculate."
 			"+ / - to change samples.");
-		text3 = QString("Mode = %1 - Samples = %2 - Terrain [%3km %4km, steps = %5] - Sun = [%6 %7 %8] - Delta R = %9").arg(
+
+		text3 = QString("Mode = %1 - Samples = %2 - %3 - Terrain [%4km %5km, steps = %6] - Sun = [%7 %8 %9] - Delta R = ").arg(
 			QString(Renderer::renderPrecalculed ? "Precalculated" : "Real-time"),
 			QString::number(Renderer::nbSamples),
+			QString(Renderer::samplesAA > 1 ? QString("AA x%1").arg(Renderer::samplesAA) : "No AA"),
 			QString::number((float)(terrainWidth / 1000.f)),
 			QString::number((float)(terrainHeight / 1000.f)),
 			QString::number(stepsTerrain),
 			QString::number(Renderer::sunPoint.x),
 			QString::number(Renderer::sunPoint.y),
-			QString::number(Renderer::sunPoint.z),
-			QString::number(Renderer::rDelta));
+			QString::number(Renderer::sunPoint.z)) +
+			QString(QString::number(Renderer::rDelta));
+
 		text4 = QString("Intensity : Sun = %1, Global = %2").arg(
 			QString::number(Renderer::sunIntensity),
 			QString::number(Renderer::globalIntensity));
@@ -207,6 +210,8 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 			break;
 		case Qt::Key_C:
 			changeRenderAuto();
+		case Qt::Key_V:
+			changeRenderAA();
 			break;
 		default:
 			QWidget::keyPressEvent(event);
@@ -379,6 +384,15 @@ void MainWin::changeRenderAuto()
 	rendering = true;
 	refresh = true;
 	thread.ChangeRenderAuto();
+	update();
+	thread.render();
+}
+
+void MainWin::changeRenderAA()
+{
+	rendering = true;
+	refresh = true;
+	thread.ChangeRenderAA();
 	update();
 	thread.render();
 }

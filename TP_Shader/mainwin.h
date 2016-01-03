@@ -52,6 +52,7 @@ private:
 	void changeRenderColor();
 	void changeRenderIter();
 	void changeRenderAuto();
+	void changeRenderAA();
 };
 
 #endif // MAINWIN_H
