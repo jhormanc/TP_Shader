@@ -16,27 +16,27 @@
 #endif
 
 // Taille de la fenêtre
-const int windowWidth = 1920; // 1920;
-const int windowHeight = 1080; // 1080;
+const int windowWidth = 1920; 
+const int windowHeight = 1080;
 
 // Taille du terrain
 const int terrainWidth = 10000;
 const int terrainHeight = 10000;
 
-const int nbEchantillonAA = 5;
+const int nbEchantillonAA = 4;
 
 // Origine et direction de la caméra
-const Point camOrigin = Point(7406.78f, 5537.87f, 300.987f); // Point(-20.f, terrainHeight * 0.5f, 1000.f) // AO 3359.59f, 779.052f, 535.08f
-const Point camTarget = Point(7406.75f, 5536.88f, 300.552f); // Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f) // 3359.83f, 780.308f, 534.828f
+const Point camOrigin = Point(-20.f, terrainHeight * 0.5f, 1000.f); // Point(-20.f, terrainHeight * 0.5f, 1000.f) // AO 3359.59f, 779.052f, 535.08f // Night AA 7934.21f, 6136.75f, 509.629f
+const Point camTarget = Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f); // Point(terrainWidth * 0.5f, terrainHeight * 0.5f, 100.f) // 3359.83f, 780.308f, 534.828f // Night AA 7934.f, 6135.78f, 509.455f
 
 // Pas du terrain
-const int stepsTerrain = 10;
+const int stepsTerrain = 2;
 
 // Nombre de samples par défaut pour le sampler poisson
 const int nbEchantillon = 1;
 
 // Rayon de visibilité (en m)
-const float r_delta = 20.f;
+const float r_delta = 10.f;
 
 // Distance d'intersection null
 const float noIntersect = -10.0f;
@@ -87,7 +87,8 @@ const ColorRGB grey = ColorRGB{ 105.f, 105.f, 105.f };
 const ColorRGB grey_light = ColorRGB{ 190.f, 190.f, 190.f };
 const ColorRGB orange = ColorRGB{ 255.f, 140.f, 0.f };
 
-const ColorRGB sky = ColorRGB{ 135.f, 206.f, 235.f };
+const ColorRGB sky = ColorRGB{ 135.f, 206.f, 235.f }; // Day
+//const ColorRGB sky = ColorRGB{ 0.f, 10.f, 25.f }; // Night
 
 const ColorRGB roche = { 35.f, 26.f, 29.f };
 const ColorRGB roche_claire = { 78.f, 59.f, 61.f };
@@ -112,13 +113,16 @@ const ColorRGB sunset = { 255.f, 204.f, 51.f };
 
 const ColorRGB sunset_bright = { 255, 170.f, 87.f };
 
-const ColorRGB sunset_dark = { 115.f, 49.f, 53.f }; //  82.f, 51.f, 56.f
+const ColorRGB sunset_dark = { 115.f, 49.f, 53.f }; //  82.f, 51.f, 56.f 
 const ColorRGB sunset_red = { 175.f, 48.f, 31.f };
 const ColorRGB sunset_yellow = { 247.f, 165.f, 37.f };
 const ColorRGB sunset_orange = { 236.f, 105.f, 34.f };
+
+const ColorRGB terrain_sunset_red = { 203.f, 55.f, 29.f };
 
 const ColorRGB sun_yellow = { 250.f, 249.f, 99.f };
 const ColorRGB sun_bright = { 255.f, 238.f, 213.f };
 
 // Couleur spéculaire
-const ColorRGB colorSpec = sunset_orange;
+// default 'white', sunset 'sunset_orange'
+const ColorRGB colorSpec = white; 

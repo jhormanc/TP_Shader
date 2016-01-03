@@ -42,7 +42,7 @@ public:
 	ColorRGB shade(Pixel p, Normals n, Point eye, Point l);
 	void precalc();
 	
-	ColorRGB radiancePrecalculed ( Ray r, float &z );
+	ColorRGB radiancePrecalculed(Ray r, float &z, int *nbIter);
 	void CameraRotation(float rot);
 
 	inline Point GetCamOrigin()

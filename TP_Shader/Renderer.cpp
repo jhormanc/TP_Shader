@@ -8,7 +8,7 @@ int Renderer::specInfluence(40);
 int Renderer::sunInfluence(4);
 float Renderer::sunIntensity(0.8f);
 float Renderer::globalIntensity(0.2f); 
-Point Renderer::sunPoint(11000.f, -500.f, 500.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f
+Point Renderer::sunPoint(terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f); //terrainWidth * 0.5f, terrainHeight * 0.5f, 1000.f // Night 9000.f, -500.f, 500.f
 float Renderer::rDelta(r_delta);
 bool Renderer::renderGrey(false);
 bool Renderer::renderNbIter(false);
@@ -96,12 +96,12 @@ ColorRGB Renderer::radiance(Pixel p, Point o)
 }
 
 
-ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
+ColorRGB Renderer::radiancePrecalculed(Ray r, float &z, int *nbIter)
 {
 	float t;
-	int nbIter = 0;
+	*nbIter = 0;
 
-	if (terrain->intersect(r, &t, &nbIter))
+	if (terrain->intersect(r, &t, nbIter))
 	{
 		Point p(r.o + r.d * t);
 		z = Point::distance(r.o, p);
@@ -115,8 +115,8 @@ ColorRGB Renderer::radiancePrecalculed(Ray r, float &z)
 	if (!renderNbIter)
 		return sky;
 
-	nbIter = clamp(nbIter, 0, 255);
-	return ColorRGB{ nbIter, nbIter, nbIter };
+	float n = clamp(*nbIter, 0.f, 255.f);
+	return ColorRGB{ n, n, n };
 }
 
 ColorRGB Renderer::shade(Pixel p, Normals n, Point eye, Point l)
@@ -244,7 +244,10 @@ void Renderer::postprocess_lightning(const float x, const float y, const float z
 		c3 = sun_color;
 	else
 	{
-		ColorRGB c5 = ColorRGB(sunset_orange) * s + ColorRGB(sunset_yellow) * (1.f - s);
+		float s2 = clamp(s * 2.f, 0.f, 1.f);
+
+		ColorRGB c5 = ColorRGB(sunset_orange) * s2 + ColorRGB(sunset_yellow) * (1.f - s2);
+		
 		c3 = ColorRGB(c2) * s + ColorRGB(c5) * (1.f - s);
 	}
 		
@@ -309,26 +312,23 @@ void Renderer::run()
 					//	std::cerr << "\rRendering: " << 100 * y / (h - 1) << "%";
 					for (int y = 0; y < h; y++)
 					{
-						ColorRGB acc = ColorRGB{ 0.f, 0.f, 0.f };
 
 						int nbIter;
 						Vector cam_dir = normalize(camera.PtScreen(x, y, w, h) - cam_vec);
 						Ray r = Ray(cam_pt, cam_dir);
 						float z;
 
-						ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
+						ColorRGB c = p ? radiancePrecalculed(r, z, &nbIter) : radiance(r, z, &nbIter);
 
-						postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
+						//postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
 						//postprocess_shadowing(z, c);
 						//postprocess_fog(z, c);
-						acc = acc + c.cclamp(0.f, 255.f);
-						acc = acc / samplesAA;
-						image.setPixel(x, y, qRgb(acc.x, acc.y, acc.z));
+						image.setPixel(x, y, qRgb(c.x, c.y, c.z));
 						//film.colors[x][y] = c;
 					}
 				}
 			}
-			else
+			else // Anti-aliasing
 			{
 				#pragma omp parallel for schedule(static)
 				for (int x = 0; x < w; x++)
@@ -349,9 +349,9 @@ void Renderer::run()
 							Ray r = Ray(cam_pt, cam_dir);
 							float z;
 
-							ColorRGB c = p ? radiancePrecalculed(r, z) : radiance(r, z, &nbIter);
+							ColorRGB c = p ? radiancePrecalculed(r, z, &nbIter) : radiance(r, z, &nbIter);
 
-							postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
+							//postprocess_lightning((float)x, (float)y, z, nbIter, c, sun, invDistMax, cam_vec, cam_dir);
 							//postprocess_shadowing(z, c);
 							//postprocess_fog(z, c);
 							acc = acc + c.cclamp(0.f, 255.f);

@@ -15,6 +15,7 @@ MainWin::MainWin(QWidget *parent)
 
 	rendering = false;
 	refresh = false;
+	showUI = true;
 
 	setWindowTitle(tr("Shader"));
 #ifndef QT_NO_CURSOR
@@ -41,7 +42,9 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 	int textWidth, textWidth2, textWidth3, textWidth4, textWidth5, textWidth6, textWidth7, textWidth8;
 	QFontMetrics metrics = painter.fontMetrics();
 
-	if (!rendering || refresh)
+	text = "";
+
+	if (showUI && (!rendering || refresh))
 	{
 		text = QString("ZQSD and AE keys to move camera. "
 			"Left mouse click to rotate camera.");
@@ -92,14 +95,14 @@ void MainWin::paintEvent(QPaintEvent * /* event */)
 		textWidth7 = metrics.width(text7);
 		textWidth8 = metrics.width(text8);
 	}
-	else
+	else if (rendering)
 		text = tr("RENDERING, PLEASE WAIT...");
 
 	textWidth = metrics.width(text);
 	painter.setPen(Qt::white);
 	painter.drawText((width() - textWidth) / 2, metrics.leading() + metrics.ascent(), text);
 
-	if (!rendering || refresh)
+	if (showUI && (!rendering || refresh))
 	{
 		painter.drawText((width() - textWidth2) / 2, metrics.leading() + metrics.ascent() + 15, text2);
 		painter.drawText((width() - textWidth3) / 2, metrics.leading() + metrics.ascent() + 30, text3);
@@ -210,8 +213,12 @@ void MainWin::keyPressEvent(QKeyEvent *event)
 			break;
 		case Qt::Key_C:
 			changeRenderAuto();
+			break;
 		case Qt::Key_V:
 			changeRenderAA();
+			break;
+		case Qt::Key_B:
+			changeShowUI();
 			break;
 		default:
 			QWidget::keyPressEvent(event);
@@ -395,6 +402,13 @@ void MainWin::changeRenderAA()
 	thread.ChangeRenderAA();
 	update();
 	thread.render();
+}
+
+void MainWin::changeShowUI()
+{
+	refresh = true;
+	showUI = !showUI;
+	update();
 }
 
 void MainWin::closeEvent(QCloseEvent *event)

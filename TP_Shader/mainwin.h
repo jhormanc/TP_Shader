@@ -32,6 +32,7 @@ private:
 	QPixmap pixmap;
 	bool rendering;
 	bool refresh;
+	bool showUI;
 
 	void rotate(const QPoint& pt);
 	void move(const int x = 0, const int y = 0, const int z = 0);
@@ -53,6 +54,7 @@ private:
 	void changeRenderIter();
 	void changeRenderAuto();
 	void changeRenderAA();
+	void changeShowUI();
 };
 
 #endif // MAINWIN_H
